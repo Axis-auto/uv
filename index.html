@@ -6,140 +6,307 @@
   <title>جهاز فحص السيارات | اكتشف الإصلاحات المخفية خلال ثوانٍ</title>
   <meta name="description" content="صفحة لاندنج بيج عربية لبيع جهاز فحص السيارات: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
   <meta name="color-scheme" content="light dark" />
-  <!-- تحميل Stripe.js -->
-  <script src="https://js.stripe.com/v3/"></script>
   <style>
-    /* أنماط CSS السابقة تبقى كما هي مع إضافة أنماط جديدة */
-    /* ... (كل أنماط CSS السابقة) ... */
-
-    /* أنماط إضافية لسياسة الخصوصية وStripe */
-    .privacy-modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
+    :root{
+      --brand:#2563eb; /* أزرق - أكثر ملاءمة لموضوع السيارات */
+      --brand-2:#3b82f6;
+      --brand-light:#dbeafe;
+      --text:#0f172a;
+      --muted:#475569;
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --danger:#dc2626;
+      --radius:12px;
+      --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family: system-ui, -apple-system, Segoe UI, Tahoma, Arial, "Noto Kufi Arabic", "Cairo", sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin-inline:auto;padding:12px}
+    header{position:sticky;top:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid #e2e8f0;z-index:50;box-shadow: var(--shadow);}
+    header .inner{display:flex;align-items:center;justify-content:space-between;gap:12px; padding: 6px 0;}
+    .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size: 18px;}
+    .logo img{height:40px;width:auto;object-fit:contain}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:1px solid transparent;background:var(--brand);color:#fff;font-weight:700;transition:var(--transition);cursor:pointer;box-shadow: var(--shadow);}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,99,235,.2)}
+    .btn.ghost{background:transparent;color:var(--brand);border-color:var(--brand);box-shadow: none;}
+    .btn.ghost:hover{background:var(--brand-light);}
+    .hero{padding:16px 0 12px}
+    .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}
+    .hero h1{font-size:clamp(24px,4vw,40px);line-height:1.15;margin:4px 0 8px}
+    .lead{color:var(--muted);font-size:clamp(14px,2vw,16px)}
+    .badges{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+    .badge{font-size:11px;border:1px solid #e2e8f0;padding:4px 8px;border-radius:8px;background:#fff;box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+    .cta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .card{background:var(--card);border:1px solid #e2e8f0;border-radius:var(--radius);padding:16px;box-shadow: var(--shadow);}
+    .product-card{display:grid;gap:8px}
+    .product-img{aspect-ratio: 4/3;border-radius:10px;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:grid;place-items:center;border:1px dashed #93c5fd;color:#2563eb;font-weight:700;overflow:hidden}
+    .product-img img{width:100%;height:100%;object-fit:contain;display:block}
+    .grid{display:grid;gap:10px}
+    .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+    .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+    .grid.cols-4{grid-template-columns:repeat(4,1fr)}
+    
+    /* تحسينات للعرض على الجوال */
+    @media (max-width:920px){
+      .hero .wrap{grid-template-columns:1fr}
+      .grid.cols-3,.grid.cols-4{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:768px){
+      .logo { font-size: 16px; }
+      .logo img { height: 35px; }
+      header .inner { flex-wrap: wrap; }
+      .hero h1 { text-align: center; }
+      .lead { text-align: center; }
+      .badges { justify-content: center; }
+      .cta-row { justify-content: center; }
+      .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .pricing-options { flex-direction: column; }
+      .shipping-timeline { flex-direction: column; gap: 16px; }
+      .shipping-timeline::before { display: none; }
+    }
+    @media (max-width:640px){
+      .container { padding: 10px; }
+      header .inner { padding: 6px 0; }
+      .logo { font-size: 14px; }
+      .logo img { height: 30px; }
+      nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+      .btn { padding: 8px 14px; font-size: 14px; }
+      .hero { padding: 12px 0; }
+      .hero h1 { font-size: 22px; }
+      .lead { font-size: 14px; }
+      .badge { font-size: 10px; padding: 3px 6px; }
+      .card { padding: 12px; }
+      .features .feat { flex-direction: column; text-align: center; }
+      .icon { margin: 0 auto; }
+      .steps .step { flex-direction: column; text-align: center; }
+      .step .num { margin: 0 auto; }
+      .table { font-size: 14px; }
+      .table td, .table th { padding: 6px 8px; }
+      .kpi { padding: 8px; }
+      .kpi .big { font-size: 18px; }
+      .pricing-card { padding: 10px; }
+      .pricing-card .price { font-size: 24px; }
+      .form-input, .form-select { padding: 10px; font-size: 14px; }
+      .lang-switcher { padding: 4px 8px; font-size: 12px; }
+      .floating-cta { padding: 8px 14px; font-size: 14px; }
+    }
+    @media (max-width:480px){
+      .logo { font-size: 12px; }
+      .logo img { height: 25px; }
+      .btn { padding: 6px 12px; font-size: 12px; }
+      .hero h1 { font-size: 20px; }
+      .badge { font-size: 9px; }
+      .kpis { grid-template-columns: 1fr; }
+    }
+    
+    section{padding:16px 0}
+    h2{font-size:clamp(20px,2.8vw,26px);margin:0 0 8px}
+    h3{font-size:clamp(16px,2.2vw,20px);margin:0 0 6px}
+    .muted{color:var(--muted)}
+    .features .feat{display:flex;gap:8px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;transition: transform 0.2s;}
+    .features .feat:hover{transform: translateY(-3px);}
+    .icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#fff;flex:0 0 auto}
+    .steps .step{display:flex;gap:8px}
+    .step .num{width:24px;height:24px;border-radius:6px;background:#dbeafe;color:#2563eb;display:grid;place-items:center;font-weight:800}
+    .table{width:100%;border-collapse:separate;border-spacing:0 4px}
+    .table tr{background:#fff;border:1px solid #e2e8f0}
+    .table td,.table th{padding:8px 10px}
+    .table th{background:#f1f5f9;text-align:right}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .kpi{background:#fff;border:1px solid #e2e8f0;padding:12px;border-radius:12px;text-align:center;box-shadow: var(--shadow);}
+    .kpi .big{font-size:20px;font-weight:900;color:var(--brand)}
+    .faq details{background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:10px;margin-bottom: 6px;}
+    .faq summary{font-weight:700;cursor:pointer}
+    .price{font-size:24px;font-weight:900;color:var(--brand)}
+    .strike{opacity:.5;text-decoration:line-through}
+    .form{display:grid;gap:8px}
+    input,select,textarea{padding:10px 12px;border-radius:8px;border:1px solid #e2e8f0;font:inherit;width: 100%; color: var(--text);}
+    label{display: block;font-weight: 600;margin-bottom: 4px;}
+    footer{padding:16px 0;border-top:1px solid #e2e8f0;background:#fff;margin-top: 20px;}
+    .floating-cta{position:fixed;left:12px;bottom:12px;z-index:60;box-shadow: 0 4px 12px rgba(0,0,0,0.15);}
+    .pricing-options {display: flex;gap: 12px;margin: 12px 0;}
+    .pricing-card {flex: 1;border: 2px solid #e2e8f0;border-radius: var(--radius);padding: 14px;text-align: center;transition: var(--transition);}
+    .pricing-card:hover {border-color: var(--brand);transform: translateY(-3px);}
+    .pricing-card.featured {border-color: var(--brand);background: var(--brand-light);position: relative;}
+    .pricing-card.featured::before {content: "الأفضل مبيعاً";position: absolute;top: -10px;left: 50%;transform: translateX(-50%);background: var(--brand);color: white;padding: 3px 10px;border-radius: 16px;font-size: 11px;font-weight: bold;}
+    .pricing-card h3 {margin-top: 0;}
+    .pricing-card .price {font-size: 28px;margin: 10px 0;}
+    .pricing-card ul {list-style: none;padding: 0;margin: 12px 0;text-align: right;}
+    .pricing-card li {padding: 4px 0;border-bottom: 1px solid #f1f5f9;}
+    .payment-info {background: #f8fafc;border-radius: var(--radius);padding: 14px;margin: 12px 0;border: 1px dashed #93c5fd;}
+    .guarantee-badge {display: inline-flex;align-items: center;gap: 6px;background: #f0fdf4;color: #166534;padding: 6px 12px;border-radius: 16px;font-weight:600;margin: 6px 0;}
+    .shipping-timeline {display: flex;justify-content: space-between;position: relative;margin: 16px 0;}
+    .shipping-timeline::before {content: '';position: absolute;top: 12px;left: 0;right: 0;height: 2px;background: #e2e8f0;}
+    .timeline-step {display: flex;flex-direction: column;align-items: center;position: relative;z-index: 2;flex: 1;}
+    .timeline-step .dot {width: 24px;height: 24px;border-radius: 50%;background: var(--brand);display: flex;align-items: center;justify-content: center;color: white;font-weight: bold;margin-bottom: 6px;}
+    .timeline-step p {text-align: center;margin: 0;font-size: 12px;}
+    .source-note{font-size:11px;color:var(--muted);margin-top:4px}
+    
+    /* إضافة أنماط للهوية البصرية للسيارات */
+    .car-icon {width: 24px; height: 24px; display: inline-block; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Cpath d='M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z'/%3E%3Ccircle cx='7.5' cy='14.5' r='1.5'/%3E%3Ccircle cx='16.5' cy='14.5' r='1.5'/%3E%3C/svg%3E") no-repeat center center;}
+    .car-theme-border {border-left: 4px solid var(--brand);}
+    
+    /* تحسينات للجوال */
+    .mobile-optimized {display: flex; flex-direction: column;}
+    .mobile-optimized .product-img {height: auto; min-height: 200px;}
+    
+    /* تحسينات للصور */
+    .image-container {position: relative; width: 100%; overflow: hidden; cursor: pointer;}
+    .image-container img {transition: transform 0.3s ease; object-fit: contain;}
+    .image-container:hover img {transform: scale(1.05);}
+    
+    /* أنماط جديدة لحقل تحميل الملفات */
+    .file-upload {display: flex;flex-direction:column;gap: 6px;margin: 8px 0;}
+    .file-upload label {display: inline-flex;align-items: center;gap: 6px;padding: 8px 12px;background: #f8fafc;border: 1px dashed #93c5fd;border-radius: 8px;cursor: pointer;}
+    .file-upload label:hover {background: #e0f2fe;}
+    .file-name {font-size: 14px;color: var(--muted);}
+    
+    /* رسائل التنبيه */
+    .alert {padding: 10px;border-radius: 8px;margin: 8px 0;display: none;}
+    .alert-success {background-color: #f0fdf4;color: #166534;border: 1px solid #bbf7d0;}
+    .alert-error {background-color: #fef2f2;color: #dc2626;border: 1px solid #fecaca;}
+    
+    /* تصميم جديد للنموذج */
+    .form-group {margin-bottom: 12px;}
+    .form-label {display: block;font-weight: 600;margin-bottom: 4px;color: var(--text);}
+    .form-input {width: 100%;padding: 10px;border: 1px solid #e2e8f0;border-radius: 8px;font-size: 16px;transition: border-color 0.3s; color: var(--text);}
+    .form-input:focus {outline: none;border-color: var(--brand);box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);}
+    .form-select {width: 100%;padding: 10px;border: 1px solid #e2e8f0;border-radius: 8px;font-size: 16px;background-color: white; color: var(--text);}
+    .form-note {font-size: 14px;color: var(--muted);margin-top: 4px;}
+    
+    /* تحسين ظهور خيارات القوائم المنسدلة */
+    select option { color: var(--text); background-color: white; }
+    
+    /* تحسينات للتحذيرات */
+    .warnings {background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius); padding: 12px; margin: 12px 0;}
+    .warnings h4 {margin-top: 0; color: #92400e;}
+    .warnings ul {margin: 6px 0; padding-right: 16px;}
+    .warnings li {margin-bottom: 4px;}
+    
+    /* معاينة الصورة */
+    .image-preview {display: none; margin-top: 8px; text-align: center;}
+    .image-preview img {max-width: 100%; max-height: 180px; border-radius: 8px; border: 1px solid #e2e8f0; object-fit: contain;}
+    
+    /* مؤشر التحميل */
+    .loader {display: none; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid var(--brand); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 8px;}
+    @keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}
+    .upload-status {display: flex; align-items: center; margin-top: 4px;}
+    
+    /* زر تبديل اللغة */
+    .lang-switcher {display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: var(--transition);}
+    .lang-switcher:hover {background: #e2e8f0;}
+    
+    /* نافذة عرض الصور */
+    .modal {display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9);}
+    .modal-content {display: block; margin: auto; max-width: 90%; max-height: 80%; margin-top: 5%; object-fit: contain;}
+    .close-modal {position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer;}
+    .close-modal:hover {color: #bbb;}
+    .modal-caption {margin: auto; display: block; width: 80%; max-width: 700px; text-align: center; color: #ccc; padding: 10px 0; height: 150px;}
+    
+    /* أنماط للغة الإنجليزية */
+    [dir="ltr"] {
+      text-align: left;
+      direction: ltr;
+    }
+    [dir="ltr"] .table th {
+      text-align: left;
+    }
+    [dir="ltr"] .pricing-card ul {
+      text-align: left;
+      padding-left: 16px;
+    }
+    [dir="ltr"] .warnings ul {
+      padding-right: 0;
+      padding-left: 16px;
+    }
+    [dir="ltr"] .features .feat,
+    [dir="ltr"] .steps .step {
+      flex-direction: row-reverse;
+    }
+    [dir="ltr"] .car-theme-border {
+      border-left: none;
+      border-right: 4px solid var(--brand);
+    }
+    [dir="ltr"] .shipping-timeline::before {
       left: 0;
-      top: 0;
+      right: 0;
+    }
+
+    /* تحسينات إضافية للصور - بدون هوامش */
+    .product-img-container {
       width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.7);
-    }
-    .privacy-content {
-      background-color: #fefefe;
-      margin: 5% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 90%;
-      max-width: 800px;
-      border-radius: var(--radius);
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .close-privacy {
-      color: #aaa;
-      float: left;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .close-privacy:hover {
-      color: black;
-    }
-    .privacy-section {
-      margin-bottom: 20px;
-    }
-    .privacy-section h3 {
-      color: var(--brand);
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 8px;
-    }
-    .StripeElement {
-      box-sizing: border-box;
-      padding: 10px 12px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      background-color: white;
-      box-shadow: 0 1px 3px 0 #e6ebf1;
-      -webkit-transition: box-shadow 150ms ease;
-      transition: box-shadow 150ms ease;
-    }
-    .StripeElement--focus {
-      box-shadow: 0 1px 3px 0 #cfd7df;
-    }
-    .StripeElement--invalid {
-      border-color: #fa755a;
-    }
-    .StripeElement--webkit-autofill {
-      background-color: #fefde5 !important;
-    }
-    .payment-option {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .payment-option:hover {
-      border-color: var(--brand);
-    }
-    .payment-option.selected {
-      border-color: var(--brand);
-      background-color: var(--brand-light);
-    }
-    .payment-option input {
-      margin-left: 8px;
-    }
-    .stripe-form {
-      display: none;
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px dashed #93c5fd;
-      border-radius: 8px;
-      background-color: #f8fafc;
-    }
-    .form-row {
-      margin-bottom: 12px;
-    }
-    .trust-badges {
+      height: auto;
       display: flex;
       justify-content: center;
-      gap: 16px;
-      margin: 16px 0;
-      flex-wrap: wrap;
-    }
-    .trust-badge {
-      display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 14px;
-      color: var(--muted);
+      background: none;
+      border-radius: 0;
+      border: none;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
     }
-    .trust-badge svg {
-      width: 20px;
-      height: 20px;
-      color: var(--ok);
+    .product-img-container img {
+      width: 100%;
+      height: auto;
+      max-height: 400px;
+      object-fit: contain;
     }
-    .secure-note {
+    .sub-image-container {
+      width: 100%;
+      height: auto;
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 6px;
-      font-size: 14px;
-      color: var(--ok);
-      margin-top: 8px;
+      background: none;
+      border-radius: 0;
+      overflow: hidden;
+      border: none;
+      margin: 0;
+      padding: 0;
     }
-    .privacy-links {
-      text-align: center;
-      margin: 16px 0;
-      font-size: 14px;
+    .sub-image-container img {
+      width: 100%;
+      height: auto;
+      max-height: 150px;
+      object-fit: contain;
     }
-    .privacy-links a {
-      color: var(--brand);
-      text-decoration: underline;
-      margin: 0 8px;
-      cursor: pointer;
+    
+    /* إزالة الهوامش من البطاقات التي تحتوي على الصور */
+    .card[style*="padding:4px"] {
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: none !important;
+    }
+    
+    /* تحسينات إضافية للتصميم العصري */
+    .modern-btn {
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    }
+    .modern-btn:hover {
+      background: linear-gradient(135deg, var(--brand-2), var(--brand));
+      box-shadow: 0 6px 10px rgba(37, 99, 235, 0.3);
+    }
+    .card-hover {
+      transition: var(--transition);
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .feature-icon {
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     }
   </style>
 </head>
@@ -169,8 +336,199 @@
   </header>
 
   <main>
-    <!-- باقي المحتوى يبقى كما هو حتى قسم الدفع -->
-    <!-- ... (كل المحتوى السابق يبقى كما هو) ... -->
+    <!-- HERO -->
+    <section class="hero gradient-bg">
+      <div class="container wrap">
+        <div>
+          <h1 data-translate="heroTitle">اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ</h1>
+          <p class="lead" data-translate="heroDesc">جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.</p>
+          <div class="badges">
+            <div class="badge" data-translate="badge1">طيف UV-A 400–405 nm</div>
+            <div class="badge" data-translate="badge2">إشعاع حتى 6000 µW/cm²</div>
+            <div class="badge" data-translate="badge3">بطارية 8400 mAh — تشغيل 60–70 دقيقة</div>
+            <div class="badge" data-translate="badge4">مصنوع من الألومنيوم المعالج وبوليمر مضغوط</div>
+          </div>
+          <div class="cta-row">
+            <a id="ctaTop" class="btn modern-btn" href="#order" data-translate="ctaOrder">اطلب الآن</a>
+            <a class="btn ghost" href="#how" data-translate="ctaHow">كيف يعمل؟</a>
+          </div>
+          <div class="kpis" style="margin-top:10px">
+            <div class="kpi"><div class="big">+250</div><div class="muted" data-translate="kpi1">عميل موثوق</div></div>
+            <div class="kpi"><div class="big">12</div><div class="muted" data-translate="kpi2">شهر ضمان</div></div>
+            <div class="kpi"><div class="big">24/7</div><div class="muted" data-translate="kpi3">دعم عبر واتساب</div></div>
+            <div class="kpi"><div class="big">3-7</div><div class="muted" data-translate="kpi4">أيام للتوصيل</div></div>
+          </div>
+        </div>
+        <div class="card product-card mobile-optimized card-hover">
+          <div class="product-img-container image-container" onclick="openModal('https://renuva.co/wp-content/uploads/2025/08/صورة-الهيرو-e1755979523975.webp', translations[currentLang].heroImageAlt)">
+            <img src="https://renuva.co/wp-content/uploads/2025/08/صورة-الهيرو-e1755979523975.webp" alt="جهاز فحص السيارات — منظر أمامي" />
+          </div>
+
+          <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;">
+            <li data-translate="feature1">يكشف الطلاء التجميلي والطبقات الإضافية واللمعان.</li>
+            <li data-translate="feature2">يظهر معالم الإصلاح تحت طبقات الحماية/PPF وحتى تحت اللف.</li>
+            <li data-translate="feature3">كاشف تسريبات التكييف مع صبغة UV (يدعم أصباغ UV الشائعة).</li>
+          </ul>
+
+          <div class="grid cols-2">
+            <div class="card" style="padding:0; border: none; box-shadow: none; background: none;">
+              <div class="muted" style="font-size:11px" data-translate="viewFrontBack">منظر أمامي وخلفي</div>
+              <div class="sub-image-container image-container" onclick="openModal('https://renuva.co/wp-content/uploads/2025/08/صور-من-الامام-و-الخلف--e1755976282161.webp', translations[currentLang].frontBackImageAlt)">
+                <img src="https://renuva.co/wp-content/uploads/2025/08/صور-من-الامام-و-الخلف--e1755976282161.webp" alt="منظر أمامي وخلفي للجهاز" />
+              </div>
+            </div>
+            <div class="card" style="padding:0; border: none; box-shadow: none; background: none;">
+              <div class="muted" style="font-size:11px" data-translate="viewSide">منظر جانبي</div>
+              <div class="sub-image-container image-container" onclick="openModal('https://renuva.co/wp-content/uploads/2025/08/صورة-جانبية-e1755976335152.webp', translations[currentLang].sideImageAlt)">
+                <img src="https://renuva.co/wp-content/uploads/2025/08/صورة-جانبية-e1755976335152.webp" alt="منظر جانبي للجهاز" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="container">
+        <h2 data-translate="featuresTitle">لماذا جهاز فحص السيارات هذا؟</h2>
+        <p class="muted" data-translate="featuresDesc">مصمم خصيصًا لفحص السيارات بسرعة وبدقّة عالية.</p>
+
+        <div class="grid cols-4 features" style="margin-top:8px">
+          <div class="feat card-hover">
+            <div class="icon feature-icon">✓</div>
+            <div>
+              <div style="font-weight:800" data-translate="feat1Title">يكشف آثار الدهان والرش</div>
+              <div class="muted" data-translate="feat1Desc">يُبين اختلافات الطبقات، المعجون والتلميع.</div>
+            </div>
+          </div>
+          <div class="feat card-hover">
+            <div class="icon feature-icon">✓</div>
+            <div>
+              <div style="font-weight:800" data-translate="feat2Title">كشف تسريبات AC مع صبغة UV</div>
+              <div class="muted" data-translate="feat2Desc">متوافق مع أصباغ UV الشائعة لسهولة كشف التسريب.</div>
+            </div>
+          </div>
+          <div class="feat card-hover">
+            <div class="icon feature-icon">✓</div>
+            <div>
+              <div style="font-weight:800" data-translate="feat3Title">بطارية 8400 mAh</div>
+              <div class="muted" data-translate="feat3Desc">تشغيل نحو 60–70 دقيقة وشحن سريع (15–20 دقيقة تقريبًا).</div>
+            </div>
+          </div>
+          <div class="feat card-hover">
+            <div class="icon feature-icon">✓</div>
+            <div>
+              <div style="font-weight:800" data-translate="feat4Title">متين ومحمول</div>
+              <div class="muted" data-translate="feat4Desc">هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="gradient-bg">
+      <div class="container">
+        <h2 data-translate="howTitle">كيف يعمل؟</h2>
+        <div class="grid cols-3 steps">
+          <div class="card step card-hover">
+            <div class="num">1</div>
+            <div>
+              <div style="font-weight:800" data-translate="step1Title">حضّر السيارة</div>
+              <div class="muted" data-translate="step1Desc">نظّف السطح وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.</div>
+            </div>
+          </div>
+          <div class="card step card-hover">
+            <div class="num">2</div>
+            <div>
+              <div style="font-weight:800" data-translate="step2Title">فعّل الجهاز</div>
+              <div class="muted" data-translate="step2Desc">استخدم الجهاز على مسافة 40–60 سم من السطح وزاوج الزوايا.</div>
+            </div>
+          </div>
+          <div class="card step card-hover">
+            <div class="num">3</div>
+            <div>
+              <div style="font-weight:800" data-translate="step3Title">اقرأ النتائج</div>
+              <div class="muted" data-translate="step3Desc">البقع والتباينات تشير إلى إصلاحات أو طلاء إضافي أو ترسبات.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="warnings">
+          <h4 data-translate="warningTitle">تنبيهات أمان هامة:</h4>
+          <ul>
+            <li data-translate="warning1">لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.</li>
+            <li data-translate="warning2">لا تعرض الجلد لأشعة UV لفترات طويلة.</li>
+            <li data-translate="warning3">لا تستخدم الجهاز بالقرب من الماء أو السوائل.</li>
+            <li data-translate="warning4">حافظ على الجهاز بعيداً عن متناول الأطفال.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SPECS / BOX -->
+    <section>
+      <div class="container grid cols-2">
+        <div class="card card-hover">
+          <h2 data-translate="specsTitle">المواصفات الفنية</h2>
+          <table class="table">
+            <tr><th data-translate="spec1">الاسم التجاري / الموديل</th><td>UVRA 100 B</td></tr>
+            <tr><th data-translate="spec2">القدرة الكهربائية</th><td>100 W</td></tr>
+            <tr><th data-translate="spec3">نوع الطاقة</th><td data-translate="spec3Value">بطارية ليثيوم قابلة للشحن</td></tr>
+            <tr><th data-translate="spec4">سعة البطارية</th><td>8400 mAh</td></tr>
+            <tr><th data-translate="spec5">مدة التشغيل</th><td>≈ 60–70 دقيقة (تشغيل متواصل)</td></tr>
+            <tr><th data-translate="spec6">مدة الشحن</th><td data-translate="spec6Value">حوالي 15–20 دقيقة (شحن سريع)</td></tr>
+            <tr><th data-translate="spec7">استمرارية العمل</th><td data-translate="spec7Value">مصمم للعمل حتى 12 ساعة/يوم (حسب الاستخدام)</td></tr>
+            <tr><th data-translate="spec8">الوزن (بدون بطارية)</th><td>680 غ</td></tr>
+            <tr><th data-translate="spec9">الوزن (مع البطارية)</th><td>1310 غ</td></tr>
+            <tr><th data-translate="spec10">الأبعاد</th><td>21.5 × 4.3 × 12 سم</td></tr>
+            <tr><th data-translate="spec11">عدد المصابيح / الليزرات</th><td>25 (توزيع 5×5)</td></tr>
+            <tr><th data-translate="spec12">قوة كل ليزر</th><td>حوالي 4 W</td></tr>
+            <tr><th data-translate="spec13">حجم الفوهة</th><td>6 × 6 سم</td></tr>
+            <tr><th data-translate="spec14">الخامة</th><td data-translate="spec14Value">ألومنيوم معالج + بوليمر مضغوط</td></tr>
+            <tr><th data-translate="spec15">نطاق الطيف</th><td>UV-A 400–405 nm</td></tr>
+            <tr><th data-translate="spec16">الطاقة الإشعاعية</th><td>حتى ≈ 6000 µW/cm²</td></tr>
+            <tr><th data-translate="spec17">قوة الإشعاع</th><td>9000 W</td></tr>
+            <tr><th data-translate="spec18">جهة الطاقة</th><td>220 فولت</td></tr>
+          </table>
+        </div>
+
+        <div class="card card-hover">
+          <h2 data-translate="boxTitle">ماذا في العبوة?</h2>
+          <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
+            <li data-translate="boxItem1">جهاز فحص السيارات</li>
+            <li data-translate="boxItem2">حقيبة حماية ضد الصدمات</li>
+            <li data-translate="boxItem3">بطارية ليثيوم 8400 mAh</li>
+            <li data-translate="boxItem4">شاحن سريع + كابل USB-C</li>
+            <li data-translate="boxItem5">دليل استخدام سريع وفيديوهات تعليمية</li>
+            <li data-translate="boxItem6">شهادة ضمان لمدة سنة</li>
+          </ul>
+
+          <h3 style="margin-top:10px" data-translate="functionsTitle">الوظائف والاستخدامات</h3>
+          <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.6">
+            <li data-translate="func1">فحص الطلاء: يكشف الطلاء التجميلي، الطلاء الموضوعي، الطبقات الإضافية، التلميع، الأكريليك والورنيش.</li>
+            <li data-translate="func2">كشف التعديلات: يظهر طبقات المعجون والمعاد إصلاحها، حتى تحت طبقات PPF أو التجليد.</li>
+            <li data-translate="func3">فحص الحوادث والغرق: يُظهر بقايا الماء، علامات الغرق، أو بداية التأكل والصدأ.</li>
+            <li data-translate="func4">فحص الأجزاء غير المعدنية: فحص المركبات المصنعة من الفيبرجلاس وأي مواد، فحص الأجزاء البلاستيكية.</li>
+            <li data-translate="func5">فحص الكسوة الداخلية: يميز ما إذا تم تبديل أو إعادة طلاء الفرش الداخلي، والمقاعد والأبواب.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="gradient-bg">
+      <div class="container">
+        <h2 data-translate="testimonialsTitle">آراء العملاء</h2>
+        <div class="grid cols-3">
+          <div class="card card-hover"><strong data-translate="testimonial1Name">مؤسسة تقييم سيارات</strong><div class="muted" data-translate="testimonial1Text">كشف لنا مواضع رش قديمة خلال دقائق. اختصر وقت الفحص كثيرًا.</div></div>
+          <div class="card card-hover"><strong data-translate="testimonial2Name">سالم — مشتري فرد</strong><div class="muted" data-translate="testimonial2Text">ساعدني أتأكد من سيارة مستعملة قبل الشراء. استثمار ممتاز.</div></div>
+          <div class="card card-hover"><strong data-translate="testimonial3Name">ورشة تلميع</strong><div class="muted" data-translate="testimonial3Text">نستخدمه بعد كل عملية تلميع للتأكد من عدم بقاء هولوجرامات.</div></div>
+        </div>
+      </div>
+    </section>
 
     <!-- PRICING -->
     <section id="pricing">
@@ -208,77 +566,26 @@
           </div>
         </div>
 
-        <div class="trust-badges">
-          <div class="trust-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            </svg>
-            <span data-translate="securePayment">دفع آمن</span>
-          </div>
-          <div class="trust-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <span data-translate="dataProtection">حماية البيانات</span>
-          </div>
-          <div class="trust-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span data-translate="qualityGuarantee">ضمان الجودة</span>
-          </div>
-        </div>
-
         <div class="payment-info">
           <h3 data-translate="paymentTitle">طرق الدفع والشحن</h3>
-          
-          <div class="payment-option" id="bankTransferOption">
-            <input type="radio" id="paymentBank" name="paymentMethod" value="bank" checked>
-            <label for="paymentBank" data-translate="paymentBank">الدفع المسبق عبر الحوالة البنكية (SWIFT)</label>
-          </div>
-          
-          <div class="payment-option" id="stripeOption">
-            <input type="radio" id="paymentStripe" name="paymentMethod" value="stripe">
-            <label for="paymentStripe" data-translate="paymentStripe">الدفع الآمن ببطاقة الائتمان (Stripe)</label>
-          </div>
-
-          <div id="bankDetails" class="stripe-form" style="display: block;">
-            <p data-translate="paymentDesc">نحن نقدم الدفع عبر الحوالة البنكية (SWIFT) فقط:</p>
-            <ul>
-              <li><strong data-translate="paymentMethod">الدفع المسبق عبر الحوالة البنكية (SWIFT)</strong></li>
-            </ul>
-            
-            <h4 data-translate="swiftDetailsTitle">تفاصيل الحوالة البنكية (SWIFT):</h4>
-            <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0;">
-              <strong>Account No:</strong> AE960500000000019423466<br>
-              <strong>Swift Code:</strong> ABDIAEADXXX<br>
-              <strong>Account Name:</strong> AXIS AUTO TECHNICAL TESTING<br>
-              <strong>Branch:</strong> SHEIKH ZAYED ROAD
-            </div>
-          </div>
-
-          <div id="stripeForm" class="stripe-form">
-            <div class="form-row">
-              <label for="card-element" data-translate="creditCard">بطاقة الائتمان</label>
-              <div id="card-element" class="StripeElement"></div>
-              <div id="card-errors" role="alert" style="color: #fa755a; font-size: 14px; margin-top: 4px;"></div>
-            </div>
-            
-            <div class="secure-note">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-              <span data-translate="secureNote">مدفوعاتك مشفرة وآمنة. نحن لا نخزن أي بيانات بطاقة.</span>
-            </div>
-          </div>
+          <p data-translate="paymentDesc">نحن نقدم الدفع عبر الحوالة البنكية (SWIFT) فقط:</p>
+          <ul>
+            <li><strong data-translate="paymentMethod">الدفع المسبق عبر الحوالة البنكية (SWIFT)</strong></li>
+          </ul>
           
           <div class="guarantee-badge">
             ✓ <span data-translate="guarantee">ضمان استرجاع خلال 14 يوم</span>
           </div>
           
-          <h4 data-translate="purchaseProcessTitle">عملية الشراء:</h4>
+          <h4 data-translate="swiftDetailsTitle">تفاصيل الحوالة البنكية (SWIFT):</h4>
+          <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0;">
+            <strong>Account No:</strong> AE960500000000019423466<br>
+            <strong>Swift Code:</strong> ABDIAEADXXX<br>
+            <strong>Account Name:</strong> AXIS AUTO TECHNICAL TESTING<br>
+            <strong>Branch:</strong> SHEIKH ZAYED ROAD
+          </div>
+          
+          <h4 data-translate="purchaseProcessTitle">عملية الشراء عبر الدفع المسبق:</h4>
           <div class="shipping-timeline">
             <div class="timeline-step">
               <div class="dot">1</div>
@@ -313,8 +620,32 @@
       </div>
     </section>
 
-    <!-- باقي المحتوى يبقى كما هو حتى النموذج -->
-    <!-- ... (المحتوى السابق) ... -->
+    <!-- FAQ -->
+    <section class="faq gradient-bg">
+      <div class="container">
+        <h2 data-translate="faqTitle">الأسئلة الشائعة</h2>
+        <div class="grid cols-2">
+          <details open><summary data-translate="faq1Question">هل أحتاج نظّارات خاصة؟</summary>
+            <div class="muted" data-translate="faq1Answer">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI Z.</div>
+          </details>
+          <details><summary data-translate="faq2Question">هل يكشف تحت طبقات الحماية (PPF)؟</summary>
+            <div class="muted" data-translate="faq2Answer">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.</div>
+          </details>
+          <details><summary data-translate="faq3Question">هل يقيس سماكة الدهان رقميًا؟</summary>
+            <div class="muted" data-translate="faq3Answer">لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.</div>
+          </details>
+          <details><summary data-translate="faq4Question">ما مدة الضمان؟</summary>
+            <div class="muted" data-translate="faq4Answer">شهادة ضمان لمدة 12 شهر.</div>
+          </details>
+          <details><summary data-translate="faq5Question">كيف أتم عملية الدفع عبر الحوالة البنكية?</summary>
+            <div class="muted" data-translate="faq5Answer">بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.</div>
+          </details>
+          <details><summary data-translate="faq6Question">ما هي مدة الشحن المتوقعة?</summary>
+            <div class="muted" data-translate="faq6Answer">بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.</div>
+          </details>
+        </div>
+      </div>
+    </section>
 
     <!-- ORDER / CONTACT -->
     <section id="order">
@@ -329,11 +660,6 @@
             </div>
             
             <div class="form-group">
-              <label class="form-label" data-translate="formEmail">البريد الإلكتروني</label>
-              <input type="email" id="email" class="form-input" required placeholder="مثال: example@domain.com" data-translate-placeholder="emailPlaceholder" />
-            </div>
-            
-            <div class="form-group">
               <label class="form-label" data-translate="formPhone">رقم الهاتف</label>
               <input type="tel" id="phone" class="form-input" required placeholder="مثال: 05xxxxxxxx" data-translate-placeholder="phonePlaceholder" />
             </div>
@@ -344,11 +670,6 @@
             </div>
             
             <div class="form-group">
-              <label class="form-label" data-translate="formAddress">العنوان</label>
-              <textarea id="address" class="form-input" rows="2" placeholder="أدخل عنوانك الكامل" data-translate-placeholder="addressPlaceholder"></textarea>
-            </div>
-            
-            <div class="form-group">
               <label class="form-label" data-translate="formQuantity">الكمية</label>
               <select id="quantity" class="form-select">
                 <option value="1" data-translate="quantityOption1">جهاز واحد - 799 $</option>
@@ -356,12 +677,7 @@
               </select>
             </div>
             
-            <div id="paymentMethodField" class="form-group" style="display: none;">
-              <input type="hidden" id="paymentMethod" name="paymentMethod" value="bank">
-              <input type="hidden" id="stripeToken" name="stripeToken">
-            </div>
-            
-            <div class="form-group" id="receiptUploadGroup">
+            <div class="form-group">
               <label class="form-label" data-translate="formReceipt">يرجى تحميل ايصال الدفع في حال تم الدفع</label>
               <div class="file-upload">
                 <label for="receipt">
@@ -383,6 +699,7 @@
                 <div class="loader" id="uploadLoader"></div>
                 <span id="uploadStatusText" class="form-note"></span>
               </div>
+              <div class="form-note" data-translate="formNote">بعد إرسال الطلب، سيتم توجيهك إلى واتساب حيث يمكنك إرسال صورة الإيصال يدوياً</div>
             </div>
             
             <div class="card" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
@@ -390,20 +707,13 @@
               <div class="muted" data-translate="formNoticeDesc">سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
             </div>
             
-            <div class="form-group">
-              <label class="form-label">
-                <input type="checkbox" id="terms" required>
-                <span data-translate="acceptTerms">أوافق على <a href="#" onclick="showPrivacyPolicy()">شروط الخدمة</a> و <a href="#" onclick="showPrivacyPolicy()">سياسة الخصوصية</a></span>
-              </label>
-            </div>
-            
-            <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" id="submitButton" data-translate="formSubmit">
+            <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="formSubmit">
               إرسال الطلب عبر واتساب
             </button>
           </form>
         </div>
         
-        <!-- المعلومات الإضافية -->
+        <!-- القسم المعدل - المعلومات الإضافية -->
         <div class="card card-hover">
           <h2 data-translate="additionalInfoTitle">معلومات إضافية</h2>
           
@@ -427,7 +737,7 @@
           <h3 style="margin-top:12px" data-translate="aboutCompanyTitle">عن الشركة</h3>
           <div class="muted" style="line-height:1.6">
             <p data-translate="aboutCompany1">شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.</p>
-            <p data-translate="aboutCompany2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.</p>
+            <p data-translate="aboutCompany2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.</p>
           </div>
 
           <h3 style="margin-top:12px" data-translate="shippingInfoTitle">معلومات الشحن</h3>
@@ -449,12 +759,6 @@
         <a class="btn modern-btn" href="https://wa.me/905075803495" data-translate="footerContact">تواصل واتساب</a>
       </div>
     </div>
-    
-    <div class="privacy-links">
-      <a href="#" onclick="showPrivacyPolicy()" data-translate="privacyPolicy">سياسة الخصوصية</a>
-      <a href="#" onclick="showTerms()" data-translate="termsOfService">شروط الخدمة</a>
-      <a href="#" onclick="showRefundPolicy()" data-translate="refundPolicy">سياسة الاسترجاع</a>
-    </div>
   </footer>
 
   <a class="btn modern-btn floating-cta" href="#order" data-translate="floatingCta">اطلب الآن</a>
@@ -464,14 +768,6 @@
     <span class="close-modal" onclick="closeModal()">&times;</span>
     <img class="modal-content" id="modalImage">
     <div id="modalCaption" class="modal-caption"></div>
-  </div>
-
-  <!-- نافذة سياسة الخصوصية -->
-  <div id="privacyModal" class="privacy-modal">
-    <div class="privacy-content">
-      <span class="close-privacy" onclick="closePrivacyModal()">&times;</span>
-      <div id="privacyContent"></div>
-    </div>
   </div>
 
   <!-- مخطط منظم للمنتج (تحسين محركات البحث) -->
@@ -501,258 +797,471 @@
   </script>
 
   <script>
-    // كود JavaScript السابق يبقى كما هو مع إضافة وظائف جديدة
-    // ... (الكود السابق) ...
+    // كائن الترجمة يحتوي على جميع النصوص باللغتين العربية والإنجليزية
+    const translations = {
+      ar: {
+        // النصوص العربية
+        siteTitle: "جهاز فحص السيارات",
+        navFeatures: "المميزات",
+        navPricing: "السعر",
+        navOrder: "اطلب الآن",
+        heroTitle: "اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ",
+        heroDesc: "جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.",
+        badge1: "طيف UV-A 400–405 nm",
+        badge2: "إشعاع حتى 6000 µW/cm²",
+        badge3: "بطارية 8400 mAh — تشغيل 60–70 دقيقة",
+        badge4: "مصنوع من الألومنيوم المعالج وبوليمر مضغوط",
+        ctaOrder: "اطلب الآن",
+        ctaHow: "كيف يعمل؟",
+        kpi1: "عميل موثوق",
+        kpi2: "شهر ضمان",
+        kpi3: "دعم عبر واتساب",
+        kpi4: "أيام للتوصيل",
+        heroImageAlt: "جهاز فحص السيارات — منظر أمامي",
+        feature1: "يكشف الطلاء التجميلي والطبقات الإضافية واللمعان.",
+        feature2: "يظهر معالم الإصلاح تحت طبقات الحماية/PPF وحتى تحت اللف.",
+        feature3: "كاشف تسريبات التكييف مع صبغة UV (يدعم أصباغ UV الشائعة).",
+        viewFrontBack: "منظر أمامي وخلفي",
+        frontBackImageAlt: "منظر أمامي وخلفي للجهاز",
+        viewSide: "منظر جانبي",
+        sideImageAlt: "منظر جانبي للجهاز",
+        featuresTitle: "لماذا جهاز فحص السيارات هذا؟",
+        featuresDesc: "مصمم خصيصًا لفحص السيارات بسرعة وبدقّة عالية.",
+        feat1Title: "يكشف آثار الدهان والرش",
+        feat1Desc: "يُبين اختلافات الطبقات، المعجون والتلميع.",
+        feat2Title: "كشف تسريبات AC مع صبغة UV",
+        feat2Desc: "متوافق مع أصباغ UV الشائعة لسهولة كشف التسريب.",
+        feat3Title: "بطارية 8400 mAh",
+        feat3Desc: "تشغيل نحو 60–70 دقيقة وشحن سريع (15–20 دقيقة تقريبًا).",
+        feat4Title: "متين ومحمول",
+        feat4Desc: "هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.",
+        howTitle: "كيف يعمل؟",
+        step1Title: "حضّر السيارة",
+        step1Desc: "نظّف السطح وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.",
+        step2Title: "فعّل الجهاز",
+        step2Desc: "استخدم الجهاز على مسافة 40–60 سم من السطح وزاوج الزوايا.",
+        step3Title: "اقرأ النتائج",
+        step3Desc: "البقع والتباينات تشير إلى إصلاحات أو طلاء إضافي أو ترسبات.",
+        warningTitle: "تنبيهات أمان هامة:",
+        warning1: "لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.",
+        warning2: "لا تعرض الجلد لأشعة UV لفترات طويلة.",
+        warning3: "لا تستخدم الجهاز بالقرب من الماء أو السوائل.",
+        warning4: "حافظ على الجهاز بعيداً عن متناول الأطفال.",
+        specsTitle: "المواصفات الفنية",
+        spec1: "الاسم التجاري / الموديل",
+        spec2: "القدرة الكهربائية",
+        spec3: "نوع الطاقة",
+        spec3Value: "بطارية ليثيوم قابلة للشحن",
+        spec4: "سعة البطارية",
+        spec5: "مدة التشغيل",
+        spec6: "مدة الشحن",
+        spec6Value: "حوالي 15–20 دقيقة (شحن سريع)",
+        spec7: "استمرارية العمل",
+        spec7Value: "مصمم للعمل حتى 12 ساعة/يوم (حسب الاستخدام)",
+        spec8: "الوزن (بدون بطارية)",
+        spec9: "الوزن (مع البطارية)",
+        spec10: "الأبعاد",
+        spec11: "عدد المصابيح / الليزرات",
+        spec12: "قوة كل ليزر",
+        spec13: "حجم الفوهة",
+        spec14: "الخامة",
+        spec14Value: "ألومنيوم معالج + بوليمر مضغوط",
+        spec15: "نطاق الطيف",
+        spec16: "الطاقة الإشعاعية",
+        spec17: "قوة الإشعاع",
+        spec18: "جهة الطاقة",
+        boxTitle: "ماذا في العبوة?",
+        boxItem1: "جهاز فحص السيارات",
+        boxItem2: "حقيبة حماية ضد الصدمات",
+        boxItem3: "بطارية ليثيوم 8400 mAh",
+        boxItem4: "شاحن سريع + كابل USB-C",
+        boxItem5: "دليل استخدام سريع وفيديوهات تعليمية",
+        boxItem6: "شهادة ضمان لمدة سنة",
+        functionsTitle: "الوظائف والاستخدامات",
+        func1: "فحص الطلاء: يكشف الطلاء التجميلي، الطلاء الموضوعي، الطبقات الإضافية، التلميع، الأكريليك والورنيش.",
+        func2: "كشف التعديلات: يظهر طبقات المعجون والمعاد إصلاحها، حتى تحت طبقات PPF أو التجليد.",
+        func3: "فحص الحوادث والغرق: يُظهر بقايا الماء، علامات الغرق، أو بداية التأكل والصدأ.",
+        func4: "فحص الأجزاء غير المعدنية: فحص المركبات المصنعة من الفيبرجلاس وأي مواد، فحص الأجزاء البلاستيكية.",
+        func5: "فحص الكسوة الداخلية: يميز ما إذا تم تبديل أو إعادة طلاء الفرش الداخلي، والمقاعد والأبواب.",
+        testimonialsTitle: "آراء العملاء",
+        testimonial1Name: "مؤسسة تقييم سيارات",
+        testimonial1Text: "كشف لنا مواضع رش قديمة خلال دقائق. اختصر وقت الفحص كثيرًا.",
+        testimonial2Name: "سالم — مشتري فرد",
+        testimonial2Text: "ساعدني أتأكد من سيارة مستعملة قبل الشراء. استثمار ممتاز.",
+        testimonial3Name: "ورشة تلميع",
+        testimonial3Text: "نستخدمه بعد كل عملية تلميع للتأكد من عدم بقاء هولوجرامات.",
+        pricingTitle: "العروض والأسعار",
+        pricingDesc: "اختر العرض المناسب لك واستفد من خصومات الكميات",
+        pricingOption1Title: "جهاز واحد",
+        pricingOption1Item1: "جهاز كامل",
+        pricingOption1Item2: "بطارية ليثيوم 8400 mAh",
+        pricingOption1Item3: "شاحن سريع + كابل USB-C",
+        pricingOption1Item4: "حقيبة حماية",
+        pricingOption1Item5: "ضمان 12 شهر",
+        pricingOption2Title: "جهازين",
+        pricingOption2Desc: "وفر 299 دولار عند الشراء بكمية",
+        pricingOption2Item1: "جهازين كاملين",
+        pricingOption2Item2: "بطاريات ليثيوم 8400 mAh",
+        pricingOption2Item3: "شواحن سريعة + كابلات USB-C",
+        pricingOption2Item4: "حقيبتي حماية",
+        pricingOption2Item5: "ضمان 12 شهر للجهازين",
+        pricingOption2Item6: "شحن مجاني",
+        pricingCta: "اطلب الآن",
+        paymentTitle: "طرق الدفع والشحن",
+        paymentDesc: "نحن نقدم الدفع عبر الحوالة البنكية (SWIFT) فقط:",
+        paymentMethod: "الدفع المسبق عبر الحوالة البنكية (SWIFT)",
+        guarantee: "ضمان استرجاع خلال 14 يوم",
+        swiftDetailsTitle: "تفاصيل الحوالة البنكية (SWIFT):",
+        purchaseProcessTitle: "عملية الشراء عبر الدفع المسبق:",
+        processStep1: "إتمام عملية الدفع",
+        processStep2: "إرسال إشعار الاستلام",
+        processStep3: "تجهيز البضاعة والشحن",
+        processStep4: "إرسال الفاتورة ورقم التتبع",
+        processStep5: "استلام المنتج خلال 3-7 أيام",
+        ourGuaranteesTitle: "ضماناتنا لك:",
+        guarantee1: "سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع",
+        guarantee2: "رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب",
+        guarantee3: "المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع",
+        guarantee4: "ضمان استرجاع كامل المبلغ خلال 14 يوم في حال عدم الرضا",
+        faqTitle: "الأسئلة الشائعة",
+        faq1Question: "هل أحتاج نظّارات خاصة؟",
+        faq1Answer: "يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI Z.",
+        faq2Question: "هل يكشف تحت طبقات الحماية (PPF)?",
+        faq2Answer: "نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.",
+        faq3Question: "هل يقيس سماكة الدهان رقميًا?",
+        faq3Answer: "لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سمالة منفصل.",
+        faq4Question: "ما مدة الضمان?",
+        faq4Answer: "شهادة ضمان لمدة 12 شهر.",
+        faq5Question: "كيف أتم عملية الدفع عبر الحوالة البنكية?",
+        faq5Answer: "بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.",
+        faq6Question: "ما هي مدة الشحن المتوقعة?",
+        faq6Answer: "بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.",
+        orderTitle: "اطلبه الآن",
+        formName: "الاسم الكامل",
+        namePlaceholder: "مثال: أحمد خالد",
+        formPhone: "رقم الهاتف",
+        phonePlaceholder: "مثال: 05xxxxxxxx",
+        formCountry: "الدولة",
+        countryPlaceholder: "مثال: الإمارات العربية المتحدة",
+        formQuantity: "الكمية",
+        quantityOption1: "جهاز واحد - 799 $",
+        quantityOption2: "جهازين - 1299 $",
+        formReceipt: "يرجى تحميل ايصال الدفع في حال تم الدفع",
+        formChooseFile: "اختر صورة لإرفاقها",
+        noFileChosen: "لم يتم اختيار ملف",
+        fileNote: "يمكنك رفع ملفات الصور فقط (JPEG, PNG, GIF)",
+        formNote: "بعد إرسال الطلب، سيتم توجيهك إلى واتساب حيث يمكنك إرسال صورة الإيصال يدوياً",
+        formNoticeTitle: "سيتم إرسال طلبك مباشرة عبر واتساب",
+        formNoticeDesc: "سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال",
+        formSubmit: "إرسال الطلب عبر واتساب",
+        additionalInfoTitle: "معلومات إضافية",
+        contactTitle: "للطلب والاستفسار",
+        contactWhatsapp: "واتساب: +971 50 152 5742",
+        contactAddress: "العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة",
+        warrantyTitle: "الضمان والخدمة",
+        warranty1: "ضمان لمدة 12 شهر ضد عيوب الصناعة",
+        warranty2: "دعم فني متاح على مدار الساعة",
+        warranty3: "خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني",
+        warranty4: "إمكانية الصيانة والإصلاح في مركز معتمد",
+        aboutCompanyTitle: "عن الشركة",
+        aboutCompany1: "شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.",
+        aboutCompany2: "الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.",
+        shippingInfoTitle: "معلومات الشحن",
+        shipping1: "مدة الشحن: 3-7 أيام عمل",
+        shipping2: "الشحن متاح لجميع دول الشرق الأوسط والعالم",
+        shipping3: "تتبع الشحنة متاح عبر البريد الإلكتروني",
+        info1: "خدمة ما بعد البيع ودعم فني عبر واتساب.",
+        info2: "إمكانية الفواتير للشركات.",
+        info3: "شحن سريع لجم أنحاء العالم.",
+        info4: "نوصي باستخدام الجهاز في أماكن ذات إضاءة منخفضة للحصول على أفضل نتيجة.",
+        techInfoTitle: "معلومات تقنية إضافية",
+        techInfo1: "الجهاز مزود بفلتر زجاجي وقائي بنسبة 99% ضد جميع الموجات الضارة مع ضوء الأشعة فوق البنفسجية.",
+        techInfo2: "يتم استخدام جميع المصابيح الـ 25 بكامل طاقة بطارية الشحن.",
+        techInfo3: "يتم استخدام مروحة التبريد في نهاية الجهاز بقوة عالية لتبريد السطح الداخلي للجهاز والحفاظ على جودة الإشعاع في جميع الأوقات.",
+        footerRights: "جميع الحقوق محفوظة.",
+        footerFeatures: "المميزات",
+        footerContact: "تواصل واتساب",
+        floatingCta: "اطلب الآن"
+      },
+      en: {
+        // النصوص الإنجليزية
+        siteTitle: "Car Inspection Device",
+        navFeatures: "Features",
+        navPricing: "Pricing",
+        navOrder: "Order Now",
+        heroTitle: "Discover hidden repairs and paint in seconds",
+        heroDesc: "A powerful portable device for inspecting car body, paint, AC leaks with UV dye, and invisible repair marks. Ideal for car showrooms, inspectors, and individual buyers.",
+        badge1: "UV-A Spectrum 400–405 nm",
+        badge2: "Radiation up to 6000 µW/cm²",
+        badge3: "8400 mAh battery — 60–70 minutes operation",
+        badge4: "Made of processed aluminum and compressed polymer",
+        ctaOrder: "Order Now",
+        ctaHow: "How it works?",
+        kpi1: "Trusted clients",
+        kpi2: "Months warranty",
+        kpi3: "WhatsApp support",
+        kpi4: "Delivery days",
+        heroImageAlt: "Car Inspection Device — Front view",
+        feature1: "Detects cosmetic paint, additional layers and gloss.",
+        feature2: "Shows repair features under protective layers/PPF and even under wrapping.",
+        feature3: "AC leak detector with UV dye (supports common UV dyes).",
+        viewFrontBack: "Front and back view",
+        frontBackImageAlt: "Front and back view of the device",
+        viewSide: "Side view",
+        sideImageAlt: "Side view of the device",
+        featuresTitle: "Why this car inspection device?",
+        featuresDesc: "Specially designed for fast and accurate car inspection.",
+        feat1Title: "Detects paint and spray marks",
+        feat1Desc: "Shows differences in layers, putty and polishing.",
+        feat2Title: "AC leak detection with UV dye",
+        feat2Desc: "Compatible with common UV dyes for easy leak detection.",
+        feat3Title: "8400 mAh battery",
+        feat3Desc: "Approx. 60–70 minutes operation and fast charging (approx. 15–20 minutes).",
+        feat4Title: "Durable and portable",
+        feat4Desc: "Processed aluminum frame + compressed polymer — protective case included.",
+        howTitle: "How it works?",
+        step1Title: "Prepare the car",
+        step1Desc: "Clean and dry the surface, preferably in a dark environment to improve visibility.",
+        step2Title: "Activate the device",
+        step2Desc: "Use the device at a distance of 40–60 cm from the surface and vary the angles.",
+        step3Title: "Read the results",
+        step3Desc: "Spots and contrasts indicate repairs, additional paint or deposits.",
+        warningTitle: "Important safety warnings:",
+        warning1: "Never direct the rays towards the eyes. Use protective glasses with UV400+, EN166 or ANSI standards.",
+        warning2: "Do not expose skin to UV rays for long periods.",
+        warning3: "Do not use the device near water or liquids.",
+        warning4: "Keep the device out of reach of children.",
+        specsTitle: "Technical Specifications",
+        spec1: "Trade name / Model",
+        spec2: "Electrical capacity",
+        spec3: "Power type",
+        spec3Value: "Rechargeable lithium battery",
+        spec4: "Battery capacity",
+        spec5: "Operating time",
+        spec6: "Charging time",
+        spec6Value: "Approx. 15–20 minutes (fast charging)",
+        spec7: "Continuous operation",
+        spec7Value: "Designed to work up to 12 hours/day (depending on use)",
+        spec8: "Weight (without battery)",
+        spec9: "Weight (with battery)",
+        spec10: "Dimensions",
+        spec11: "Number of lamps / lasers",
+        spec12: "Power of each laser",
+        spec13: "Nozzle size",
+        spec14: "Material",
+        spec14Value: "Processed aluminum + compressed polymer",
+        spec15: "Spectrum range",
+        spec16: "Radiant energy",
+        spec17: "Radiation power",
+        spec18: "Power source",
+        boxTitle: "What's in the box?",
+        boxItem1: "Car inspection device",
+        boxItem2: "Shockproof protective case",
+        boxItem3: "8400 mAh lithium battery",
+        boxItem4: "Fast charger + USB-C cable",
+        boxItem5: "Quick user guide and tutorial videos",
+        boxItem6: "One year warranty certificate",
+        functionsTitle: "Functions and uses",
+        func1: "Paint inspection: Detects cosmetic paint, objective paint, additional layers, polishing, acrylic and varnish.",
+        func2: "Modification detection: Shows layers of putty and repaired areas, even under PPF or wrapping layers.",
+        func3: "Accident and flood inspection: Shows water residues, flood marks, or beginning corrosion and rust.",
+        func4: "Non-metallic parts inspection: Inspection of vehicles made of fiberglass and any materials, inspection of plastic parts.",
+        func5: "Interior upholstery inspection: Distinguishes whether the interior upholstery, seats and doors have been replaced or repainted.",
+        testimonialsTitle: "Customer Reviews",
+        testimonial1Name: "Car evaluation foundation",
+        testimonial1Text: "Revealed old spray spots within minutes. Greatly reduced inspection time.",
+        testimonial2Name: "Salem — Individual buyer",
+        testimonial2Text: "Helped me verify a used car before purchase. Excellent investment.",
+        testimonial3Name: "Polishing workshop",
+        testimonial3Text: "We use it after every polishing operation to ensure no holograms remain.",
+        pricingTitle: "Offers and Prices",
+        pricingDesc: "Choose the offer that suits you and benefit from quantity discounts",
+        pricingOption1Title: "One device",
+        pricingOption1Item1: "Complete device",
+        pricingOption1Item2: "8400 mAh lithium battery",
+        pricingOption1Item3: "Fast charger + USB-C cable",
+        pricingOption1Item4: "Protective case",
+        pricingOption1Item5: "12 months warranty",
+        pricingOption2Title: "Two devices",
+        pricingOption2Desc: "Save $299 when buying in quantity",
+        pricingOption2Item1: "Two complete devices",
+        pricingOption2Item2: "8400 mAh lithium batteries",
+        pricingOption2Item3: "Fast chargers + USB-C cables",
+        pricingOption2Item4: "Two protective cases",
+        pricingOption2Item5: "12 months warranty for both devices",
+        pricingOption2Item6: "Free shipping",
+        pricingCta: "Order Now",
+        paymentTitle: "Payment and Shipping Methods",
+        paymentDesc: "We only accept payment via bank transfer (SWIFT):",
+        paymentMethod: "Prepayment via bank transfer (SWIFT)",
+        guarantee: "14-day return guarantee",
+        swiftDetailsTitle: "Bank transfer (SWIFT) details:",
+        purchaseProcessTitle: "Purchase process via prepayment:",
+        processStep1: "Complete payment process",
+        processStep2: "Send receipt notification",
+        processStep3: "Prepare goods and shipping",
+        processStep4: "Send invoice and tracking number",
+        processStep5: "Receive product within 3-7 days",
+        ourGuaranteesTitle: "Our guarantees for you:",
+        guarantee1: "Purchase invoice and shipping bill will be sent immediately upon receipt of payment",
+        guarantee2: "Tracking number will be sent to your email or via WhatsApp",
+        guarantee3: "The product will reach you within a week at most after payment confirmation",
+        guarantee4: "Full refund guarantee within 14 days in case of dissatisfaction",
+        faqTitle: "Frequently Asked Questions",
+        faq1Question: "Do I need special glasses?",
+        faq1Answer: "It is recommended to use protective glasses with UV400+, EN166 or ANSI Z standards.",
+        faq2Question: "Does it detect under protective layers (PPF)?",
+        faq2Answer: "Yes - the device is designed to show material and paint differences even under PPF or protective wraps.",
+        faq3Question: "Does it measure paint thickness digitally?",
+        faq3Answer: "No - this is an optical device for visual detection and discrimination. A separate thickness gauge is required for digital thickness measurement.",
+        faq4Question: "What is the warranty period?",
+        faq4Answer: "12 month warranty certificate.",
+        faq5Question: "How do I complete payment via bank transfer?",
+        faq5Answer: "After confirming the order, we will send you the bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm the order and send the invoice and shipping bill.",
+        faq6Question: "What is the expected shipping time?",
+        faq6Answer: "After payment confirmation, shipping takes 24-48 hours and the product arrives within 3-7 business days depending on the destination.",
+        orderTitle: "Order Now",
+        formName: "Full name",
+        namePlaceholder: "Example: Ahmed Khalid",
+        formPhone: "Phone number",
+        phonePlaceholder: "Example: 05xxxxxxxx",
+        formCountry: "Country",
+        countryPlaceholder: "Example: United Arab Emirates",
+        formQuantity: "Quantity",
+        quantityOption1: "One device - 799 $",
+        quantityOption2: "Two devices - 1299 $",
+        formReceipt: "Please upload payment receipt if payment has been made",
+        formChooseFile: "Choose image to attach",
+        noFileChosen: "No file chosen",
+        fileNote: "You can only upload image files (JPEG, PNG, GIF)",
+        formNote: "After submitting your order, you will be directed to WhatsApp where you can manually send the receipt image",
+        formNoticeTitle: "Your order will be sent directly via WhatsApp",
+        formNoticeDesc: "Our support team will contact you within 24 hours to confirm your order and help you send the receipt image",
+        formSubmit: "Send order via WhatsApp",
+        additionalInfoTitle: "Additional information",
+        contactTitle: "For orders and inquiries",
+        contactWhatsapp: "WhatsApp: +971 50 152 5742",
+        contactAddress: "Address: Sheikh Mohammed bin Zayed Street - Used Car Market - Sharjah, UAE",
+        warrantyTitle: "Warranty and Service",
+        warranty1: "12 months warranty against manufacturing defects",
+        warranty2: "24/7 technical support available",
+        warranty3: "After-sales service via WhatsApp and email",
+        warranty4: "Possibility of maintenance and repair at an authorized center",
+        aboutCompanyTitle: "About the Company",
+        aboutCompany1: "AXIS is a pioneer in the field of vehicle inspection in the region, using the latest technologies and equipment to ensure accurate and reliable reports for its clients.",
+        aboutCompany2: "The device is certified and used in AXIS specialized vehicle inspection centers, and has proven highly effective in detecting the finest invisible defects and repairs.",
+        shippingInfoTitle: "Shipping Information",
+        shipping1: "Shipping time: 3-7 working days",
+        shipping2: "Shipping available to all Middle Eastern countries and worldwide",
+        shipping3: "Shipment tracking available via email",
+        info1: "After-sales service and technical support via WhatsApp.",
+        info2: "Possibility of invoices for companies.",
+        info3: "Fast shipping worldwide.",
+        info4: "We recommend using the device in low-light places for best results.",
+        techInfoTitle: "Additional technical information",
+        techInfo1: "The device is equipped with a 99% protective glass filter against all harmful waves with ultraviolet light.",
+        techInfo2: "All 25 lamps are used at full battery charging power.",
+        techInfo3: "The cooling fan at the end of the device is used at high power to cool the internal surface of the device and maintain the quality of radiation at all times.",
+        footerRights: "All rights reserved.",
+        footerFeatures: "Features",
+        footerContact: "Contact WhatsApp",
+        floatingCta: "Order Now"
+      }
+    };
 
-    // إضافة Stripe وبيانات التهيئة
-    const stripe = Stripe('pk_test_51JABC1234567890ABC'); // استبدل بمفتاحك الخاص من Stripe
-    const elements = stripe.elements();
-    let cardElement;
+    // اللغة الحالية
+    let currentLang = 'ar';
 
-    // تهيئة عناصر Stripe عند تحميل الصفحة
-    document.addEventListener('DOMContentLoaded', function() {
-      // تهيئة عنصر بطاقة الائتمان
-      const style = {
-        base: {
-          color: '#32325d',
-          fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-          fontSmoothing: 'antialiased',
-          fontSize: '16px',
-          '::placeholder': {
-            color: '#aab7c4'
-          }
-        },
-        invalid: {
-          color: '#fa755a',
-          iconColor: '#fa755a'
-        }
-      };
-
-      cardElement = elements.create('card', { style: style });
-      cardElement.mount('#card-element');
-
-      // التعامل مع أخطاء البطاقة
-      cardElement.on('change', function(event) {
-        const displayError = document.getElementById('card-errors');
-        if (event.error) {
-          displayError.textContent = event.error.message;
-        } else {
-          displayError.textContent = '';
-        }
-      });
-
-      // التعامل مع تغيير طريقة الدفع
-      document.querySelectorAll('input[name="paymentMethod"]').forEach(function(radio) {
-        radio.addEventListener('change', function() {
-          const paymentMethod = this.value;
-          document.getElementById('paymentMethod').value = paymentMethod;
-          
-          if (paymentMethod === 'bank') {
-            document.getElementById('bankDetails').style.display = 'block';
-            document.getElementById('stripeForm').style.display = 'none';
-            document.getElementById('receiptUploadGroup').style.display = 'block';
-          } else {
-            document.getElementById('bankDetails').style.display = 'none';
-            document.getElementById('stripeForm').style.display = 'block';
-            document.getElementById('receiptUploadGroup').style.display = 'none';
-          }
-        });
-      });
-
-      // تحميل سياسة الخصوصية وشروط الخدمة
-      loadPolicyContent();
-    });
-
-    // دالة لتحميل محتوى السياسات
-    function loadPolicyContent() {
-      // في تطبيق حقيقي، يمكن جلب هذا المحتوى من ملف خارجي أو قاعدة بيانات
-      const privacyContent = `
-        <h2>سياسة الخصوصية</h2>
-        <div class="privacy-section">
-          <h3>مقدمة</h3>
-          <p>نحن في Axis Auto نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية هذه كيف نقوم بجمع واستخدام وحماية معلوماتك الشخصية.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>البيانات التي نجمعها</h3>
-          <p>نجمع أنواعًا مختلفة من البيانات لأغراض تقديم خدماتنا وتحسينها، بما في ذلك:</p>
-          <ul>
-            <li>البيانات الشخصية (الاسم، البريد الإلكتروني، رقم الهاتف)</li>
-            <li>بيانات الدفع (يتم معالجتها بشكل آمن عبر Stripe ولا نخزنها)</li>
-            <li>بيانات الاستخدام (كيفية استخدامك لموقعنا)</li>
-          </ul>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>كيف نستخدم بياناتك</h3>
-          <p>نستخدم بياناتك للأغراض التالية:</p>
-          <ul>
-            <li>معالجة الطلبات والدفعات</li>
-            <li>تقديم الدعم للعملاء</li>
-            <li>تحسين خدماتنا ومنتجاتنا</li>
-            <li>الامتثال للالتزامات القانونية</li>
-          </ul>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>حماية البيانات</h3>
-          <p>نحن نستخدم تدابير أمنية تقنية وإدارية لحماية بياناتك الشخصية ضد الوصول غير المصرح به والضياع أو التدمير.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>مشاركة البيانات</h3>
-          <p>لا نبيع أو نؤجر بياناتك الشخصية إلى أطراف ثالثة. قد نشارك بياناتك مع:</p>
-          <ul>
-            <li>مقدمي خدمات الدفع (Stripe)</li>
-            <li>شركات الشحن</li>
-            <li>الجهات القانونية عند الاقتضاء</li>
-          </ul>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>حقوقك</h3>
-          <p>لديك الحق في الوصول إلى بياناتك الشخصية وتصحيحها أو حذفها أو تقييد معالجتها. يمكنك ممارسة هذه الحقوق عن طريق الاتصال بنا.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>التغييرات على السياسة</h3>
-          <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سننشر أي تغييرات على هذه الصفحة وسنخطرك إذا كانت التغييرات كبيرة.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>اتصل بنا</h3>
-          <p>إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على: info@axis-auto.com</p>
-        </div>
-      `;
+    // دالة لإنشاء رابط واتساب
+    function waLink(phone, text) {
+      const p = phone.replace(/[^0-9]/g, "");
+      const t = encodeURIComponent(text);
+      return `https://wa.me/${p}?text=${t}`;
+    }
+    
+    // دالة لعرض اسم الملف المختار ومعاينة الصورة
+    function showFileName(input) {
+      const fileNameField = document.getElementById('fileName');
+      const imagePreview = document.getElementById('imagePreview');
+      const previewImg = document.getElementById('previewImg');
       
-      document.getElementById('privacyContent').innerHTML = privacyContent;
+      if (input.files.length > 0) {
+        fileNameField.textContent = input.files[0].name;
+        fileNameField.style.color = "var(--ok)";
+        
+        // معاينة الصورة إذا كانت صورة
+        if (input.files[0].type.match('image.*')) {
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            imagePreview.style.display = 'block';
+          }
+          
+          reader.readAsDataURL(input.files[0]);
+        } else {
+          imagePreview.style.display = 'none';
+        }
+      } else {
+        fileNameField.textContent = translations[currentLang].noFileChosen;
+        fileNameField.style.color = "var(--muted)";
+        imagePreview.style.display = 'none';
+      }
     }
-
-    // دالة لعرض سياسة الخصوصية
-    function showPrivacyPolicy() {
-      document.getElementById('privacyModal').style.display = 'block';
-      document.getElementById('privacyContent').innerHTML = document.getElementById('privacyContent').innerHTML;
+    
+    // دالة لرفع الصورة إلى ImgBB والحصول على رابط
+    async function uploadImageToImgBB(file) {
+      const apiKey = '1404ac190ec18b119b80e9f2e3955731'; // API Key من ImgBB (هذا مفتاح تجريبي، احصل على مفتاح خاص بك)
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      try {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          return data.data.url;
+        } else {
+          throw new Error(data.error.message || 'فشل في رفع الصورة');
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+      }
     }
-
-    // دالة لعرض شروط الخدمة
-    function showTerms() {
-      document.getElementById('privacyModal').style.display = 'block';
-      document.getElementById('privacyContent').innerHTML = `
-        <h2>شروط الخدمة</h2>
-        <div class="privacy-section">
-          <h3>1. القبول</h3>
-          <p>باستخدام موقعنا أو خدماتنا، فإنك توافق على الالتزام بهذه الشروط والأحكام.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>2. الطلبات والدفعات</h3>
-          <p>جميع الطلبات تخضع للتوفر والموافقة. نحتفظ بالحق في رفض أي طلب لأي سبب.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>3. الأسعار والضرائب</h3>
-          <p>جميع الأسعار بالدولار الأمريكي وقد تكون خاضعة للضرائب المحلية حسب الدولة.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>4. الشحن والتسليم</h3>
-          <p>أوقات الشحن المقدرة هي لأغراض التقدير فقط ولا نضمن موعد التسليم بالضبط.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>5. الضمان والإرجاع</h3>
-          <p>يخضع الضمان لشروط الضمان المرفقة مع المنتج. سياسة الإرجاع ضمن 14 يوم من الاستلام.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>6. الملكية الفكرية</h3>
-          <p>جميع المحتويات على هذا الموقع محمية بحقوق الملكية الفكرية ولا يجوز نسخها أو إعادة إنتاجها دون إذن.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>7. المسؤولية</h3>
-          <p>لا نتحمل مسؤولية أي أضرار غير مباشرة أو عرضية ناتجة عن استخدام منتجاتنا أو خدماتنا.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>8. القانون الحاكم</h3>
-          <p>تخضع هذه الشروط والأحكام لقوانين دولة الإمارات العربية المتحدة.</p>
-        </div>
-      `;
+    
+    // دالة لإظهار رسالة تنبيه
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = message;
+      alertBox.className = `alert alert-${type}`;
+      alertBox.style.display = 'block';
+      
+      // إخفاء الرسالة بعد 5 ثواني
+      setTimeout(() => {
+        alertBox.style.display = 'none';
+      }, 5000);
     }
-
-    // دالة لعرض سياسة الاسترجاع
-    function showRefundPolicy() {
-      document.getElementById('privacyModal').style.display = 'block';
-      document.getElementById('privacyContent').innerHTML = `
-        <h2>سياسة الاسترجاع والاستبدال</h2>
-        <div class="privacy-section">
-          <h3>1. ضمان الاسترجاع</h3>
-          <p>نحن نقدم ضمان استرجاع لمدة 14 يوم من تاريخ استلام المنتج. لاسترجاع المنتج، يجب أن يكون في حالته الأصلية مع جميع الملحقات والتغليف.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>2. عملية الاسترجاع</h3>
-          <p>لاتباع عملية الاسترجاع، يرجى الاتصال بنا عبر الواتساب أو البريد الإلكتروني للحصول على رقم إذن الاسترجاع (RMA). بدون هذا الرقم، لن نتمكن من معالجة طلب الاسترجاع.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>3. المبالغ المستردة</h3>
-          <p>بعد استلام المنتج والتأكد من حالته، سنقوم بإرجاع المبلغ خلال 5-7 أيام عمل بنفس طريقة الدفع الأصلية.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>4. استثناءات السياسة</h3>
-          <p>لا تنطبق سياسة الاسترجاع على المنتجات التي تم إساءة استخدامها أو تلفها بسبب سوء الاستخدام أو عدم اتباع تعليمات التشغيل.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>5. تكاليف الشحن</h3>
-          <p>في حالة الاسترجاع بسبب عيب في المنتج أو خطأ من جانبنا، فإننا نتحمل تكاليف الشحن. في حالات الاسترجاع الأخرى، يتحمل العميل تكاليف الشحن.</p>
-        </div>
-        
-        <div class="privacy-section">
-          <h3>6. الضمان</h3>
-          <p>جميع منتجاتنا مغطاة بضمان لمدة 12 شهر ضد عيوب التصنيع. لا يغطي الضمان الأضرار الناجمة عن سوء الاستخدام أو الحوادث.</p>
-        </div>
-      `;
-    }
-
-    // دالة لإغلاق نافذة السياسة
-    function closePrivacyModal() {
-      document.getElementById('privacyModal').style.display = 'none';
-    }
-
-    // تعديل دالة معالجة الطلب لدعم Stripe
+    
+    // دالة معالجة الطلب
     async function handleOrder(event) {
       event.preventDefault();
       
       // جمع البيانات من النموذج
       const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const country = document.getElementById('country').value.trim();
-      const address = document.getElementById('address').value.trim();
       const quantity = document.getElementById('quantity').value;
-      const paymentMethod = document.getElementById('paymentMethod').value;
       const receiptFile = document.getElementById('receipt');
       
       // التحقق من صحة البيانات
-      if (!name || !email || !phone || !country) {
+      if (!name || !phone || !country) {
         showAlert(currentLang === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', 'error');
         return;
-      }
-      
-      // إذا كانت طريقة الدفع Stripe، قم بإنشاء token
-      if (paymentMethod === 'stripe') {
-        const {token, error} = await stripe.createToken(cardElement);
-        
-        if (error) {
-          showAlert(currentLang === 'ar' ? `خطأ في بطاقة الائتمان: ${error.message}` : `Credit card error: ${error.message}`, 'error');
-          return;
-        }
-        
-        document.getElementById('stripeToken').value = token.id;
       }
       
       let imageUrl = '';
@@ -782,17 +1291,12 @@
       // بناء الرسالة
       let msg = currentLang === 'ar' ? `طلب جهاز فحص السيارات%0A%0A` : `Car Inspection Device Order%0A%0A`;
       msg += `${currentLang === 'ar' ? 'الاسم' : 'Name'}: ${name}%0A`;
-      msg += `${currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email'}: ${email}%0A`;
       msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone number'}: ${phone}%0A`;
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
-      msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
       msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${quantity}%0A`;
-      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment method'}: ${paymentMethod === 'bank' ? (currentLang === 'ar' ? 'الحوالة البنكية (SWIFT)' : 'Bank transfer (SWIFT)') : (currentLang === 'ar' ? 'بطاقة الائتمان (Stripe)' : 'Credit card (Stripe)')}%0A%0A`;
+      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment method'}: ${currentLang === 'ar' ? 'الحوالة البنكية (SWIFT)' : 'Bank transfer (SWIFT)'}%0A%0A`;
       
-      if (paymentMethod === 'stripe') {
-        msg += `${currentLang === 'ar' ? 'تمت معالجة الدفع عبر Stripe بنجاح' : 'Payment processed successfully via Stripe'}%0A`;
-        msg += `${currentLang === 'ar' ? 'رمز المعاملة: ' : 'Transaction token: '}${document.getElementById('stripeToken').value}%0A%0A`;
-      } else if (imageUrl) {
+      if (imageUrl) {
         msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment receipt'}: ${imageUrl}%0A%0A`;
         msg += `${currentLang === 'ar' ? 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.' : 'You can click on the link above to view the receipt image.'}%0A%0A`;
       } else if (receiptFile.files.length > 0) {
@@ -818,43 +1322,93 @@
       document.getElementById('imagePreview').style.display = 'none';
       document.getElementById('uploadStatusText').textContent = '';
     }
-
-    // إضافة نصوص الترجمة الجديدة
-    translations.ar = {
-      ...translations.ar,
-      securePayment: "دفع آمن",
-      dataProtection: "حماية البيانات",
-      qualityGuarantee: "ضمان الجودة",
-      paymentStripe: "الدفع الآمن ببطاقة الائتمان (Stripe)",
-      creditCard: "بطاقة الائتمان",
-      secureNote: "مدفوعاتك مشفرة وآمنة. نحن لا نخزن أي بيانات بطاقة.",
-      formEmail: "البريد الإلكتروني",
-      emailPlaceholder: "مثال: example@domain.com",
-      formAddress: "العنوان",
-      addressPlaceholder: "أدخل عنوانك الكامل",
-      acceptTerms: "أوافق على شروط الخدمة وسياسة الخصوصية",
-      privacyPolicy: "سياسة الخصوصية",
-      termsOfService: "شروط الخدمة",
-      refundPolicy: "سياسة الاسترجاع"
-    };
-
-    translations.en = {
-      ...translations.en,
-      securePayment: "Secure Payment",
-      dataProtection: "Data Protection",
-      qualityGuarantee: "Quality Guarantee",
-      paymentStripe: "Secure Credit Card Payment (Stripe)",
-      creditCard: "Credit Card",
-      secureNote: "Your payments are encrypted and secure. We do not store any card data.",
-      formEmail: "Email Address",
-      emailPlaceholder: "Example: example@domain.com",
-      formAddress: "Address",
-      addressPlaceholder: "Enter your full address",
-      acceptTerms: "I agree to the Terms of Service and Privacy Policy",
-      privacyPolicy: "Privacy Policy",
-      termsOfService: "Terms of Service",
-      refundPolicy: "Refund Policy"
-    };
+    
+    // دالة لتغيير اللغة
+    function changeLanguage(lang) {
+      currentLang = lang;
+      
+      // تغيير اتجاه الصفحة
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = lang;
+      
+      // تحديث نص زر التبديل
+      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
+      
+      // تحديث جميع العناصر التي تحتوي على بيانات الترجمة
+      document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[lang] && translations[lang][key]) {
+          element.textContent = translations[lang][key];
+        }
+      });
+      
+      // تحديث النصوص في العناصر الأخرى مثل placeholders
+      document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-translate-placeholder');
+        if (translations[lang] && translations[lang][key]) {
+          element.placeholder = translations[lang][key];
+        }
+      });
+      
+      // تحديث النصوص في عناصر HTML الأخرى مثل title و meta
+      document.title = lang === 'ar' ? 'جهاز فحص السيارات | اكتشف الإصلاحات المخفية خلال ثوانٍ' : 'Car Inspection Device | Discover Hidden Repairs in Seconds';
+      
+      // حفظ اللغة المفضلة في localStorage
+      localStorage.setItem('preferredLanguage', lang);
+    }
+    
+    // سنة ديناميكية
+    document.getElementById('y').textContent = new Date().getFullYear();
+    
+    // تحديث السعر بناء على الكمية المختارة
+    document.getElementById('quantity').addEventListener('change', function() {
+      const priceElement = document.querySelector('.pricing-card.featured .price');
+      if (this.value === '2') {
+        priceElement.textContent = '1299 $';
+      } else {
+        priceElement.textContent = '799 $';
+      }
+    });
+    
+    // إضافة مستمع الحدث للنموذج
+    document.getElementById('orderForm').addEventListener('submit', handleOrder);
+    
+    // نافذة عرض الصور
+    function openModal(src, alt) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      const captionText = document.getElementById('modalCaption');
+      
+      modal.style.display = "block";
+      modalImg.src = src;
+      captionText.innerHTML = alt;
+    }
+    
+    function closeModal() {
+      document.getElementById('imageModal').style.display = "none";
+    }
+    
+    // إغلاق النافذة عند النقر خارجها
+    window.onclick = function(event) {
+      const modal = document.getElementById('imageModal');
+      if (event.target == modal) {
+        closeModal();
+      }
+    }
+    
+    // تبديل اللغة عند النقر على الزر
+    document.getElementById('langSwitcher').addEventListener('click', function() {
+      const newLang = currentLang === 'ar' ? 'en' : 'ar';
+      changeLanguage(newLang);
+    });
+    
+    // تحميل اللغة المفضلة من localStorage إذا كانت موجودة
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedLang = localStorage.getItem('preferredLanguage');
+      if (savedLang) {
+        changeLanguage(savedLang);
+      }
+    });
   </script>
 </body>
 </html>
