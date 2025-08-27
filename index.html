@@ -6,6 +6,8 @@
   <title>جهاز فحص السيارات | اكتشف الإصلاحات المخفية خلال ثوانٍ</title>
   <meta name="description" content="صفحة لاندنج بيج عربية لبيع جهاز فحص السيارات: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
   <meta name="color-scheme" content="light dark" />
+  <!-- إضافة Stripe.js -->
+  <script src="https://js.stripe.com/v3/"></script>
   <style>
     :root{
       --brand:#2563eb; /* أزرق - أكثر ملاءمة لموضوع السيارات */
@@ -68,6 +70,7 @@
       .pricing-options { flex-direction: column; }
       .shipping-timeline { flex-direction: column; gap: 16px; }
       .shipping-timeline::before { display: none; }
+      .payment-methods { flex-direction: column; }
     }
     @media (max-width:640px){
       .container { padding: 10px; }
@@ -198,7 +201,7 @@
     .upload-status {display: flex; align-items: center; margin-top: 4px;}
     
     /* زر تبديل اللغة */
-    .lang-switcher {display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: var(--transition);}
+    .lang-switcher {display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; cursor: pointer;transition: var(--transition);}
     .lang-switcher:hover {background: #e2e8f0;}
     
     /* نافذة عرض الصور */
@@ -307,6 +310,61 @@
     }
     .gradient-bg {
       background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+    
+    /* أنماط جديدة لطرق الدفع */
+    .payment-methods {
+      display: flex;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .payment-method {
+      flex: 1;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .payment-method:hover {
+      border-color: var(--brand);
+      background-color: var(--brand-light);
+    }
+    .payment-method.selected {
+      border-color: var(--brand);
+      background-color: var(--brand-light);
+    }
+    .payment-method img {
+      height: 40px;
+      margin-bottom: 8px;
+      object-fit: contain;
+    }
+    .payment-details {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      background-color: #f8fafc;
+    }
+    .payment-details.active {
+      display: block;
+    }
+    .stripe-element {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 12px;
+    }
+    .payment-success {
+      background: #f0fdf4;
+      color: #166534;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 8px 0;
+      display: none;
     }
   </style>
 </head>
@@ -568,24 +626,47 @@
 
         <div class="payment-info">
           <h3 data-translate="paymentTitle">طرق الدفع والشحن</h3>
-          <p data-translate="paymentDesc">نحن نقدم الدفع عبر الحوالة البنكية (SWIFT) فقط:</p>
-          <ul>
-            <li><strong data-translate="paymentMethod">الدفع المسبق عبر الحوالة البنكية (SWIFT)</strong></li>
-          </ul>
+          <p data-translate="paymentDesc">نحن نقدم طريقتين للدفع:</p>
+          
+          <div class="payment-methods">
+            <div class="payment-method" onclick="selectPaymentMethod('stripe')">
+              <img src="https://logos-world.net/wp-content/uploads/2020/09/Stripe-Logo.png" alt="Stripe">
+              <div>بطاقة ائتمان/خصم</div>
+            </div>
+            <div class="payment-method" onclick="selectPaymentMethod('swift')">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/SWIFT_logo.svg/800px-SWIFT_logo.svg.png" alt="SWIFT">
+              <div>حوالة بنكية (SWIFT)</div>
+            </div>
+          </div>
+
+          <!-- تفاصيل الدفع بالبطاقة (Stripe) -->
+          <div id="stripe-details" class="payment-details">
+            <div id="stripe-element" class="stripe-element">
+              <!-- سيتم إضافة عناصر Stripe هنا عبر JavaScript -->
+            </div>
+            <div id="card-errors" role="alert" style="color: var(--danger); margin-bottom: 12px;"></div>
+            <button id="stripe-button" class="btn modern-btn" style="width: 100%;">ادفع الآن</button>
+            <div id="payment-success" class="payment-success">
+              ✓ تمت عملية الدفع بنجاح! يمكنك الآن إكمال الطلب.
+            </div>
+          </div>
+
+          <!-- تفاصيل الحوالة البنكية (SWIFT) -->
+          <div id="swift-details" class="payment-details">
+            <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0;">
+              <strong>Account No:</strong> AE960500000000019423466<br>
+              <strong>Swift Code:</strong> ABDIAEADXXX<br>
+              <strong>Account Name:</strong> AXIS AUTO TECHNICAL TESTING<br>
+              <strong>Branch:</strong> SHEIKH ZAYED ROAD
+            </div>
+            <div class="form-note" data-translate="swiftNote">بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.</div>
+          </div>
           
           <div class="guarantee-badge">
             ✓ <span data-translate="guarantee">ضمان استرجاع خلال 14 يوم</span>
           </div>
           
-          <h4 data-translate="swiftDetailsTitle">تفاصيل الحوالة البنكية (SWIFT):</h4>
-          <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0;">
-            <strong>Account No:</strong> AE960500000000019423466<br>
-            <strong>Swift Code:</strong> ABDIAEADXXX<br>
-            <strong>Account Name:</strong> AXIS AUTO TECHNICAL TESTING<br>
-            <strong>Branch:</strong> SHEIKH ZAYED ROAD
-          </div>
-          
-          <h4 data-translate="purchaseProcessTitle">عملية الشراء عبر الدفع المسبق:</h4>
+          <h4 data-translate="purchaseProcessTitle">عملية الشراء:</h4>
           <div class="shipping-timeline">
             <div class="timeline-step">
               <div class="dot">1</div>
@@ -668,6 +749,11 @@
               <label class="form-label" data-translate="formCountry">الدولة</label>
               <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" data-translate-placeholder="countryPlaceholder" />
             </div>
+
+            <div class="form-group">
+              <label class="form-label" data-translate="formAddress">العنوان</label>
+              <textarea id="address" class="form-input" rows="3" required placeholder="مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد" data-translate-placeholder="addressPlaceholder"></textarea>
+            </div>
             
             <div class="form-group">
               <label class="form-label" data-translate="formQuantity">الكمية</label>
@@ -675,6 +761,31 @@
                 <option value="1" data-translate="quantityOption1">جهاز واحد - 799 $</option>
                 <option value="2" data-translate="quantityOption2">جهازين - 1299 $</option>
               </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" data-translate="formPaymentMethod">طريقة الدفع</label>
+              <select id="paymentMethod" class="form-select" onchange="togglePaymentDetails()">
+                <option value="stripe" data-translate="paymentOptionStripe">الدفع بالبطاقة (Stripe)</option>
+                <option value="swift" data-translate="paymentOptionSwift">حوالة بنكية (SWIFT)</option>
+              </select>
+            </div>
+
+            <!-- تفاصيل الدفع بالبطاقة (ستظهر فقط عند اختيار Stripe) -->
+            <div id="stripePayment" style="display: none;">
+              <div id="stripe-button-container"></div>
+              <div class="form-note" data-translate="stripeNote">سيتم توجيهك إلى صفحة الدفع الآمنة لدى Stripe لإتمام عملية الدفع.</div>
+            </div>
+
+            <!-- تفاصيل الحوالة البنكية (ستظهر فقط عند اختيار SWIFT) -->
+            <div id="swiftDetails" style="display: none;">
+              <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0;">
+                <strong>Account No:</strong> AE960500000000019423466<br>
+                <strong>Swift Code:</strong> ABDIAEADXXX<br>
+                <strong>Account Name:</strong> AXIS AUTO TECHNICAL TESTING<br>
+                <strong>Branch:</strong> SHEIKH ZAYED ROAD
+              </div>
+              <div class="form-note" data-translate="swiftNote">بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.</div>
             </div>
             
             <div class="form-group">
@@ -737,7 +848,7 @@
           <h3 style="margin-top:12px" data-translate="aboutCompanyTitle">عن الشركة</h3>
           <div class="muted" style="line-height:1.6">
             <p data-translate="aboutCompany1">شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.</p>
-            <p data-translate="aboutCompany2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.</p>
+            <p data-translate="aboutCompany2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.</p>
           </div>
 
           <h3 style="margin-top:12px" data-translate="shippingInfoTitle">معلومات الشحن</h3>
@@ -835,7 +946,7 @@
         feat3Desc: "تشغيل نحو 60–70 دقيقة وشحن سريع (15–20 دقيقة تقريبًا).",
         feat4Title: "متين ومحمول",
         feat4Desc: "هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.",
-        howTitle: "كيف يعمل؟",
+        howTitle: "كيف يعمل？",
         step1Title: "حضّر السيارة",
         step1Desc: "نظّف السطح وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.",
         step2Title: "فعّل الجهاز",
@@ -908,11 +1019,15 @@
         pricingOption2Item6: "شحن مجاني",
         pricingCta: "اطلب الآن",
         paymentTitle: "طرق الدفع والشحن",
-        paymentDesc: "نحن نقدم الدفع عبر الحوالة البنكية (SWIFT) فقط:",
-        paymentMethod: "الدفع المسبق عبر الحوالة البنكية (SWIFT)",
+        paymentDesc: "نحن نقدم طريقتين للدفع:",
+        paymentMethod: "طريقة الدفع",
+        paymentOptionStripe: "الدفع بالبطاقة (Stripe)",
+        paymentOptionSwift: "حوالة بنكية (SWIFT)",
+        stripeNote: "سيتم توجيهك إلى صفحة الدفع الآمنة لدى Stripe لإتمام عملية الدفع.",
+        swiftNote: "بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.",
         guarantee: "ضمان استرجاع خلال 14 يوم",
         swiftDetailsTitle: "تفاصيل الحوالة البنكية (SWIFT):",
-        purchaseProcessTitle: "عملية الشراء عبر الدفع المسبق:",
+        purchaseProcessTitle: "عملية الشراء:",
         processStep1: "إتمام عملية الدفع",
         processStep2: "إرسال إشعار الاستلام",
         processStep3: "تجهيز البضاعة والشحن",
@@ -943,6 +1058,8 @@
         phonePlaceholder: "مثال: 05xxxxxxxx",
         formCountry: "الدولة",
         countryPlaceholder: "مثال: الإمارات العربية المتحدة",
+        formAddress: "العنوان",
+        addressPlaceholder: "مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد",
         formQuantity: "الكمية",
         quantityOption1: "جهاز واحد - 799 $",
         quantityOption2: "جهازين - 1299 $",
@@ -1092,11 +1209,15 @@
         pricingOption2Item6: "Free shipping",
         pricingCta: "Order Now",
         paymentTitle: "Payment and Shipping Methods",
-        paymentDesc: "We only accept payment via bank transfer (SWIFT):",
-        paymentMethod: "Prepayment via bank transfer (SWIFT)",
+        paymentDesc: "We offer two payment methods:",
+        paymentMethod: "Payment method",
+        paymentOptionStripe: "Credit/Debit Card (Stripe)",
+        paymentOptionSwift: "Bank Transfer (SWIFT)",
+        stripeNote: "You will be redirected to Stripe's secure payment page to complete the payment.",
+        swiftNote: "After completing the transfer, please upload a copy of the payment receipt below.",
         guarantee: "14-day return guarantee",
         swiftDetailsTitle: "Bank transfer (SWIFT) details:",
-        purchaseProcessTitle: "Purchase process via prepayment:",
+        purchaseProcessTitle: "Purchase process:",
         processStep1: "Complete payment process",
         processStep2: "Send receipt notification",
         processStep3: "Prepare goods and shipping",
@@ -1127,6 +1248,8 @@
         phonePlaceholder: "Example: 05xxxxxxxx",
         formCountry: "Country",
         countryPlaceholder: "Example: United Arab Emirates",
+        formAddress: "Address",
+        addressPlaceholder: "Example: Dubai, Al Marar Area, Sheikh Mohammed bin Zayed Street",
         formQuantity: "Quantity",
         quantityOption1: "One device - 799 $",
         quantityOption2: "Two devices - 1299 $",
@@ -1255,11 +1378,13 @@
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const country = document.getElementById('country').value.trim();
+      const address = document.getElementById('address').value.trim();
       const quantity = document.getElementById('quantity').value;
+      const paymentMethod = document.getElementById('paymentMethod').value;
       const receiptFile = document.getElementById('receipt');
       
       // التحقق من صحة البيانات
-      if (!name || !phone || !country) {
+      if (!name || !phone || !country || !address) {
         showAlert(currentLang === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', 'error');
         return;
       }
@@ -1293,8 +1418,9 @@
       msg += `${currentLang === 'ar' ? 'الاسم' : 'Name'}: ${name}%0A`;
       msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone number'}: ${phone}%0A`;
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
+      msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
       msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${quantity}%0A`;
-      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment method'}: ${currentLang === 'ar' ? 'الحوالة البنكية (SWIFT)' : 'Bank transfer (SWIFT)'}%0A%0A`;
+      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
       
       if (imageUrl) {
         msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment receipt'}: ${imageUrl}%0A%0A`;
@@ -1357,6 +1483,33 @@
       localStorage.setItem('preferredLanguage', lang);
     }
     
+    // دالة لتبديل طريقة الدفع
+    function togglePaymentDetails() {
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const stripePayment = document.getElementById('stripePayment');
+      const swiftDetails = document.getElementById('swiftDetails');
+      
+      if (paymentMethod === 'stripe') {
+        stripePayment.style.display = 'block';
+        swiftDetails.style.display = 'none';
+      } else {
+        stripePayment.style.display = 'none';
+        swiftDetails.style.display = 'block';
+      }
+    }
+    
+    // دالة لاختيار طريقة الدفع
+    function selectPaymentMethod(method) {
+      document.querySelectorAll('.payment-method').forEach(el => {
+        el.classList.remove('selected');
+      });
+      
+      document.querySelector(`.payment-method:nth-child(${method === 'stripe' ? 1 : 2})`).classList.add('selected');
+      
+      document.getElementById('paymentMethod').value = method;
+      togglePaymentDetails();
+    }
+    
     // سنة ديناميكية
     document.getElementById('y').textContent = new Date().getFullYear();
     
@@ -1408,6 +1561,9 @@
       if (savedLang) {
         changeLanguage(savedLang);
       }
+      
+      // تهيئة طريقة الدفع الافتراضية
+      togglePaymentDetails();
     });
   </script>
 </body>
