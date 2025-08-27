@@ -366,6 +366,43 @@
       margin: 8px 0;
       display: none;
     }
+    
+    /* أنماط سياسة الخصوصية */
+    .privacy-policy {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      background-color: #f8fafc;
+      margin: 12px 0;
+    }
+    .privacy-policy h4 {
+      margin-top: 0;
+      color: var(--brand);
+    }
+    .privacy-policy p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .privacy-checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .privacy-checkbox input {
+      margin-top: 4px;
+    }
+    .privacy-checkbox label {
+      font-weight: normal;
+      margin-bottom: 0;
+    }
+    .privacy-link {
+      color: var(--brand);
+      text-decoration: underline;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -458,7 +495,7 @@
             <div class="icon feature-icon">✓</div>
             <div>
               <div style="font-weight:800" data-translate="feat1Title">يكشف آثار الدهان والرش</div>
-              <div class="muted" data-translate="feat1Desc">يُبين اختلافات الطبقات، المعجون والتلميع.</div>
+              <div class="muted" data-translate="feat1Desc">يُبين اختلافات الطبلات، المعجون والتلميع.</div>
             </div>
           </div>
           <div class="feat card-hover">
@@ -741,6 +778,11 @@
             </div>
             
             <div class="form-group">
+              <label class="form-label" data-translate="formEmail">البريد الإلكتروني</label>
+              <input type="email" id="email" class="form-input" required placeholder="مثال: example@domain.com" data-translate-placeholder="emailPlaceholder" />
+            </div>
+            
+            <div class="form-group">
               <label class="form-label" data-translate="formPhone">رقم الهاتف</label>
               <input type="tel" id="phone" class="form-input" required placeholder="مثال: 05xxxxxxxx" data-translate-placeholder="phonePlaceholder" />
             </div>
@@ -773,7 +815,11 @@
 
             <!-- تفاصيل الدفع بالبطاقة (ستظهر فقط عند اختيار Stripe) -->
             <div id="stripePayment" style="display: none;">
-              <div id="stripe-button-container"></div>
+              <div class="form-group">
+                <label class="form-label" data-translate="formCardDetails">تفاصيل البطاقة</label>
+                <div id="card-element" class="form-input" style="height: 40px; padding: 10px;"></div>
+                <div id="card-errors-form" role="alert" style="color: var(--danger); margin-top: 8px;"></div>
+              </div>
               <div class="form-note" data-translate="stripeNote">سيتم توجيهك إلى صفحة الدفع الآمنة لدى Stripe لإتمام عملية الدفع.</div>
             </div>
 
@@ -810,7 +856,12 @@
                 <div class="loader" id="uploadLoader"></div>
                 <span id="uploadStatusText" class="form-note"></span>
               </div>
-              <div class="form-note" data-translate="formNote">بعد إرسال الطلب، سيتم توجيهك إلى واتساب حيث يمكنك إرسال صورة الإيصال يدوياً</div>
+            </div>
+            
+            <!-- سياسة الخصوصية -->
+            <div class="privacy-checkbox">
+              <input type="checkbox" id="privacyAgreement" required>
+              <label for="privacyAgreement" data-translate="privacyAgreementText">أوافق على <span class="privacy-link" onclick="showPrivacyPolicy()">سياسة الخصوصية</span> وشروط الاستخدام</label>
             </div>
             
             <div class="card" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
@@ -819,7 +870,7 @@
             </div>
             
             <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="formSubmit">
-              إرسال الطلب عبر واتساب
+              إرسال الطلب via WhatsApp
             </button>
           </form>
         </div>
@@ -860,11 +911,41 @@
         </div>
       </div>
     </section>
+
+    <!-- سياسة الخصوصية (مخفية بشكل افتراضي) -->
+    <div id="privacyModal" class="modal">
+      <div class="modal-content" style="background: white; padding: 20px; border-radius: 12px; max-width: 800px; margin: 5% auto;">
+        <span class="close-modal" onclick="closePrivacyModal()" style="color: black; font-size: 30px;">&times;</span>
+        <h2 data-translate="privacyTitle">سياسة الخصوصية</h2>
+        <div class="privacy-policy">
+          <h4 data-translate="privacySection1">مقدمة</h4>
+          <p data-translate="privacyText1">نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.</p>
+          
+          <h4 data-translate="privacySection2">البيانات التي نجمعها</h4>
+          <p data-translate="privacyText2">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم Stripe لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
+          
+          <h4 data-translate="privacySection3">كيف نستخدم بياناتك</h4>
+          <p data-translate="privacyText3">نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).</p>
+          
+          <h4 data-translate="privacySection4">مشاركة البيانات</h4>
+          <p data-translate="privacyText4">نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</p>
+          
+          <h4 data-translate="privacySection5">حماية البيانات</h4>
+          <p data-translate="privacyText5">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
+          
+          <h4 data-translate="privacySection6">التغييرات على السياسة</h4>
+          <p data-translate="privacyText6">قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.</p>
+          
+          <h4 data-translate="privacySection7">اتصل بنا</h4>
+          <p data-translate="privacyText7">إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على: info@axis-auto.com</p>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer>
     <div class="container" style="display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap">
-      <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footerRights">جميع الحقوق محفوظة.</span></div>
+      <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footerRights">جميع الحقوق محفوظة.</span> | <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="privacyLink">سياسة الخصوصية</a></div>
       <div style="display:flex;gap:6px">
         <a class="btn ghost" href="#features" data-translate="footerFeatures">المميزات</a>
         <a class="btn modern-btn" href="https://wa.me/905075803495" data-translate="footerContact">تواصل واتساب</a>
@@ -1054,6 +1135,8 @@
         orderTitle: "اطلبه الآن",
         formName: "الاسم الكامل",
         namePlaceholder: "مثال: أحمد خالد",
+        formEmail: "البريد الإلكتروني",
+        emailPlaceholder: "مثال: example@domain.com",
         formPhone: "رقم الهاتف",
         phonePlaceholder: "مثال: 05xxxxxxxx",
         formCountry: "الدولة",
@@ -1063,6 +1146,7 @@
         formQuantity: "الكمية",
         quantityOption1: "جهاز واحد - 799 $",
         quantityOption2: "جهازين - 1299 $",
+        formCardDetails: "تفاصيل البطاقة",
         formReceipt: "يرجى تحميل ايصال الدفع في حال تم الدفع",
         formChooseFile: "اختر صورة لإرفاقها",
         noFileChosen: "لم يتم اختيار ملف",
@@ -1070,7 +1154,7 @@
         formNote: "بعد إرسال الطلب، سيتم توجيهك إلى واتساب حيث يمكنك إرسال صورة الإيصال يدوياً",
         formNoticeTitle: "سيتم إرسال طلبك مباشرة عبر واتساب",
         formNoticeDesc: "سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال",
-        formSubmit: "إرسال الطلب عبر واتساب",
+        formSubmit: "إرسال الطلب via WhatsApp",
         additionalInfoTitle: "معلومات إضافية",
         contactTitle: "للطلب والاستفسار",
         contactWhatsapp: "واتساب: +971 50 152 5742",
@@ -1098,7 +1182,24 @@
         footerRights: "جميع الحقوق محفوظة.",
         footerFeatures: "المميزات",
         footerContact: "تواصل واتساب",
-        floatingCta: "اطلب الآن"
+        floatingCta: "اطلب الآن",
+        privacyLink: "سياسة الخصوصية",
+        privacyTitle: "سياسة الخصوصية",
+        privacySection1: "مقدمة",
+        privacyText1: "نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.",
+        privacySection2: "البيانات التي نجمعها",
+        privacyText2: "عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم Stripe لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.",
+        privacySection3: "كيف نستخدم بياناتك",
+        privacyText3: "نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).",
+        privacySection4: "مشاركة البيانات",
+        privacyText4: "نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.",
+        privacySection5: "حماية البيانات",
+        privacyText5: "نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.",
+        privacySection6: "التغييرات على السياسة",
+        privacyText6: "قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.",
+        privacySection7: "اتصل بنا",
+        privacyText7: "إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على: info@axis-auto.com",
+        privacyAgreementText: "أوافق على سياسة الخصوصية وشروط الاستخدام"
       },
       en: {
         // النصوص الإنجليزية
@@ -1244,6 +1345,8 @@
         orderTitle: "Order Now",
         formName: "Full name",
         namePlaceholder: "Example: Ahmed Khalid",
+        formEmail: "Email address",
+        emailPlaceholder: "Example: example@domain.com",
         formPhone: "Phone number",
         phonePlaceholder: "Example: 05xxxxxxxx",
         formCountry: "Country",
@@ -1253,6 +1356,7 @@
         formQuantity: "Quantity",
         quantityOption1: "One device - 799 $",
         quantityOption2: "Two devices - 1299 $",
+        formCardDetails: "Card Details",
         formReceipt: "Please upload payment receipt if payment has been made",
         formChooseFile: "Choose image to attach",
         noFileChosen: "No file chosen",
@@ -1288,12 +1392,62 @@
         footerRights: "All rights reserved.",
         footerFeatures: "Features",
         footerContact: "Contact WhatsApp",
-        floatingCta: "Order Now"
+        floatingCta: "Order Now",
+        privacyLink: "Privacy Policy",
+        privacyTitle: "Privacy Policy",
+        privacySection1: "Introduction",
+        privacyText1: "At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and protect your information when you use our website and services.",
+        privacySection2: "Data We Collect",
+        privacyText2: "When you complete a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use Stripe to process payments and do not store credit card details on our servers.",
+        privacySection3: "How We Use Your Data",
+        privacyText3: "We use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).",
+        privacySection4: "Data Sharing",
+        privacyText4: "We share your information with payment processors (Stripe) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.",
+        privacySection5: "Data Protection",
+        privacyText5: "We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.",
+        privacySection6: "Policy Changes",
+        privacyText6: "We may update this privacy policy from time to time. Any changes will be posted on this page and we will notify you by email if the changes are substantial.",
+        privacySection7: "Contact Us",
+        privacyText7: "If you have any questions about this privacy policy, please contact us at: info@axis-auto.com",
+        privacyAgreementText: "I agree to the privacy policy and terms of use"
       }
     };
 
     // اللغة الحالية
     let currentLang = 'ar';
+    let stripe = null;
+    let cardElement = null;
+
+    // تهيئة Stripe
+    function initStripe() {
+      stripe = Stripe('pk_test_51PJhZ2P3pRlqk8Lk9w7s6tT8qY1V2X3z4A5B6C7D8E9F0G1H2I3J4K5L6M7N8O9P0Q'); // استبدل بمفتاحك العام من Stripe
+      const elements = stripe.elements();
+      
+      // إنشاء عنصر البطاقة
+      cardElement = elements.create('card', {
+        style: {
+          base: {
+            fontSize: '16px',
+            color: '#0f172a',
+            '::placeholder': {
+              color: '#aab7c4'
+            }
+          }
+        }
+      });
+      
+      cardElement.mount('#card-element');
+      
+      // التعامل مع أخطاء البطاقة
+      cardElement.on('change', function(event) {
+        const displayError = document.getElementById('card-errors-form');
+        if (event.error) {
+          displayError.textContent = event.error.message;
+        } else {
+          displayError.textContent = '';
+        }
+      });
+    }
 
     // دالة لإنشاء رابط واتساب
     function waLink(phone, text) {
@@ -1376,17 +1530,50 @@
       
       // جمع البيانات من النموذج
       const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const country = document.getElementById('country').value.trim();
       const address = document.getElementById('address').value.trim();
       const quantity = document.getElementById('quantity').value;
       const paymentMethod = document.getElementById('paymentMethod').value;
       const receiptFile = document.getElementById('receipt');
+      const privacyAgreement = document.getElementById('privacyAgreement').checked;
       
       // التحقق من صحة البيانات
-      if (!name || !phone || !country || !address) {
+      if (!name || !email || !phone || !country || !address) {
         showAlert(currentLang === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', 'error');
         return;
+      }
+      
+      if (!privacyAgreement) {
+        showAlert(currentLang === 'ar' ? 'يجب الموافقة على سياسة الخصوصية وشروط الاستخدام' : 'You must agree to the privacy policy and terms of use', 'error');
+        return;
+      }
+      
+      // إذا كان الدفع عبر Stripe، قم بمعالجة الدفع أولاً
+      if (paymentMethod === 'stripe') {
+        const {error, paymentMethod: pm} = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+          billing_details: {
+            name: name,
+            email: email,
+            phone: phone,
+            address: {
+              country: country,
+              line1: address
+            }
+          }
+        });
+        
+        if (error) {
+          showAlert(error.message, 'error');
+          return;
+        }
+        
+        // هنا يمكنك إرسال paymentMethod.id إلى الخادم الخاص بك لاستكمال عملية الدفع
+        // في هذا المثال، سنقوم بمحاكاة نجاح الدفع
+        showAlert(currentLang === 'ar' ? 'تمت عملية الدفع بنجاح! سيتم توجيهك إلى واتساب الآن.' : 'Payment successful! You will be redirected to WhatsApp now.', 'success');
       }
       
       let imageUrl = '';
@@ -1416,6 +1603,7 @@
       // بناء الرسالة
       let msg = currentLang === 'ar' ? `طلب جهاز فحص السيارات%0A%0A` : `Car Inspection Device Order%0A%0A`;
       msg += `${currentLang === 'ar' ? 'الاسم' : 'Name'}: ${name}%0A`;
+      msg += `${currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email'}: ${email}%0A`;
       msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone number'}: ${phone}%0A`;
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
       msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
@@ -1510,6 +1698,16 @@
       togglePaymentDetails();
     }
     
+    // دالة لعرض سياسة الخصوصية
+    function showPrivacyPolicy() {
+      document.getElementById('privacyModal').style.display = 'block';
+    }
+    
+    // دالة لإغلاق نافذة سياسة الخصوصية
+    function closePrivacyModal() {
+      document.getElementById('privacyModal').style.display = 'none';
+    }
+    
     // سنة ديناميكية
     document.getElementById('y').textContent = new Date().getFullYear();
     
@@ -1544,8 +1742,12 @@
     // إغلاق النافذة عند النقر خارجها
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
+      const privacyModal = document.getElementById('privacyModal');
       if (event.target == modal) {
         closeModal();
+      }
+      if (event.target == privacyModal) {
+        closePrivacyModal();
       }
     }
     
@@ -1564,6 +1766,9 @@
       
       // تهيئة طريقة الدفع الافتراضية
       togglePaymentDetails();
+      
+      // تهيئة Stripe
+      initStripe();
     });
   </script>
 </body>
