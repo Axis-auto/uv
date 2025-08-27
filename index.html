@@ -214,11 +214,6 @@
     .contact-info { display: flex; flex-direction: column; gap: 6px; }
     .contact-item { display: flex; align-items: center; gap: 6px; direction: ltr; unicode-bidi: embed; }
     
-    /* New styles for contact icons */
-    .contact-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--brand); }
-    .contact-info-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-    .contact-info-text { color: var(--muted); font-size: 15px; }
-    
     [dir="ltr"] { text-align: left; direction: ltr; }
     [dir="ltr"] .table th { text-align: left; }
     [dir="ltr"] .pricing-card ul { text-align: left; padding-left: 16px; }
@@ -599,7 +594,7 @@
         <h2 data-translate="faq.title">الأسئلة الشائعة</h2>
         <div class="grid cols-2">
           <details open><summary data-translate="faq.q1">هل أحتاج نظّارات خاصة؟</summary>
-            <div class="muted" data-translate="faq.a1">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 или ANSI.</div>
+            <div class="muted" data-translate="faq.a1">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.</div>
           </details>
           <details><summary data-translate="faq.q2">هل يكشف تحت طبقات الحماية (PPF)؟</summary>
             <div class="muted" data-translate="faq.a2">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.</div>
@@ -723,7 +718,7 @@
             
             <div class="card" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
               <strong data-translate="order.whatsappTitle">سيتم إرسال طلبك مباشرة عبر واتساب</strong>
-              <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك в إرسال صورة الإيصال</div>
+              <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
             </div>
             
             <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
@@ -735,38 +730,11 @@
           
           <h3 style="margin-top:10px" data-translate="info.contactTitle">للطلب والاستفسار</h3>
           <div class="contact-info">
-            <div class="contact-info-item">
-              <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
-                <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
-              </svg>
-              <span class="contact-info-text">uv@axis-auto.com</span>
-            </div>
-            <div class="contact-info-item">
-              <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
-                <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
-              </svg>
-              <span class="contact-info-text">info@axis-auto.com</span>
-            </div>
-            <div class="contact-info-item">
-              <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M.98 3.55a2.5 2.5 0 012.835-.97L12 6.33l8.185-3.75a2.5 2.5 0 012.835.97 2.5 2.5 0 01-.97 2.835L14.8 12l7.25 3.315a2.5 2.5 0 01.97 2.835 2.5 2.5 0 01-2.835.97L12 17.67l-8.185 3.75a2.5 2.5 0 01-2.835-.97 2.5 2.5 0 01.97-2.835L9.2 12 1.95 8.685a2.5 2.5 0 01-.97-2.835z"/>
-              </svg>
-              <span class="contact-info-text">+971 50 152 5742</span>
-            </div>
-            <div class="contact-info-item">
-              <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fill-rule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 极速快3 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clip-rule="evenodd" />
-              </svg>
-              <span class="contact-info-text">+971 6 565 0021</span>
-            </div>
-            <div class="contact-info-item">
-              <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 极速快3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-              </svg>
-              <span class="contact-info-text" data-translate="info.address">شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</span>
-            </div>
+            <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> uv@axis-auto.com</div>
+            <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> info@axis-auto.com</div>
+            <div class="contact-item"><span class="muted">واتساب:</span> +971 50 152 5742</div>
+            <div class="contact-item"><span class="muted">هاتف:</span> +971 6 565 0021</div>
+            <div class="muted" data-translate="info.address">العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</div>
           </div>
 
           <h3 style="margin-top:12px" data-translate="info.warrantyTitle">الضمان والخدمة</h3>
@@ -786,8 +754,8 @@
           <h3 style="margin-top:12px" data-translate="info.shippingTitle">معلومات الشحن</h3>
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="info.shipping1">مدة الشحن: 3-7 أيام عمل</li>
-            <li data极速快3-translate="info.shipping2">الشحن متاح لجميع دول الشرق الأوسط والعالم</li>
-            <li data-translate="极速快3info.shipping3">تتبع الشحنة متاح عبر البريد الإلكتروني</li>
+            <li data-translate="info.shipping2">الشحن متاح لجميع دول الشرق الأوسط والعالم</li>
+            <li data-translate="info.shipping3">تتبع الشحنة متاح عبر البريد الإلكتروني</li>
           </ul>
         </div>
       </div>
@@ -797,7 +765,7 @@
     <div id="privacyModal" class="modal">
       <div class="modal-content" style="background: white; padding: 20px; border-radius: 12px; max-width: 800px; margin: 5% auto;">
         <span class="close-modal" onclick="closePrivacyModal()" style="color: black; font-size: 30px;">&times;</span>
-        <h2 data-translate极速快3="privacy.title">سياسة الخصوصية والإرجاع</h2>
+        <h2 data-translate="privacy.title">سياسة الخصوصية والإرجاع</h2>
         <div class="privacy-policy">
           <h4 data-translate="privacy.introTitle">مقدمة</h4>
           <p data-translate="privacy.introText">نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية والإرجاع هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.</p>
@@ -805,7 +773,7 @@
           <h4 data-translate="privacy.dataTitle">البيانات التي نجمعها</h4>
           <p data-translate="privacy.dataText">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم Stripe لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
           
-          <h4 data-translate="privacy.usageTitle">كيف نستخدم بياناتك</极速快34>
+          <h4 data-translate="privacy.usageTitle">كيف نستخدم بياناتك</h4>
           <p data-translate="privacy.usageText">نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).</p>
           
           <h4 data-translate="privacy.sharingTitle">مشاركة البيانات</h4>
@@ -829,17 +797,17 @@
           <p data-translate="privacy.refundText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.</p>
           
           <div class="stripe-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 极速快3 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16a4 4 0 0 1-8 极速快3 0c0-5 4-8 8-8"></path>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
             </svg>
             <span data-translate="privacy.stripeText">مدفوعات آمنة عبر Stripe - استرداد فوري</span>
           </div>
           
           <h4 data-translate="privacy.changesTitle">التغييرات على السياسة</h4>
-          <p data-translate="privacy.changes极速快3Text">قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.</p>
+          <p data-translate="privacy.changesText">قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.</p>
           
           <h4 data-translate="privacy.contactTitle">اتصل بنا</h4>
-          <p data-translate="privacy.contactText">إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com</p>
+          <p data-translate="privacy.contactText">Если у вас есть вопросы о политике конфиденциальности и возврата, свяжитесь с нами по адресу: info@axis-auto.com</p>
         </div>
       </div>
     </div>
@@ -861,7 +829,7 @@
   <div id="imageModal" class="modal">
     <span class="close-modal" onclick="closeModal()">&times;</span>
     <img class="modal-content" id="modalImage">
-    <div id="modalCaption" class="modal-caption"></极速快3div>
+    <div id="modalCaption" class="modal-caption"></div>
   </div>
 
   <!-- SCHEMA MARKUP -->
@@ -909,7 +877,7 @@
         'hero.title': 'اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ',
         'hero.description': 'جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.',
         'hero.badge1': 'طيف UV-A 400–405 nm',
-        'hero.badge2': 'إشعاع حتى 6000 µ极速快3W/cm²',
+        'hero.badge2': 'إشعاع حتى 6000 µW/cm²',
         'hero.badge3': 'بطارية 8400 mAh — تشغيل 60–70 دقيقة',
         'hero.badge4': 'مصنوع من الألومنيوم معالج وبوليمر مضغوط',
         'hero.orderNow': 'اطلب الآن',
@@ -934,7 +902,7 @@
         'features.feat3.title': 'بطارية 8400 mAh',
         'features.feat3.desc': 'تشغيل نحو 60–70 دقيقة وشحن سريع (15–20 دقيقة تقريبًا).',
         'features.feat4.title': 'متين ومحمول',
-        'features.feat极速快34.desc': 'هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.',
+        'features.feat4.desc': 'هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.',
         
         // كيف يعمل
         'how.title': 'كيف يعمل؟',
@@ -970,7 +938,7 @@
         'specs.dimensions': 'الأبعاد',
         'specs.lamps': 'عدد المصابيح / الليزرات',
         'specs.lampPower': 'قوة كل ليزر',
-        'spec极速快3s.nozzle': 'حجم الفوهة',
+        'specs.nozzle': 'حجم الفوهة',
         'specs.material': 'الخامة',
         'specs.materialValue': 'ألومنيوم معالج + بوليمر مضغوط',
         'specs.spectrum': 'نطاق الطيف',
@@ -1012,7 +980,7 @@
         'pricing.option1.item2': 'بطارية ليثيوم 8400 mAh',
         'pricing.option1.item3': 'شاحن سريع + كابل USB-C',
         'pricing.option1.item4': 'حقيبة حماية',
-        '极速快3pricing.option1.item5': 'ضمان 12 شهر',
+        'pricing.option1.item5': 'ضمان 12 شهر',
         'pricing.option2.title': 'جهازين',
         'pricing.option2.save': 'وفر 299 دولار عند الشراء بكمية',
         'pricing.option2.item1': 'جهازين كاملين',
@@ -1037,7 +1005,7 @@
         'payment.step2': 'إرسال إشعار الاستلام',
         'payment.step3': 'تجهيز البضاعة والشحن',
         'payment.step4': 'إرسال الفاتورة ورقم التتبع',
-        'payment.st极速快3ep5': 'استلام المنتج خلال 3-7 أيام',
+        'payment.step5': 'استلام المنتج خلال 3-7 أيام',
         'payment.guaranteesTitle': 'ضماناتنا لك:',
         'payment.guarantee1': 'سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع',
         'payment.guarantee2': 'رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب',
@@ -1048,8 +1016,8 @@
         'faq.title': 'الأسئلة الشائعة',
         'faq.q1': 'هل أحتاج نظّارات خاصة؟',
         'faq.a1': 'يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.',
-        'faq极速快3.q2': 'هل يكشف تحت طبقات الحماية (PPF)؟',
-        '极速快3faq.a2': 'نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.',
+        'faq.q2': 'هل يكشف تحت طبقات الحماية (PPF)؟',
+        'faq.a2': 'نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.',
         'faq.q3': 'هل يقيس سماكة الدهان رقميًا؟',
         'faq.a3': 'لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.',
         'faq.q4': 'ما مدة الضمان؟',
@@ -1103,7 +1071,7 @@
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
         'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
-        'info.shipping1': 'مدة الشحن: 3-极速快37 أيام عمل',
+        'info.shipping1': 'مدة الشحن: 3-7 أيام عمل',
         'info.shipping2': 'الشحن متاح لجميع دول الشرق الأوسط والعالم',
         'info.shipping3': 'تتبع الشحنة متاح عبر البريد الإلكتروني',
         
@@ -1121,14 +1089,14 @@
         'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
         'privacy.returnText': 'نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.',
-        '极速快3privacy.conditionsTitle': 'شروط الإرجاع:',
+        'privacy.conditionsTitle': 'شروط الإرجاع:',
         'privacy.condition1': 'أن يكون المنتج في حالته الأصلية وبغلافه الأصلي',
         'privacy.condition2': 'أن تكون جميع الملحقات والوثائق متوفرة',
         'privacy.condition3': 'أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام',
         'privacy.condition4': 'أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام',
         'privacy.refundTitle': 'عملية الاسترداد:',
         'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة, سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
-        'privacy.stripe极速快3Text': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
+        'privacy.stripeText': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
         'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
         'privacy.contactTitle': 'اتصل بنا',
@@ -1165,14 +1133,14 @@
         'hero.feature2': 'Shows repair features under protective layers/PPF and even under wrapping.',
         'hero.feature3': 'AC leak detector with UV dye (supports common UV dyes).',
         'hero.frontBackView': 'Front and Back View',
-        'hero.side极速快3View': 'Side View',
+        'hero.sideView': 'Side View',
         
         // Features
         'features.title': 'Why This Car Inspection Device?',
         'features.subtitle': 'Designed specifically for fast and accurate car inspections.',
         'features.feat1.title': 'Detects Paint and Spray Marks',
         'features.feat1.desc': 'Shows differences in panels, putty, and polishing.',
-        'features.feat2.title': 'AC Leak Detection with UV D极速快3ye',
+        'features.feat2.title': 'AC Leak Detection with UV Dye',
         'features.feat2.desc': 'Compatible with common UV dyes for easy leak detection.',
         'features.feat3.title': '8400 mAh Battery',
         'features.feat3.desc': 'Approx. 60–70 minutes runtime and fast charging (approx. 15–20 minutes).',
@@ -1192,7 +1160,7 @@
         'warnings.title': 'Important Safety Warnings:',
         'warnings.item1': 'Never point the rays towards eyes. Use protective glasses with UV400+, EN166, or ANSI standards.',
         'warnings.item2': 'Do not expose skin to UV rays for extended periods.',
-        'warnings.item3': '极速快3Do not use the device near water or liquids.',
+        'warnings.item3': 'Do not use the device near water or liquids.',
         'warnings.item4': 'Keep the device out of reach of children.',
         
         // Specifications
@@ -1249,7 +1217,7 @@
         
         // Pricing
         'pricing.title': 'Offers and Prices',
-        '极速快3pricing.subtitle': 'Choose the right offer for you and benefit from quantity discounts',
+        'pricing.subtitle': 'Choose the right offer for you and benefit from quantity discounts',
         'pricing.option1.title': 'One Device',
         'pricing.option1.item1': 'Complete Device',
         'pricing.option1.item2': '8400 mAh Lithium Battery',
@@ -1258,7 +1226,7 @@
         'pricing.option1.item5': '12-Month Warranty',
         'pricing.option2.title': 'Two Devices',
         'pricing.option2.save': 'Save $299 when buying in quantity',
-        'pricing.option2.item1':极速快3 'Two Complete Devices',
+        'pricing.option2.item1': 'Two Complete Devices',
         'pricing.option2.item2': '8400 mAh Lithium Batteries',
         'pricing.option2.item3': 'Fast Chargers + USB-C Cables',
         'pricing.option2.item4': 'Two Protective Cases',
@@ -1289,11 +1257,11 @@
         
         // FAQ
         'faq.title': 'Frequently Asked Questions',
-        'fa极速快3q.q1': 'Do I need special glasses?',
+        'faq.q1': 'Do I need special glasses?',
         'faq.a1': 'It is recommended to use protective glasses with UV400+, EN166, or ANSI standards.',
         'faq.q2': 'Does it detect under protective layers (PPF)?',
         'faq.a2': 'Yes - the device is designed to show material and paint differences even under PPF or protective wraps.',
-        'faq.q极速快33': 'Does it measure paint thickness digitally?',
+        'faq.q3': 'Does it measure paint thickness digitally?',
         'faq.a3': 'No - this is an optical device for visual detection and distinction. A separate thickness gauge is needed for digital measurement.',
         'faq.q4': 'What is the warranty period?',
         'faq.a4': '12-month warranty certificate.',
@@ -1301,8 +1269,8 @@
         'faq.a5': 'After confirming your order, we will send you bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm your order and send the invoice and shipping bill.',
         'faq.q6': 'What is the expected shipping time?',
         'faq.a6': 'After payment confirmation, shipping takes 24-48 hours and the product arrives within 3-7 business days depending on destination.',
-        'faq.q7': '极速快3How can I return the product?',
-        'faq.a7': 'Contact us via WhatsApp within 14 days of receipt, and极速快3 we will provide you with return instructions. When we receive the product in its original condition, we will refund the amount within 5极速快3-7 business days.',
+        'faq.q7': 'How can I return the product?',
+        'faq.a7': 'Contact us via WhatsApp within 14 days of receipt, and we will provide you with return instructions. When we receive the product in its original condition, we will refund the amount within 5-7 business days.',
         'faq.q8': 'Is payment via Stripe secure?',
         'faq.a8': 'Yes, Stripe is a secure and globally accredited payment platform. We do not store any credit card data on our servers, and all payments are processed through Stripe\'s secure servers.',
         
@@ -1317,7 +1285,7 @@
         'order.option1': 'One Device - $799',
         'order.option2': 'Two Devices - $1299',
         'order.paymentMethod': 'Payment Method',
-        'order极速快3.paymentStripe': 'Card Payment (极速快3Stripe)',
+        'order.paymentStripe': 'Card Payment (Stripe)',
         'order.paymentSwift': 'Bank Transfer (SWIFT)',
         'order.cardDetails': 'Card Details',
         'order.stripeNote': 'You will be redirected to Stripe\'s secure payment page to complete the payment process.',
@@ -1355,7 +1323,7 @@
         'privacy.introTitle': 'Introduction',
         'privacy.introText': 'At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This Privacy and Return Policy explains how we collect, use, and protect your information when you use our website and services.',
         'privacy.dataTitle': 'Data We Collect',
-        'privacy.dataText': 'When completing a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use Stri极速快3pe to process payments and do not store credit card details on our servers.',
+        'privacy.dataText': 'When completing a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use Stripe to process payments and do not store credit card details on our servers.',
         'privacy.usageTitle': 'How We Use Your Data',
         'privacy.usageText': 'We use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).',
         'privacy.sharingTitle': 'Data Sharing',
@@ -1365,15 +1333,15 @@
         'privacy.returnTitle': 'Return and Refurn Policy',
         'privacy.returnText': 'We trust in the quality of our product, so we grant you the right to return the product within 14 days of receipt and receive a full refund if you are dissatisfied for any reason.',
         'privacy.conditionsTitle': 'Return Conditions:',
-        'privacy极速快3.condition1': 'The product must be in its original condition and original packaging',
+        'privacy.condition1': 'The product must be in its original condition and original packaging',
         'privacy.condition2': 'All accessories and documents must be available',
         'privacy.condition3': 'The return must be made within 14 days of receipt date',
         'privacy.condition4': 'The product must not have been damaged due to misuse',
         'privacy.refundTitle': 'Refund Process:',
-极速快3        'privacy.refundText': 'When the product is returned according to the mentioned conditions, the paid amount will be refunded using the original payment method within 5-7 business days. For card payments, the amount will appear in your statement within 1-2 billing cycles.',
+        'privacy.refundText': 'When the product is returned according to the mentioned conditions, the paid amount will be refunded using the original payment method within 5-7 business days. For card payments, the amount will appear in your statement within 1-2 billing cycles.',
         'privacy.stripeText': 'Secure payments via Stripe - Instant refund',
         'privacy.changesTitle': 'Policy Changes',
-        'privacy.changesText': 'We may update this Privacy and Return Policy from time to time. Any changes will be posted极速快3 on this page and we will notify you by email if the changes are substantial.',
+        'privacy.changesText': 'We may update this Privacy and Return Policy from time to time. Any changes will be posted on this page and we will notify you by email if the changes are substantial.',
         'privacy.contactTitle': 'Contact Us',
         'privacy.contactText': 'If you have any questions about this Privacy and Return Policy, please contact us at: info@axis-auto.com',
         
@@ -1412,7 +1380,7 @@
 
     // تهيئة Stripe
     function initStripe() {
-      stripe = Stripe('pk_test_51PJhZ2P3pRlqk8Lk9w7s6tT8qY1V2X3z4A5B6C7D8E9F0G1H2I3J4K5L6极速快3M7N8O9P0Q');
+      stripe = Stripe('pk_test_51PJhZ2P3pRlqk8Lk9w7s6tT8qY1V2X3z4A5B6C7D8E9F0G1H2I3J4K5L6M7N8O9P0Q');
       const elements = stripe.elements();
       
       cardElement = elements.create('card', {
@@ -1437,7 +1405,7 @@
 
     // تبديل اللغة
     function toggleLanguage() {
-      const newLang = currentLang === 'ar' ? 'en极速快3' : 'ar';
+      const newLang = currentLang === 'ar' ? 'en' : 'ar';
       changeLanguage(newLang);
     }
 
@@ -1505,7 +1473,7 @@
         fileNameField.textContent = input.files[0].name;
         fileNameField.style.color = "var(--ok)";
         
-        if (input.files[0极速快3].type.match('image.*')) {
+        if (input.files[0].type.match('image.*')) {
           const reader = new FileReader();
           reader.onload = function(e) {
             previewImg.src = e.target.result;
@@ -1544,7 +1512,7 @@
 
     // إظهار رسالة تنبيه
     function showAlert(message, type) {
-      const alertBox = document.getElementById('alert极速快3Box');
+      const alertBox = document.getElementById('alertBox');
       alertBox.textContent = message;
       alertBox.className = `alert alert-${type}`;
       alertBox.style.display = 'block';
@@ -1571,7 +1539,7 @@
       let imageUrl = '';
       const receiptFile = document.getElementById('receipt');
       if (receiptFile.files.length > 0) {
-        image极速快3Url = await uploadImage(receiptFile.files[0]);
+        imageUrl = await uploadImage(receiptFile.files[0]);
       }
       
       // إرسال الطلب عبر واتساب
@@ -1665,7 +1633,7 @@
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
       msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
       msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${quantity}%0A`;
-      msg += `${currentLang === 'ar'极速快3 ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
+      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
       
       if (imageUrl) {
         msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment Receipt'}: ${imageUrl}%0A%0A`;
