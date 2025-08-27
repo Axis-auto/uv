@@ -403,6 +403,79 @@
       text-decoration: underline;
       cursor: pointer;
     }
+    
+    /* أنماط سياسة الإرجاع الجديدة */
+    .return-policy {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius);
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .return-policy h3 {
+      color: #d97706;
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .return-policy-icon {
+      color: #d97706;
+      font-size: 24px;
+    }
+    .return-steps {
+      display: flex;
+      justify-content: space-between;
+      margin: 16px 0;
+      position: relative;
+    }
+    .return-steps::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #fde68a;
+      z-index: 1;
+    }
+    .return-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      text-align: center;
+    }
+    .return-step .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #d97706;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .return-step p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .stripe-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #635bff;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-weight: 600;
+      margin: 8px 0;
+    }
   </style>
 </head>
 <body>
@@ -415,6 +488,7 @@
       <nav style="display:flex;gap:8px;align-items:center">
         <a href="#features" class="btn ghost" data-translate="navFeatures">المميزات</a>
         <a href="#pricing" class="btn ghost" data-translate="navPricing">السعر</a>
+        <a href="#return-policy" class="btn ghost" data-translate="navReturnPolicy">سياسة الإرجاع</a>
         <a href="#order" class="btn modern-btn" data-translate="navOrder">اطلب الآن</a>
         <div class="lang-switcher" id="langSwitcher">
           <span id="currentLang">EN</span>
@@ -468,8 +542,8 @@
           <div class="grid cols-2">
             <div class="card" style="padding:0; border: none; box-shadow: none; background: none;">
               <div class="muted" style="font-size:11px" data-translate="viewFrontBack">منظر أمامي وخلفي</div>
-              <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true', translations[currentLang].frontBackImageAlt)">
-                <img src="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true" alt="منظر أمامي وخلفي للجهاز" />
+              <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true', translations[currentLang].frontBackImageAlt)">
+                <img src="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true" alt="منظر أمامي وخلفي للجهاز" />
               </div>
             </div>
             <div class="card" style="padding:0; border: none; box-shadow: none; background: none;">
@@ -559,6 +633,58 @@
             <li data-translate="warning3">لا تستخدم الجهاز بالقرب من الماء أو السوائل.</li>
             <li data-translate="warning4">حافظ على الجهاز بعيداً عن متناول الأطفال.</li>
           </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- RETURN POLICY -->
+    <section id="return-policy" class="gradient-bg">
+      <div class="container">
+        <h2 data-translate="returnPolicyTitle">سياسة الإرجاع والاسترداد</h2>
+        <p class="muted" data-translate="returnPolicyDesc">نحن نضمن رضاك الكامل عن منتجنا ونقدم سياسة إرجاع مرنة وآمنة</p>
+
+        <div class="return-policy card-hover">
+          <h3><span class="return-policy-icon">✓</span> <span data-translate="returnGuarantee">ضمان الإرجاع لمدة 14 يوم</span></h3>
+          <p data-translate="returnPolicyText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.</p>
+          
+          <div class="stripe-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
+            </svg>
+            <span data-translate="stripeSecure">مدفوعات آمنة عبر Stripe - استرداد فوري</span>
+          </div>
+
+          <div class="return-steps">
+            <div class="return-step">
+              <div class="step-number">1</div>
+              <p data-translate="returnStep1">اتصل بنا خلال 14 يوم</p>
+            </div>
+            <div class="return-step">
+              <div class="step-number">2</div>
+              <p data-translate="returnStep2">أعد المنتج في غلافه الأصلي</p>
+            </div>
+            <div class="return-step">
+              <div class="step-number">3</div>
+              <p data-translate="returnStep3">استلم استرداداً كاملاً خلال 5-7 أيام</p>
+            </div>
+          </div>
+
+          <h4 data-translate="returnConditionsTitle">شروط الإرجاع:</h4>
+          <ul>
+            <li data-translate="returnCondition1">أن يكون المنتج في حالته الأصلية وبغلافه الأصلي</li>
+            <li data-translate="returnCondition2">أن تكون جميع الملحقات والوثائق متوفرة</li>
+            <li data-translate="returnCondition3">أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام</li>
+            <li data-translate="returnCondition4">أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام</li>
+          </ul>
+
+          <div class="payment-info">
+            <h4 data-translate="refundProcessTitle">عملية الاسترداد:</h4>
+            <p data-translate="refundProcessText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.</p>
+            
+            <div class="guarantee-badge">
+              ✓ <span data-translate="stripeRefund">Stripe تضمن معالجة آمنة لاسترداد الأموال</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -744,7 +870,7 @@
         <h2 data-translate="faqTitle">الأسئلة الشائعة</h2>
         <div class="grid cols-2">
           <details open><summary data-translate="faq1Question">هل أحتاج نظّارات خاصة؟</summary>
-            <div class="muted" data-translate="faq1Answer">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 или ANSI.</div>
+            <div class="muted" data-translate="faq1Answer">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.</div>
           </details>
           <details><summary data-translate="faq2Question">هل يكشف تحت طبقات الحماية (PPF)؟</summary>
             <div class="muted" data-translate="faq2Answer">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.</div>
@@ -760,6 +886,12 @@
           </details>
           <details><summary data-translate="faq6Question">ما هي مدة الشحن المتوقعة?</summary>
             <div class="muted" data-translate="faq6Answer">بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.</div>
+          </details>
+          <details><summary data-translate="faq7Question">كيف يمكنني إرجاع المنتج؟</summary>
+            <div class="muted" data-translate="faq7Answer">اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.</div>
+          </details>
+          <details><summary data-translate="faq8Question">هل الدفع عبر Stripe آمن؟</summary>
+            <div class="muted" data-translate="faq8Answer">نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.</div>
           </details>
         </div>
       </div>
@@ -945,7 +1077,7 @@
 
   <footer>
     <div class="container" style="display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap">
-      <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footerRights">جميع الحقوق محفوظة.</span> | <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="privacyLink">سياسة الخصوصية</a></div>
+      <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footerRights">جميع الحقوق محفوظة.</span> | <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="privacyLink">سياسة الخصوصية</a> | <a href="#return-policy" data-translate="footerReturnPolicy">سياسة الإرجاع</a></div>
       <div style="display:flex;gap:6px">
         <a class="btn ghost" href="#features" data-translate="footerFeatures">المميزات</a>
         <a class="btn modern-btn" href="https://wa.me/905075803495" data-translate="footerContact">تواصل واتساب</a>
@@ -996,6 +1128,7 @@
         siteTitle: "جهاز فحص السيارات",
         navFeatures: "المميزات",
         navPricing: "السعر",
+        navReturnPolicy: "سياسة الإرجاع",
         navOrder: "اطلب الآن",
         heroTitle: "اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ",
         heroDesc: "جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.",
@@ -1031,7 +1164,7 @@
         step1Title: "حضّر السيارة",
         step1Desc: "نظّف السطح وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.",
         step2Title: "فعّل الجهاز",
-        step2Desc: "استخدم الجهاز на مسافة 40–60 سم من السطح وزاوج الزوايا.",
+        step2Desc: "استخدم الجهاز على مسافة 40–60 سم من السطح وزاوج الزوايا.",
         step3Title: "اقرأ النتائج",
         step3Desc: "البقع والتباينات تشير إلى إصلاحات أو طلاء إضافي أو ترسبات.",
         warningTitle: "تنبيهات أمان هامة:",
@@ -1039,6 +1172,22 @@
         warning2: "لا تعرض الجلد لأشعة UV لفترات طويلة.",
         warning3: "لا تستخدم الجهاز بالقرب من الماء أو السوائل.",
         warning4: "حافظ على الجهاز بعيداً عن متناول الأطفال.",
+        returnPolicyTitle: "سياسة الإرجاع والاسترداد",
+        returnPolicyDesc: "نحن نضمن رضاك الكامل عن منتجنا ونقدم سياسة إرجاع مرنة وآمنة",
+        returnGuarantee: "ضمان الإرجاع لمدة 14 يوم",
+        returnPolicyText: "نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.",
+        stripeSecure: "مدفوعات آمنة عبر Stripe - استرداد فوري",
+        returnStep1: "اتصل بنا خلال 14 يوم",
+        returnStep2: "أعد المنتج في غلافه الأصلي",
+        returnStep3: "استلم استرداداً كاملاً خلال 5-7 أيام",
+        returnConditionsTitle: "شروط الإرجاع:",
+        returnCondition1: "أن يكون المنتج في حالته الأصلية وبغلافه الأصلي",
+        returnCondition2: "أن تكون جميع الملحقات والوثائق متوفرة",
+        returnCondition3: "أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام",
+        returnCondition4: "أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام",
+        refundProcessTitle: "عملية الاسترداد:",
+        refundProcessText: "عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.",
+        stripeRefund: "Stripe تضمن معالجة آمنة لاسترداد الأموال",
         specsTitle: "المواصفات الفنية",
         spec1: "الاسم التجاري / الموديل",
         spec2: "القدرة الكهربائية",
@@ -1125,13 +1274,17 @@
         faq2Question: "هل يكشف تحت طبقات الحماية (PPF)?",
         faq2Answer: "نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.",
         faq3Question: "هل يقيس سماكة الدهان رقميًا?",
-        faq3Answer: "لا — هذا جهак بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سمالة منفصل.",
+        faq3Answer: "لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.",
         faq4Question: "ما مدة الضمان?",
         faq4Answer: "شهادة ضمان لمدة 12 شهر.",
         faq5Question: "كيف أتم عملية الدفع عبر الحوالة البنكية?",
         faq5Answer: "بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.",
         faq6Question: "ما هي مدة الشحن المتوقعة?",
         faq6Answer: "بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.",
+        faq7Question: "كيف يمكنني إرجاع المنتج؟",
+        faq7Answer: "اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.",
+        faq8Question: "هل الدفع عبر Stripe آمن؟",
+        faq8Answer: "نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.",
         orderTitle: "اطلبه الآن",
         formName: "الاسم الكامل",
         namePlaceholder: "مثال: أحمد خالد",
@@ -1147,7 +1300,7 @@
         quantityOption1: "جهاز واحد - 799 $",
         quantityOption2: "جهازين - 1299 $",
         formCardDetails: "تفاصيل البطاقة",
-        formReceipt: "يرجى تحميل ايصال الدفع في حال تم الدفع",
+        formRececept: "يرجى تحميل ايصال الدفع في حال تم الدفع",
         formChooseFile: "اختر صورة لإرفاقها",
         noFileChosen: "لم يتم اختيار ملف",
         fileNote: "يمكنك رفع ملفات الصور فقط (JPEG, PNG, GIF)",
@@ -1172,7 +1325,7 @@
         shipping2: "الشحن متاح لجميع دول الشرق الأوسط والعالم",
         shipping3: "تتبع الشحنة متاح عبر البريد الإلكتروني",
         info1: "خدمة ما بعد البيع ودعم فني عبر واتساب.",
-        info2: "إمكانية الفواتير للشركات.",
+        info2: "إمكانية الفواتير لل الشركات.",
         info3: "شحن سريع لجم أنحاء العالم.",
         info4: "نوصي باستخدام الجهاز في أماكن ذات إضاءة منخفضة للحصول على أفضل نتيجة.",
         techInfoTitle: "معلومات تقنية إضافية",
@@ -1181,6 +1334,7 @@
         techInfo3: "يتم استخدام مروحة التبريد في نهاية الجهاز بقوة عالية لتبريد السطح الداخلي للجهاز والحفاظ على جودة الإشعاع في جميع الأوقات.",
         footerRights: "جميع الحقوق محفوظة.",
         footerFeatures: "المميزات",
+        footerReturnPolicy: "سياسة الإرجاع",
         footerContact: "تواصل واتساب",
         floatingCta: "اطلب الآن",
         privacyLink: "سياسة الخصوصية",
@@ -1206,6 +1360,7 @@
         siteTitle: "Car Inspection Device",
         navFeatures: "Features",
         navPricing: "Pricing",
+        navReturnPolicy: "Return Policy",
         navOrder: "Order Now",
         heroTitle: "Discover hidden repairs and paint in seconds",
         heroDesc: "A powerful portable device for inspecting car body, paint, AC leaks with UV dye, and invisible repair marks. Ideal for car showrooms, inspectors, and individual buyers.",
@@ -1249,6 +1404,22 @@
         warning2: "Do not expose skin to UV rays for long periods.",
         warning3: "Do not use the device near water or liquids.",
         warning4: "Keep the device out of reach of children.",
+        returnPolicyTitle: "Return and Refund Policy",
+        returnPolicyDesc: "We guarantee your complete satisfaction with our product and offer a flexible and secure return policy",
+        returnGuarantee: "14-Day Return Guarantee",
+        returnPolicyText: "We are confident in the quality of our product, so we give you the right to return the product within 14 days of receipt and receive a full refund if you are not satisfied for any reason.",
+        stripeSecure: "Secure payments via Stripe - Instant refund",
+        returnStep1: "Contact us within 14 days",
+        returnStep2: "Return the product in its original packaging",
+        returnStep3: "Receive full refund within 5-7 days",
+        returnConditionsTitle: "Return conditions:",
+        returnCondition1: "The product must be in its original condition and packaging",
+        returnCondition2: "All accessories and documents must be available",
+        returnCondition3: "Return must be made within 14 days of receipt",
+        returnCondition4: "The product must not have been damaged due to misuse",
+        refundProcessTitle: "Refund process:",
+        refundProcessText: "When returning the product according to the mentioned conditions, the paid amount will be refunded using the original payment method within 5-7 business days. For card payments, the amount will appear in your statement within 1-2 billing cycles.",
+        stripeRefund: "Stripe guarantees secure refund processing",
         specsTitle: "Technical Specifications",
         spec1: "Trade name / Model",
         spec2: "Electrical capacity",
@@ -1342,6 +1513,10 @@
         faq5Answer: "After confirming the order, we will send you the bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm the order and send the invoice and shipping bill.",
         faq6Question: "What is the expected shipping time?",
         faq6Answer: "After payment confirmation, shipping takes 24-48 hours and the product arrives within 3-7 business days depending on the destination.",
+        faq7Question: "How can I return the product?",
+        faq7Answer: "Contact us via WhatsApp within 14 days of receipt, and we will provide you with return instructions. When we receive the product in its original condition, we will process the refund within 5-7 business days.",
+        faq8Question: "Is payment via Stripe secure?",
+        faq8Answer: "Yes, Stripe is a secure and globally accredited payment platform. We do not store any credit card data on our servers, and all payment transactions are processed through Stripe's secure servers.",
         orderTitle: "Order Now",
         formName: "Full name",
         namePlaceholder: "Example: Ahmed Khalid",
@@ -1391,6 +1566,7 @@
         techInfo3: "The cooling fan at the end of the device is used at high power to cool the internal surface of the device and maintain the quality of radiation at all times.",
         footerRights: "All rights reserved.",
         footerFeatures: "Features",
+        footerReturnPolicy: "Return Policy",
         footerContact: "Contact WhatsApp",
         floatingCta: "Order Now",
         privacyLink: "Privacy Policy",
@@ -1493,7 +1669,7 @@
       formData.append('image', file);
       
       try {
-        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey`, {
           method: 'POST',
           body: formData
         });
