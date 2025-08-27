@@ -36,13 +36,7 @@
     .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,99,235,.2)}
     .btn.ghost{background:transparent;color:var(--brand);border-color:var(--brand);box-shadow: none;}
     .btn.ghost:hover{background:var(--brand-light);}
-    .hero{
-      padding:16px 0 12px;
-      background-image: linear-gradient(rgba(248, 250, 252, 0.92), rgba(226, 232, 240, 0.92)), url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
+    .hero{padding:16px 0 12px}
     .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}
     .hero h1{font-size:clamp(24px,4vw,40px);line-height:1.15;margin:4px 0 8px}
     .lead{color:var(--muted);font-size:clamp(14px,2vw,16px)}
@@ -512,7 +506,7 @@
 
   <main>
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero gradient-bg">
       <div class="container wrap">
         <div>
           <h1 data-translate="heroTitle">اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ</h1>
@@ -535,8 +529,7 @@
           </div>
         </div>
         <div class="card product-card mobile-optimized card-hover">
-          <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp', translations[currentLang].heroImageAlt)">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" />
+          <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" />
           </div>
 
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;">
@@ -827,7 +820,7 @@
             <div class="muted" data-translate="faq1Answer">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.</div>
           </details>
           <details><summary data-translate="faq2Question">هل يكشف تحت طبقات الحماية (PPF)؟</summary>
-            <div class="muted" data-translate="faq2Answer">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF или اللفّات الواقية.</div>
+            <div class="muted" data-translate="faq2Answer">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.</div>
           </details>
           <details><summary data-translate="faq3Question">هل يقيس سماكة الدهان رقميًا؟</summary>
             <div class="muted" data-translate="faq3Answer">لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.</div>
@@ -921,7 +914,7 @@
             </div>
             
             <div class="form-group">
-              <label class="form-label" data-translate="formReceipt">يرجى تحميل ايصال الدفع в حال تم الدفع</label>
+              <label class="form-label" data-translate="formReceipt">يرجى تحميل ايصال الدفع في حال تم الدفع</label>
               <div class="file-upload">
                 <label for="receipt">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -985,7 +978,7 @@
           <h3 style="margin-top:12px" data-translate="aboutCompanyTitle">عن الشركة</h3>
           <div class="muted" style="line-height:1.6">
             <p data-translate="aboutCompany1">شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.</p>
-            <p data-translate="aboutCompany2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.</p>
+            <p data-translate="aboutCompany2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.</p>
           </div>
 
           <h3 style="margin-top:12px" data-translate="shippingInfoTitle">معلومات الشحن</h3>
@@ -1135,11 +1128,11 @@
         feat3Desc: "تشغيل نحو 60–70 دقيقة وشحن سريع (15–20 دقيقة تقريبًا).",
         feat4Title: "متين ومحمول",
         feat4Desc: "هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.",
-        howTitle: "كيف يعمل؟",
+        howTitle: "كيف يعمل？",
         step1Title: "حضّر السيارة",
         step1Desc: "نظّف السطح وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.",
         step2Title: "فعّل الجهاز",
-        step2Desc: "استخدم الجهاز على مسافة 40–60 см من السطح وزاوج الزوايا.",
+        step2Desc: "استخدم الجهاز على مسافة 40–60 سم من السطح وزاوج الزوايا.",
         step3Title: "اقرأ النتائج",
         step3Desc: "البقع والتباينات تشير إلى إصلاحات أو طلاء إضافي أو ترسبات.",
         warningTitle: "تنبيهات أمان هامة:",
@@ -1181,7 +1174,7 @@
         spec12: "قوة كل ليزر",
         spec13: "حجم الفوهة",
         spec14: "الخامة",
-        spec14Value: "ألومنيوم معالج + بوليمر مضغوط",
+        spec14Value: "ألومنيوم معالج + بولimer مضغوط",
         spec15: "نطاق الطيف",
         spec16: "الطاقة الإشعاعية",
         spec17: "قوة الإشعاع",
@@ -1247,7 +1240,7 @@
         faq1Question: "هل أحتاج نظّارات خاصة؟",
         faq1Answer: "يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI Z.",
         faq2Question: "هل يكشف تحت طبقات الحماية (PPF)?",
-        faq2Answer: "نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF или اللفّات الواقية.",
+        faq2Answer: "نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.",
         faq3Question: "هل يقيس سماكة الدهان رقميًا?",
         faq3Answer: "لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.",
         faq4Question: "ما مدة الضمان?",
@@ -1286,7 +1279,7 @@
         additionalInfoTitle: "معلومات إضافية",
         contactTitle: "للطلب والاستفسار",
         contactWhatsapp: "واتساب: +971 50 152 5742",
-        contactAddress: "العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة",
+        contactAddress: "العنوان: شارع Sheikh Mohammed bin Zayed - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة",
         warrantyTitle: "الضمان والخدمة",
         warranty1: "ضمان لمدة 12 شهر ضد عيوب الصناعة",
         warranty2: "دعم فني متاح على مدار الساعة",
@@ -1298,10 +1291,10 @@
         shippingInfoTitle: "معلومات الشحن",
         shipping1: "مدة الشحن: 3-7 أيام عمل",
         shipping2: "الشحن متاح لجميع دول الشرق الأوسط والعالم",
-        shipping3: "تتبع الشحنة متاح عبر البريد الإlectronي",
+        shipping3: "تتبع الشحنة متاح عبر البريد الإلكتروني",
         info1: "خدمة ما بعد البيع ودعم فني عبر واتساب.",
-        info2: "إمكانية الفواتير للشركات.",
-        info3: "شحن سريع لجميع أنحاء العالم.",
+        info2: "إمكانية الفواتير لل الشركات.",
+        info3: "شحن سريع لجم أنحاء العالم.",
         info4: "نوصي باستخدام الجهاز في أماكن ذات إضاءة منخفضة للحصول على أفضل نتيجة.",
         techInfoTitle: "معلومات تقنية إضافية",
         techInfo1: "الجهاز مزود بفلتر زجاجي وقائي بنسبة 99% ضد جميع الموجات الضارة مع ضوء الأشعة فوق البنفسجية.",
@@ -1322,13 +1315,243 @@
         privacySection4: "مشاركة البيانات",
         privacyText4: "نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.",
         privacySection5: "حماية البيانات",
-        privacyText5: "نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.",
-                  privacySection6: "التغييرات على السياسة",
-          privacyText6: "قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.",
-          
-          privacySection7: "اتصل بنا",
-          privacyText7: "إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com"
-        }
+        privacyText5: "نحن نستخدم تدابير أمنية تقنية والإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.",
+        privacySection6: "التغييرات على السياسة",
+        privacyText6: "قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.",
+        privacySection7: "اتصل بنا",
+        privacyText7: "إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com",
+        privacyAgreementText: "أوافق على سياسة الخصوصية والإرجاع وشروط الاستخدام"
+      },
+      en: {
+        // النصوص الإنجليزية
+        siteTitle: "Car Inspection Device",
+        navFeatures: "Features",
+        navPricing: "Pricing",
+        navFAQ: "FAQ",
+        navOrder: "Order Now",
+        heroTitle: "Discover hidden repairs and paint in seconds",
+        heroDesc: "A powerful portable device for inspecting car body, paint, AC leaks with UV dye, and invisible repair marks. Ideal for car showrooms, inspectors, and individual buyers.",
+        badge1: "UV-A Spectrum 400–405 nm",
+        badge2: "Radiation up to 6000 µW/cm²",
+        badge3: "8400 mAh battery — 60–70 minutes operation",
+        badge4: "Made of processed aluminum and compressed polymer",
+        ctaOrder: "Order Now",
+        ctaHow: "How it works?",
+        kpi1: "Trusted clients",
+        kpi2: "Months warranty",
+        kpi3: "WhatsApp support",
+        kpi4: "Delivery days",
+        heroImageAlt: "Car Inspection Device — Front view",
+        feature1: "Detects cosmetic paint, additional layers and gloss.",
+        feature2: "Shows repair features under protective layers/PPF and even under wrapping.",
+        feature3: "AC leak detector with UV dye (supports common UV dyes).",
+        viewFrontBack: "Front and back view",
+        frontBackImageAlt: "Front and back view of the device",
+        viewSide: "Side view",
+        sideImageAlt: "Side view of the device",
+        featuresTitle: "Why this car inspection device?",
+        featuresDesc: "Specially designed for fast and accurate car inspection.",
+        feat1Title: "Detects paint and spray marks",
+        feat1Desc: "Shows differences in layers, putty and polishing.",
+        feat2Title: "AC leak detection with UV dye",
+        feat2Desc: "Compatible with common UV dyes for easy leak detection.",
+        feat3Title: "8400 mAh battery",
+        feat3Desc: "Approx. 60–70 minutes operation and fast charging (approx. 15–20 minutes).",
+        feat4Title: "Durable and portable",
+        feat4Desc: "Processed aluminum frame + compressed polymer — protective case included.",
+        howTitle: "How it works?",
+        step1Title: "Prepare the car",
+        step1Desc: "Clean and dry the surface, preferably in a dark environment to improve visibility.",
+        step2Title: "Activate the device",
+        step2Desc: "Use the device at a distance of 40–60 cm from the surface and vary the angles.",
+        step3Title: "Read the results",
+        step3Desc: "Spots and contrasts indicate repairs, additional paint or deposits.",
+        warningTitle: "Important safety warnings:",
+        warning1: "Never direct the rays towards the eyes. Use protective glasses with UV400+, EN166 or ANSI standards.",
+        warning2: "Do not expose skin to UV rays for long periods.",
+        warning3: "Do not use the device near water or liquids.",
+        warning4: "Keep the device out of reach of children.",
+        returnPolicyTitle: "Return and Refund Policy",
+        returnPolicyDesc: "We guarantee your complete satisfaction with our product and offer a flexible and secure return policy",
+        returnGuarantee: "14-Day Return Guarantee",
+        returnPolicyText: "We are confident in the quality of our product, so we give you the right to return the product within 14 days of receipt and receive a full refund if you are not satisfied for any reason.",
+        stripeSecure: "Secure payments via Stripe - Instant refund",
+        returnStep1: "Contact us within 14 days",
+        returnStep2: "Return the product in its original packaging",
+        returnStep3: "Receive full refund within 5-7 days",
+        returnConditionsTitle: "Return conditions:",
+        returnCondition1: "The product must be in its original condition and packaging",
+        returnCondition2: "All accessories and documents must be available",
+        returnCondition3: "Return must be made within 14 days of receipt",
+        returnCondition4: "The product must not have been damaged due to misuse",
+        refundProcessTitle: "Refund process:",
+        refundProcessText: "When returning the product according to the mentioned conditions, the paid amount will be refunded using the original payment method within 5-7 business days. For card payments, the amount will appear in your statement within 1-2 billing cycles.",
+        stripeRefund: "Stripe guarantees secure refund processing",
+        specsTitle: "Technical Specifications",
+        spec1: "Trade name / Model",
+        spec2: "Electrical capacity",
+        spec3: "Power type",
+        spec3Value: "Rechargeable lithium battery",
+        spec4: "Battery capacity",
+        spec5: "Operating time",
+        spec6: "Charging time",
+        spec6Value: "Approx. 15–20 minutes (fast charging)",
+        spec7: "Continuous operation",
+        spec7Value: "Designed to work up to 12 hours/day (depending on use)",
+        spec8: "Weight (without battery)",
+        spec9: "Weight (with battery)",
+        spec10: "Dimensions",
+        spec11: "Number of lamps / lasers",
+        spec12: "Power of each laser",
+        spec13: "Nozzle size",
+        spec14: "Material",
+        spec14Value: "Processed aluminum + compressed polymer",
+        spec15: "Spectrum range",
+        spec16: "Radiant energy",
+        spec17: "Radiation power",
+        spec18: "Power source",
+        boxTitle: "What's in the box?",
+        boxItem1: "Car inspection device",
+        boxItem2: "Shockproof protective case",
+        boxItem3: "8400 mAh lithium battery",
+        boxItem4: "Fast charger + USB-C cable",
+        boxItem5: "Quick user guide and tutorial videos",
+        boxItem6: "One year warranty certificate",
+        functionsTitle: "Functions and uses",
+        func1: "Paint inspection: Detects cosmetic paint, objective paint, additional layers, polishing, acrylic and varnish.",
+        func2: "Modification detection: Shows layers of putty and repaired areas, even under PPF or wrapping layers.",
+        func3: "Accident and flood inspection: Shows water residues, flood marks, or beginning corrosion and rust.",
+        func4: "Non-metallic parts inspection: Inspection of vehicles made of fiberglass and any materials, inspection of plastic parts.",
+        func5: "Interior upholstery inspection: Distinguishes whether the interior upholstery, seats and doors have been replaced or repainted.",
+        testimonialsTitle: "Customer Reviews",
+        testimonial1Name: "Car evaluation foundation",
+        testimonial1Text: "Revealed old spray spots within minutes. Greatly reduced inspection time.",
+        testimonial2Name: "Salem — Individual buyer",
+        testimonial2Text: "Helped me verify a used car before purchase. Excellent investment.",
+        testimonial3Name: "Polishing workshop",
+        testimonial3Text: "We use it after every polishing operation to ensure no holograms remain.",
+        pricingTitle: "Offers and Prices",
+        pricingDesc: "Choose the offer that suits you and benefit from quantity discounts",
+        pricingOption1Title: "One device",
+        pricingOption1Item1: "Complete device",
+        pricingOption1Item2: "8400 mAh lithium battery",
+        pricingOption1Item3: "Fast charger + USB-C cable",
+        pricingOption1Item4: "Protective case",
+        pricingOption1Item5: "12 months warranty",
+        pricingOption2Title: "Two devices",
+        pricingOption2Desc: "Save $299 when buying in quantity",
+        pricingOption2Item1: "Two complete devices",
+        pricingOption2Item2: "8400 mAh lithium batteries",
+        pricingOption2Item3: "Fast chargers + USB-C cables",
+        pricingOption2Item4: "Two protective cases",
+        pricingOption2Item5: "12 months warranty for both devices",
+        pricingOption2Item6: "Free shipping",
+        pricingCta: "Order Now",
+        paymentTitle: "Payment and Shipping Methods",
+        paymentDesc: "We offer two payment methods:",
+        paymentMethod: "Payment method",
+        paymentOptionStripe: "Credit/Debit Card (Stripe)",
+        paymentOptionSwift: "Bank Transfer (SWIFT)",
+        stripeNote: "You will be redirected to Stripe's secure payment page to complete the payment.",
+        swiftNote: "After completing the transfer, please upload a copy of the payment receipt below.",
+        guarantee: "14-day return guarantee",
+        swiftDetailsTitle: "Bank transfer (SWIFT) details:",
+        purchaseProcessTitle: "Purchase process:",
+        processStep1: "Complete payment process",
+        processStep2: "Send receipt notification",
+        processStep3: "Prepare goods and shipping",
+        processStep4: "Send invoice and tracking number",
+        processStep5: "Receive product within 3-7 days",
+        ourGuaranteesTitle: "Our guarantees for you:",
+        guarantee1: "Purchase invoice and shipping bill will be sent immediately upon receipt of payment",
+        guarantee2: "Tracking number will be sent to your email or via WhatsApp",
+        guarantee3: "The product will reach you within a week at most after payment confirmation",
+        guarantee4: "Full refund guarantee within 14 days in case of dissatisfaction",
+        faqTitle: "Frequently Asked Questions",
+        faq1Question: "Do I need special glasses?",
+        faq1Answer: "It is recommended to use protective glasses with UV400+, EN166 or ANSI Z standards.",
+        faq2Question: "Does it detect under protective layers (PPF)?",
+        faq2Answer: "Yes - the device is designed to show material and paint differences even under PPF or protective wraps.",
+        faq3Question: "Does it measure paint thickness digitally?",
+        faq3Answer: "No - this is an optical device for visual detection and discrimination. A separate thickness gauge is required for digital thickness measurement.",
+        faq4Question: "What is the warranty period?",
+        faq4Answer: "12 month warranty certificate.",
+        faq5Question: "How do I complete payment via bank transfer?",
+        faq5Answer: "After confirming the order, we will send you the bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm the order and send the invoice and shipping bill.",
+        faq6Question: "What is the expected shipping time?",
+        faq6Answer: "After payment confirmation, shipping takes 24-48 hours and the product arrives within 3-7 business days depending on the destination.",
+        faq7Question: "How can I return the product?",
+        faq7Answer: "Contact us via WhatsApp within 14 days of receipt, and we will provide you with return instructions. When we receive the product in its original condition, we will process the refund within 5-7 business days.",
+        faq8Question: "Is payment via Stripe secure?",
+        faq8Answer: "Yes, Stripe is a secure and globally accredited payment platform. We do not store any credit card data on our servers, and all payment transactions are processed through Stripe's secure servers.",
+        orderTitle: "Order Now",
+        formName: "Full name",
+        namePlaceholder: "Example: Ahmed Khalid",
+        formEmail: "Email address",
+        emailPlaceholder: "Example: example@domain.com",
+        formPhone: "Phone number",
+        phonePlaceholder: "Example: 05xxxxxxxx",
+        formCountry: "Country",
+        countryPlaceholder: "Example: United Arab Emirates",
+        formAddress: "Address",
+        addressPlaceholder: "Example: Dubai, Al Marar Area, Sheikh Mohammed bin Zayed Street",
+        formQuantity: "Quantity",
+        quantityOption1: "One device - 799 $",
+        quantityOption2: "Two devices - 1299 $",
+        formCardDetails: "Card Details",
+        formReceipt: "Please upload payment receipt if payment has been made",
+        formChooseFile: "Choose image to attach",
+        noFileChosen: "No file chosen",
+        fileNote: "You can only upload image files (JPEG, PNG, GIF)",
+        formNote: "After submitting your order, you will be directed to WhatsApp where you can manually send the receipt image",
+        formNoticeTitle: "Your order will be sent directly via WhatsApp",
+        formNoticeDesc: "Our support team will contact you within 24 hours to confirm your order and help you send the receipt image",
+        formSubmit: "Send order via WhatsApp",
+        additionalInfoTitle: "Additional information",
+        contactTitle: "For orders and inquiries",
+        contactWhatsapp: "WhatsApp: +971 50 152 5742",
+        contactAddress: "Address: Sheikh Mohammed bin Zayed Street - Used Car Market - Sharjah, UAE",
+        warrantyTitle: "Warranty and Service",
+        warranty1: "12 months warranty against manufacturing defects",
+        warranty2: "24/7 technical support available",
+        warranty3: "After-sales service via WhatsApp and email",
+        warranty4: "Possibility of maintenance and repair at an authorized center",
+        aboutCompanyTitle: "About the Company",
+        aboutCompany1: "AXIS is a pioneer in the field of vehicle inspection in the region, using the latest technologies and equipment to ensure accurate and reliable reports for its clients.",
+        aboutCompany2: "The device is certified and used in AXIS specialized vehicle inspection centers, and has proven highly effective in detecting the finest invisible defects and repairs.",
+        shippingInfoTitle: "Shipping Information",
+        shipping1: "Shipping time: 3-7 working days",
+        shipping2: "Shipping available to all Middle Eastern countries and worldwide",
+        shipping3: "Shipment tracking available via email",
+        info1: "After-sales service and technical support via WhatsApp.",
+        info2: "Possibility of invoices for companies.",
+        info3: "Fast shipping worldwide.",
+        info4: "We recommend using the device in low-light places for best results.",
+        techInfoTitle: "Additional technical information",
+        techInfo1: "The device is equipped with a 99% protective glass filter against all harmful waves with ultraviolet light.",
+        techInfo2: "All 25 lamps are used at full battery charging power.",
+        techInfo3: "The cooling fan at the end of the device is used at high power to cool the internal surface of the device and maintain the quality of radiation at all times.",
+        footerRights: "All rights reserved.",
+        footerFeatures: "Features",
+        footerContact: "Contact WhatsApp",
+        floatingCta: "Order Now",
+        privacyLink: "Privacy and Return Policy",
+        privacyTitle: "Privacy and Return Policy",
+        privacySection1: "Introduction",
+        privacyText1: "At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This privacy and return policy explains how we collect, use, and protect your information when you use our website and services.",
+        privacySection2: "Data We Collect",
+        privacyText2: "When you complete a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use Stripe to process payments and do not store credit card details on our servers.",
+        privacySection3: "How We Use Your Data",
+        privacyText3: "We use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).",
+        privacySection4: "Data Sharing",
+        privacyText4: "We share your information with payment processors (Stripe) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.",
+        privacySection5: "Data Protection",
+        privacyText5: "We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.",
+        privacySection6: "Policy Changes",
+        privacyText6: "We may update this privacy and return policy from time to time. Any changes will be posted on this page and we will notify you by email if the changes are substantial.",
+        privacySection7: "Contact Us",
+        privacyText7: "If you have any questions about this privacy and return policy, please contact us at: info@axis-auto.com",
+        privacyAgreementText: "I agree to the privacy and return policy and terms of use"
       }
     };
 
