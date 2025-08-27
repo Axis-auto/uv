@@ -56,13 +56,15 @@
     
     .hero {
       padding: 16px 0 12px; 
-      background-image: url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
-      background-size: cover; background-position: center; position: relative;
-    }
-    
-    .hero::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-      background: rgba(255,255,255,0.85); z-index: 1;
+      background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
+      background-size: cover; 
+      background-position: center; 
+      background-attachment: fixed;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      color: white;
     }
     
     .hero .wrap {
@@ -70,11 +72,11 @@
       grid-template-columns: 1.1fr .9fr; gap: 16px; align-items: start;
     }
     
-    .hero h1 { font-size: clamp(24px,4vw,40px); line-height: 1.15; margin: 4px 0 8px; }
-    .lead { color: var(--muted); font-size: clamp(14px,2vw,16px); }
+    .hero h1 { font-size: clamp(24px,4vw,40px); line-height: 1.15; margin: 4px 0 8px; color: white; }
+    .hero .lead { color: #e2e8f0; font-size: clamp(14px,2vw,16px); }
     
     .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-    .badge { font-size: 11px; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .badge { font-size: 11px; border: 1px solid rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: white; }
     
     .cta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     
@@ -230,7 +232,7 @@
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
       header .inner { flex-wrap: wrap; }
-      .hero h1, .lead { text-align: center; }
+      .hero h1, .hero .lead { text-align: center; }
       .badges, .cta-row { justify-content: center; }
       .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: repeat(2,1fr); }
@@ -247,9 +249,9 @@
       .logo img { height: 30px; }
       nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
       .btn { padding: 8px 14px; font-size: 14px; }
-      .hero { padding: 12px 0; }
+      .hero { padding: 12px 0; min-height: 80vh; }
       .hero h1 { font-size: 22px; }
-      .lead { font-size: 14px; }
+      .hero .lead { font-size: 14px; }
       .badge { font-size: 10px; padding: 3px 6px; }
       .card { padding: 12px; }
       .table { font-size: 14px; }
@@ -288,7 +290,7 @@
         <div class="lang-switcher" id="langSwitcher">
           <span id="currentLang">EN</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1 1.275-1.275L12 3Z"></path>
             <path d="M5 3v4"></path>
             <path d="M19 17v4"></path>
             <path d="M3 5h4"></path>
@@ -508,7 +510,7 @@
               <li data-translate="pricing.option1.item2">بطارية ليثيوم 8400 mAh</li>
               <li data-translate="pricing.option1.item3">شاحن سريع + كابل USB-C</li>
               <li data-translate="pricing.option1.item4">حقيبة حماية</li>
-              <li data-translate="pricing.option1.item5">ضمان 12 شهر</li>
+              <li data-translate="pricing.option1.item5">ضمان 12 месяц</li>
             </ul>
             <a class="btn modern-btn" href="#order" data-translate="pricing.orderNow">اطلب الآن</a>
           </div>
@@ -741,7 +743,7 @@
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="info.warranty1">ضمان لمدة 12 شهر ضد عيوب الصناعة</li>
             <li data-translate="info.warranty2">دعم فني متاح على مدار الساعة</li>
-            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني</li>
+            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإlectronي</li>
             <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
           </ul>
 
@@ -794,7 +796,7 @@
           </ul>
           
           <h4 data-translate="privacy.refundTitle">عملية الاسترداد:</h4>
-          <p data-translate="privacy.refundText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.</p>
+          <p data-translate="privacy.refundText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ в كشف حسابك خلال 1-2 دورات فوترة.</p>
           
           <div class="stripe-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1009,7 +1011,7 @@
         'payment.guaranteesTitle': 'ضماناتنا لك:',
         'payment.guarantee1': 'سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع',
         'payment.guarantee2': 'رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب',
-        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع',
+        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوم كحد أقصى بعد تأكيد الدفع',
         'payment.guarantee4': 'ضمان استرجاع كامل المبلغ خلال 14 يوم في حال عدم الرضا',
         
         // الأسئلة الشائعة
@@ -1067,7 +1069,7 @@
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
         'info.warranty3': 'خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني',
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
-        'info.aboutTitle': 'عن الشركة',
+        'info.aboutTitle': 'عن الشرка',
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
         'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
@@ -1086,7 +1088,7 @@
         'privacy.sharingTitle': 'مشاركة البيانات',
         'privacy.sharingText': 'نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.',
         'privacy.protectionTitle': 'حماية البيانات',
-        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
+        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية والإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
         'privacy.returnText': 'نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.',
         'privacy.conditionsTitle': 'شروط الإرجاع:',
