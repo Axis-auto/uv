@@ -26,7 +26,7 @@
     
     a { color: inherit; text-decoration: none; }
     
-    .container { max-width: 1100px; margin-inline: auto; padding: 12px; }
+    .container { max-width: 1100px; margin-inline: auto; padding: 10px; }
     
     header {
       position: sticky; top: 0; 
@@ -87,7 +87,7 @@
     
     .cta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     
-    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
     .product-card { display: grid; gap: 8px; }
     
     .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; }
@@ -102,7 +102,7 @@
     .grid.cols-3 { grid-template-columns: repeat(3,1fr); }
     .grid.cols-4 { grid-template-columns: repeat(4,1fr); }
     
-    section { padding: 16px 0; }
+    section { padding: 14px 0; }
     h2 { font-size: clamp(20px,2.8vw,26px); margin: 0 0 8px; }
     h3 { font-size: clamp(16px,2.2vw,20px); margin: 0 0 6px; }
     .muted { color: var(--muted); }
@@ -139,13 +139,22 @@
     .pricing-card img { max-width: 100%; height: auto; max-height: 150px; object-fit: contain; margin-bottom: 10px; border-radius: 8px; }
     
     .form { display: grid; gap: 8px; }
-    .form-group { margin-bottom: 12px; }
+    .form-group { margin-bottom: 10px; }
     .form-label { display: block; font-weight: 600; margin-bottom: 4px; color: var(--text); }
     .form-input, .form-select, .form-textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; color: var(--text); }
     .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     .form-note { font-size: 14px; color: var(--muted); margin-top: 4px; }
     
-    footer { padding: 20px 0; border-top: 1px solid #e2e8f0; background: #fff; margin-top: 20px; }
+    footer { 
+      padding: 20px 0; 
+      border-top: 1px solid #e2e8f0; 
+      margin-top: 20px;
+      background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: white;
+    }
     .floating-cta { position: fixed; left: 12px; bottom: 12px; z-index: 60; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     
     .gradient-bg { background: linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%); }
@@ -225,7 +234,7 @@
     
     .footer-contact h3 {
       margin-bottom: 12px;
-      color: var(--brand);
+      color: white;
     }
     
     .footer-contact-item {
@@ -236,7 +245,7 @@
     }
     
     .footer-contact-item i {
-      color: var(--brand);
+      color: white;
       width: 20px;
     }
     
@@ -253,14 +262,14 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: var(--brand-light);
-      color: var(--brand);
+      background: rgba(255,255,255,0.2);
+      color: white;
       transition: var(--transition);
     }
     
     .social-link:hover {
-      background: var(--brand);
-      color: white;
+      background: white;
+      color: var(--brand);
       transform: translateY(-2px);
     }
     
@@ -269,9 +278,10 @@
       justify-content: space-between;
       align-items: center;
       padding-top: 20px;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid rgba(255,255,255,0.2);
       flex-wrap: wrap;
       gap: 12px;
+      color: white;
     }
     
     .footer-links {
@@ -280,12 +290,37 @@
     }
     
     .footer-links a {
-      color: var(--muted);
+      color: rgba(255,255,255,0.8);
       transition: var(--transition);
     }
     
     .footer-links a:hover {
-      color: var(--brand);
+      color: white;
+    }
+    
+    .whatsapp-contact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+    }
+    
+    .whatsapp-contact a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      font-weight: 600;
+    }
+    
+    /* Fix for numbers display */
+    .numbers-fix {
+      unicode-bidi: embed;
+      direction: ltr;
+      display: inline-block;
     }
     
     [dir="ltr"] { text-align: left; direction: ltr; }
@@ -318,7 +353,7 @@
     }
     
     @media (max-width:640px) {
-      .container { padding: 10px; }
+      .container { padding: 8px; }
       header .inner { padding: 6px 0; }
       .logo { font-size: 14px; }
       .logo img { height: 30px; }
@@ -394,10 +429,10 @@
             <a class="btn ghost" href="#how" data-translate="hero.howItWorks">كيف يعمل؟</a>
           </div>
           <div class="kpis" style="margin-top:10px">
-            <div class="kpi"><div class="big">+250</div><div class="muted" data-translate="hero.trustedClients">عميل موثوق</div></div>
-            <div class="kpi"><div class="big">12</div><div class="muted" data-translate="hero.warranty">شهر ضمان</div></div>
-            <div class="kpi"><div class="big">24/7</div><div class="muted" data-translate="hero.support">دعم عبر واتساب</div></div>
-            <div class="kpi"><div class="big">3-7</div><div class="muted" data-translate="hero.delivery">أيام للتوصيل</div></div>
+            <div class="kpi"><div class="big"><span class="numbers-fix">+250</span></div><div class="muted" data-translate="hero.trustedClients">عميل موثوق</div></div>
+            <div class="kpi"><div class="big"><span class="numbers-fix">12</span></div><div class="muted" data-translate="hero.warranty">شهر ضمان</div></div>
+            <div class="kpi"><div class="big"><span class="numbers-fix">24/7</span></div><div class="muted" data-translate="hero.support">دعم عبر واتساب</div></div>
+            <div class="kpi"><div class="big"><span class="numbers-fix">3-7</span></div><div class="muted" data-translate="hero.delivery">أيام للتوصيل</div></div>
           </div>
         </div>
         <div class="card product-card mobile-optimized card-hover">
@@ -515,23 +550,23 @@
           <h2 data-translate="specs.title">المواصفات الفنية</h2>
           <table class="table">
             <tr><th data-translate="specs.model">الاسم التجاري / الموديل</th><td>UVRA 100 B</td></tr>
-            <tr><th data-translate="specs.power">القدرة الكهربائية</th><td>100 W</td></tr>
+            <tr><th data-translate="specs.power">القدرة الكهربائية</th><td><span class="numbers-fix">100</span> W</td></tr>
             <tr><th data-translate="specs.powerType">نوع الطاقة</th><td data-translate="specs.powerTypeValue">بطارية ليثيوم قابلة للشحن</td></tr>
-            <tr><th data-translate="specs.battery">سعة البطارية</th><td>8400 mAh</td></tr>
-            <tr><th data-translate="specs.runtime">مدة التشغيل</th><td data-translate="specs.runtimeValue">≈ 60–70 دقيقة (تشغيل متواصل)</td></tr>
-            <tr><th data-translate="specs.chargeTime">مدة الشحن</th><td data-translate="specs.chargeTimeValue">حوالي 15–20 دقيقة (شحن سريع)</td></tr>
-            <tr><th data-translate="specs.operation">استمرارية العمل</th><td data-translate="specs.operationValue">مصمم للعمل حتى 12 ساعة/يوم (حسب الاستخدام)</td></tr>
-            <tr><th data-translate="specs.weight">الوزن (بدون بطارية)</th><td>680 g</td></tr>
-            <tr><th data-translate="specs.weightWithBattery">الوزن (مع البطارية)</th><td>1310 g</td></tr>
-            <tr><th data-translate="specs.dimensions">الأبعاد</th><td>21.5 × 4.3 × 12cm</td></tr>
-            <tr><th data-translate="specs.lamps">عدد المصابيح / الليزرات</th><td>25 (distribution 5×5)</td></tr>
-            <tr><th data-translate="specs.lampPower">قوة كل ليزر</th><td> 4 W</td></tr>
-            <tr><th data-translate="specs.nozzle">حجم الفوهة</th><td>6 × 6cm</td></tr>
+            <tr><th data-translate="specs.battery">سعة البطارية</th><td><span class="numbers-fix">8400</span> mAh</td></tr>
+            <tr><th data-translate="specs.runtime">مدة التشغيل</th><td data-translate="specs.runtimeValue">≈ <span class="numbers-fix">60–70</span> دقيقة (تشغيل متواصل)</td></tr>
+            <tr><th data-translate="specs.chargeTime">مدة الشحن</th><td data-translate="specs.chargeTimeValue">حوالي <span class="numbers-fix">15–20</span> دقيقة (شحن سريع)</td></tr>
+            <tr><th data-translate="specs.operation">استمرارية العمل</th><td data-translate="specs.operationValue">مصمم للعمل حتى <span class="numbers-fix">12</span> ساعة/يوم (حسب الاستخدام)</td></tr>
+            <tr><th data-translate="specs.weight">الوزن (بدون بطارية)</th><td><span class="numbers-fix">680</span> g</td></tr>
+            <tr><th data-translate="specs.weightWithBattery">الوزن (مع البطارية)</th><td><span class="numbers-fix">1310</span> g</td></tr>
+            <tr><th data-translate="specs.dimensions">الأبعاد</th><td><span class="numbers-fix">21.5</span> × <span class="numbers-fix">4.3</span> × <span class="numbers-fix">12</span>cm</td></tr>
+            <tr><th data-translate="specs.lamps">عدد المصابيح / الليزرات</th><td><span class="numbers-fix">25</span> (distribution <span class="numbers-fix">5</span>×<span class="numbers-fix">5</span>)</td></tr>
+            <tr><th data-translate="specs.lampPower">قوة كل ليزر</th><td> <span class="numbers-fix">4</span> W</td></tr>
+            <tr><th data-translate="specs.nozzle">حجم الفوهة</th><td><span class="numbers-fix">6</span> × <span class="numbers-fix">6</span>cm</td></tr>
             <tr><th data-translate="specs.material">الخامة</th><td data-translate="specs.materialValue">ألومنيوم معالج + بوليمر مضغوط</td></tr>
-            <tr><th data-translate="specs.spectrum">نطاق الطيف</th><td>UV-A 400–405 nm</td></tr>
-            <tr><th data-translate="specs.radiation">الطاقة الإشعاعية</th><td> ≈ 6000 µW/cm²</td></tr>
-            <tr><th data-translate="specs.radiationPower">قوة الإشعاع</th><td>9000 W</td></tr>
-            <tr><th data-translate="specs.voltage">جهة الطاقة</th><td>220 v</td></tr>
+            <tr><th data-translate="specs.spectrum">نطاق الطيف</th><td>UV-A <span class="numbers-fix">400–405</span> nm</td></tr>
+            <tr><th data-translate="specs.radiation">الطاقة الإشعاعية</th><td> ≈ <span class="numbers-fix">6000</span> µW/cm²</td></tr>
+            <tr><th data-translate="specs.radiationPower">قوة الإشعاع</th><td><span class="numbers-fix">9000</span> W</td></tr>
+            <tr><th data-translate="specs.voltage">جهة الطاقة</th><td><span class="numbers-fix">220</span> v</td></tr>
           </table>
         </div>
 
@@ -540,7 +575,7 @@
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="package.item1">جهاز فحص السيارات</li>
             <li data-translate="package.item2">حقيبة حماية ضد الصدمات</li>
-            <li data-translate="package.item3">بطارية ليثيوم 8400 mAh</li>
+            <li data-translate="package.item3">بطارية ليثيوم <span class="numbers-fix">8400</span> mAh</li>
             <li data-translate="package.item4">شاحن سريع + كابل USB-C</li>
             <li data-translate="package.item5">دليل استخدام سريع وفيديوهات تعليمية</li>
             <li data-translate="package.item6">شهادة ضمان لمدة سنة</li>
@@ -580,13 +615,13 @@
           <div class="pricing-card card-hover">
             <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp" alt="جهاز واحد" />
             <h3 data-translate="pricing.option1.title">جهاز واحد</h3>
-            <div class="price">799 $</div>
+            <div class="price"><span class="numbers-fix">799</span> $</div>
             <ul>
               <li data-translate="pricing.option1.item1">جهاز كامل</li>
-              <li data-translate="pricing.option1.item2">بطارية ليثيوم 8400 mAh</li>
+              <li data-translate="pricing.option1.item2">بطارية ليثيوم <span class="numbers-fix">8400</span> mAh</li>
               <li data-translate="pricing.option1.item3">شاحن سريع + كابل USB-C</li>
               <li data-translate="pricing.option1.item4">حقيبة حماية</li>
-              <li data-translate="pricing.option1.item5">ضمان 12 месяц</li>
+              <li data-translate="pricing.option1.item5">ضمان <span class="numbers-fix">12</span> месяц</li>
             </ul>
             <a class="btn modern-btn" href="#order" data-translate="pricing.orderNow">اطلب الآن</a>
           </div>
@@ -594,14 +629,14 @@
           <div class="pricing-card featured card-hover">
             <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp" alt="جهازين" />
             <h3 data-translate="pricing.option2.title">جهازين</h3>
-            <div class="price">1299 $</div>
-            <div class="muted" style="font-size: 13px;" data-translate="pricing.option2.save">وفر 299 دولار عند الشراء بكمية</div>
+            <div class="price"><span class="numbers-fix">1299</span> $</div>
+            <div class="muted" style="font-size: 13px;" data-translate="pricing.option2.save">وفر <span class="numbers-fix">299</span> دولار عند الشراء بكمية</div>
             <ul>
               <li data-translate="pricing.option2.item1">جهازين كاملين</li>
-              <li data-translate="pricing.option2.item2">بطاريات ليثيوم 8400 mAh</li>
+              <li data-translate="pricing.option2.item2">بطاريات ليثيوم <span class="numbers-fix">8400</span> mAh</li>
               <li data-translate="pricing.option2.item3">شواحن سريعة + كابلات USB-C</li>
               <li data-translate="pricing.option2.item4">حقيبتي حماية</li>
-              <li data-translate="pricing.option2.item5">ضمان 12 شهر للجهازين</li>
+              <li data-translate="pricing.option2.item5">ضمان <span class="numbers-fix">12</span> شهر للجهازين</li>
               <li data-translate="pricing.option2.item6">شحن مجاني</li>
             </ul>
             <a class="btn modern-btn" href="#order" data-translate="pricing.orderNow">اطلب الآن</a>
@@ -644,7 +679,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
-            <span data-translate="payment.guarantee">ضمان استرجاع خلال 14 يوم</span>
+            <span data-translate="payment.guarantee">ضمان استرجاع خلال <span class="numbers-fix">14</span> يوم</span>
           </div>
           
           <h4 data-translate="payment.processTitle">عملية الشراء:</h4>
@@ -653,7 +688,7 @@
             <div class="timeline-step"><div class="dot">2</div><p data-translate="payment.step2">إرسال إشعار الاستلام</p></div>
             <div class="timeline-step"><div class="dot">3</div><p data-translate="payment.step3">تجهيز البضاعة والشحن</p></div>
             <div class="timeline-step"><div class="dot">4</div><p data-translate="payment.step4">إرسال الفاتورة ورقم التتبع</p></div>
-            <div class="timeline-step"><div class="dot">5</div><p data-translate="payment.step5">استلام المنتج خلال 3-7 أيام</p></div>
+            <div class="timeline-step"><div class="dot">5</div><p data-translate="payment.step5">استلام المنتج خلال <span class="numbers-fix">3-7</span> أيام</p></div>
           </div>
           
           <p><strong data-translate="payment.guaranteesTitle">ضماناتنا لك:</strong></p>
@@ -661,7 +696,7 @@
             <li data-translate="payment.guarantee1">سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع</li>
             <li data-translate="payment.guarantee2">رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب</li>
             <li data-translate="payment.guarantee3">المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع</li>
-            <li data-translate="payment.guarantee4">ضمان استرجاع كامل المبلغ خلال 14 يوم في حال عدم الرضا</li>
+            <li data-translate="payment.guarantee4">ضمان استرجاع كامل المبلغ خلال <span class="numbers-fix">14</span> يوم في حال عدم الرضا</li>
           </ul>
         </div>
       </div>
@@ -682,16 +717,16 @@
             <div class="muted" data-translate="faq.a3">لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.</div>
           </details>
           <details><summary data-translate="faq.q4">ما مدة الضمان؟</summary>
-            <div class="muted" data-translate="faq.a4">شهادة ضمان لمدة 12 شهر.</div>
+            <div class="muted" data-translate="faq.a4">شهادة ضمان لمدة <span class="numbers-fix">12</span> شهر.</div>
           </details>
           <details><summary data-translate="faq.q5">كيف أتم عملية الدفع عبر الحوالة البنكية?</summary>
             <div class="muted" data-translate="faq.a5">بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.</div>
           </details>
           <details><summary data-translate="faq.q6">ما هي مدة الشحن المتوقعة?</summary>
-            <div class="muted" data-translate="faq.a6">بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.</div>
+            <div class="muted" data-translate="faq.a6">بعد تأكيد الدفع، يتم الشحن خلال <span class="numbers-fix">24-48</span> ساعة ويصل المنتج خلال <span class="numbers-fix">3-7</span> أيام عمل حسب الوجهة.</div>
           </details>
           <details><summary data-translate="faq.q7">كيف يمكنني إرجاع المنتج؟</summary>
-            <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.</div>
+            <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال <span class="numbers-fix">14</span> يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال <span class="numbers-fix">5-7</span> أيام عمل.</div>
           </details>
           <details><summary data-translate="faq.q8">هل الدفع عبر Stripe آمن؟</summary>
             <div class="muted" data-translate="faq.a8">نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.</div>
@@ -735,8 +770,8 @@
             <div class="form-group">
               <label class="form-label" data-translate="order.quantity">الكمية</label>
               <select id="quantity" class="form-select">
-                <option value="1" data-translate="order.option1">جهاز واحد - 799 $</option>
-                <option value="2" data-translate="order.option2">جهازين - 1299 $</option>
+                <option value="1" data-translate="order.option1">جهاز واحد - <span class="numbers-fix">799</span> $</option>
+                <option value="2" data-translate="order.option2">جهازين - <span class="numbers-fix">1299</span> $</option>
               </select>
             </div>
             
@@ -797,7 +832,7 @@
             
             <div class="card" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
               <strong data-translate="order.whatsappTitle">سيتم إرسال طلبك مباشرة عبر واتساب</strong>
-              <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
+              <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
             </div>
             
             <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
@@ -809,7 +844,7 @@
           
           <h3 style="margin-top:10px" data-translate="info.warrantyTitle">الضمان والخدمة</h3>
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
-            <li data-translate="info.warranty1">ضمان لمدة 12 شهر ضد عيوب الصناعة</li>
+            <li data-translate="info.warranty1">ضمان لمدة <span class="numbers-fix">12</span> شهر ضد عيوب الصناعة</li>
             <li data-translate="info.warranty2">دعم فني متاح على مدار الساعة</li>
             <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني</li>
             <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
@@ -823,7 +858,7 @@
 
           <h3 style="margin-top:12px" data-translate="info.shippingTitle">معلومات الشحن</h3>
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
-            <li data-translate="info.shipping1">مدة الشحن: 3-7 أيام عمل</li>
+            <li data-translate="info.shipping1">مدة الشحن: <span class="numbers-fix">3-7</span> أيام عمل</li>
             <li data-translate="info.shipping2">الشحن متاح لجميع دول الشرق الأوسط والعالم</li>
             <li data-translate="info.shipping3">تتبع الشحنة متاح عبر البريد الإلكتروني</li>
           </ul>
@@ -853,18 +888,18 @@
           <p data-translate="privacy.protectionText">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
           
           <h4 data-translate="privacy.returnTitle">سياسة الإرجاع والاسترداد</h4>
-          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ в حال عدم الرضا لأي سبب كان.</p>
+          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال <span class="numbers-fix">14</span> يوم من استلامه واسترداد كامل المبلغ в حال عدم الرضا لأي سبب كان.</p>
           
           <h4 data-translate="privacy.conditionsTitle">شروط الإرجاع:</h4>
           <ul>
             <li data-translate="privacy.condition1">أن يكون المنتج في حالته الأصلية وبغلافه الأصلي</li>
             <li data-translate="privacy.condition2">أن تكون جميع الملحقات والوثائق متوفرة</li>
-            <li data-translate="privacy.condition3">أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام</li>
+            <li data-translate="privacy.condition3">أن يتم الإرجاع خلال <span class="numbers-fix">14</span> يوم من تاريخ الاستلام</li>
             <li data-translate="privacy.condition4">أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام</li>
           </ul>
           
           <h4 data-translate="privacy.refundTitle">عملية الاسترداد:</h4>
-          <p data-translate="privacy.refundText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ в كشف حسابك خلال 1-2 دورات فوترة.</p>
+          <p data-translate="privacy.refundText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال <span class="numbers-fix">5-7</span> أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ в كشف حسابك خلال <span class="numbers-fix">1-2</span> دورات فوترة.</p>
           
           <div class="stripe-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -907,6 +942,13 @@
           <div class="footer-contact-item">
             <i class="fas fa-map-marker-alt"></i>
             <span data-translate="info.address">شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</span>
+          </div>
+          
+          <div class="whatsapp-contact">
+            <a href="https://wa.me/971501525742" target="_blank">
+              <i class="fab fa-whatsapp" style="font-size: 24px;"></i>
+              <span>اضغط للتواصل عبر واتساب</span>
+            </a>
           </div>
           
           <div class="social-links">
@@ -1138,7 +1180,7 @@
         // الأسئلة الشائعة
         'faq.title': 'الأسئلة الشائعة',
         'faq.q1': 'هل أحتاج نظّارات خاصة؟',
-        'faq.a1': 'يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.',
+        'faq.a1': 'يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 или ANSI.',
         'faq.q2': 'هل يكشف تحت طبقات الحماية (PPF)؟',
         'faq.a2': 'نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.',
         'faq.q3': 'هل يقيس سماكة الدهان رقميًا؟',
@@ -1178,7 +1220,7 @@
         'order.privacy2': 'سياسة الخصوصية والإرجاع',
         'order.privacy3': ' وشروط الاستخدام',
         'order.whatsappTitle': 'سيتم إرسال طلبك مباشرة عبر واتساب',
-        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
+        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك в إرسال صورة الإيصال',
         'order.submit': 'إرسال الطلب via WhatsApp',
         
         // معلومات إضافية
