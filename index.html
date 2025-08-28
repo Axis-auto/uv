@@ -28,9 +28,16 @@
     .container { max-width: 1100px; margin-inline: auto; padding: 12px; }
     
     header {
-      position: sticky; top: 0; background: rgba(255,255,255,.95); 
-      backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; 
-      z-index: 50; box-shadow: var(--shadow);
+      position: sticky; top: 0; 
+      background: rgba(0, 0, 0, 0.7); /* خلفية شبه شفافة داكنة لتحسين قراءة النص */
+      backdrop-filter: blur(10px); 
+      z-index: 50; 
+      box-shadow: var(--shadow);
+      /* إضافة صورة الخلفية */
+      background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed; /* نفس تأثير الخلفية الثابتة في الهيرو */
     }
     
     header .inner {
@@ -38,7 +45,7 @@
       gap: 12px; padding: 6px 0;
     }
     
-    .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; }
+    .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; color: white; }
     .logo img { height: 40px; width: auto; object-fit: contain; }
     
     .btn {
@@ -49,8 +56,8 @@
     }
     
     .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,.2); }
-    .btn.ghost { background: transparent; color: var(--brand); border-color: var(--brand); box-shadow: none; }
-    .btn.ghost:hover { background: var(--brand-light); }
+    .btn.ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.3); box-shadow: none; }
+    .btn.ghost:hover { background: rgba(255,255,255,0.1); }
     .modern-btn { background: linear-gradient(135deg,var(--brand),var(--brand-2)); box-shadow: 0 4px 6px rgba(37,99,235,0.2); }
     .modern-btn:hover { background: linear-gradient(135deg,var(--brand-2),var(--brand)); box-shadow: 0 6px 10px rgba(37,99,235,0.3); }
     
@@ -201,8 +208,8 @@
     .privacy-checkbox label { font-weight: normal; margin-bottom: 0; }
     .privacy-link { color: var(--brand); text-decoration: underline; cursor: pointer; }
     
-    .lang-switcher { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: var(--transition); }
-    .lang-switcher:hover { background: #e2e8f0; }
+    .lang-switcher { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: var(--transition); color: white; }
+    .lang-switcher:hover { background: rgba(255,255,255,0.3); }
     
     .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; }
     .product-img-container img { width: 100%; height: auto; max-height: 400px; object-fit: contain; }
@@ -311,6 +318,7 @@
     </div>
   </header>
 
+  <!-- باقي المحتوى يبقى كما هو -->
   <main>
     <!-- HERO SECTION -->
     <section class="hero">
@@ -365,6 +373,7 @@
       </div>
     </section>
 
+    <!-- باقي المحتوى يبقى كما هو -->
     <!-- FEATURES SECTION -->
     <section id="features">
       <div class="container">
