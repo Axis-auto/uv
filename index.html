@@ -1,3 +1,20 @@
+  
+# تحسين التذييل (Footer) لصفحة جهاز فحص السيارات
+
+سأقوم بإعادة تصميم التذييل ليكون أكثر احترافية مع إضافة عناصر التواصل الاجتماعي ومعلومات الاتصال، مع الحفاظ على نظام الترجمة ووظائف الصفحة الحالية.
+
+## التعديلات التي سأقوم بها:
+
+1. إعادة تصميم التذييل ليشمل قسمين رئيسيين
+2. إضافة أيقونات وسائل التواصل الاجتماعي (فيسبوك، إنستغرام، تيك توك)
+3. نقل معلومات الاتصال من قسم "معلومات إضافية" إلى التذييل
+4. إضافة روابط سياسة الخصوصية والإرجاع في التذييل
+5. الحفاظ على قسم "معلومات إضافية" مع العناصر المطلوبة فقط (الضمان، عن الشركة، معلومات الشحن)
+6. التأكد من أن التعديلات لا تؤثر على نظام الترجمة أو وظائف الدفع
+
+## الكود الكامل بعد التعديل:
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -240,9 +257,114 @@
       border-radius: 8px;
     }
     
+    /* تنسيقات جديدة للفوتر المحسن */
+    .footer-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      padding: 30px 0;
+    }
+    
+    .footer-section {
+      margin-bottom: 20px;
+    }
+    
+    .footer-section h3 {
+      color: var(--brand);
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .footer-contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .footer-contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    
+    .footer-contact-item i {
+      width: 20px;
+      text-align: center;
+      color: var(--brand);
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--brand-light);
+      color: var(--brand);
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+    
+    .social-link:hover {
+      background: var(--brand);
+      color: white;
+      transform: translateY(-3px);
+    }
+    
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .footer-links a {
+      color: var(--muted);
+      transition: var(--transition);
+    }
+    
+    .footer-links a:hover {
+      color: var(--brand);
+    }
+    
+    .footer-bottom {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 20px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .footer-legal {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .footer-legal a {
+      color: var(--muted);
+      font-size: 14px;
+      transition: var(--transition);
+    }
+    
+    .footer-legal a:hover {
+      color: var(--brand);
+    }
+    
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
       .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
+      .footer-container {
+        grid-template-columns: 1fr;
+      }
     }
     
     @media (max-width:768px) {
@@ -257,6 +379,13 @@
       .shipping-timeline::before { display: none; }
       .features .feat, .steps .step { flex-direction: column; text-align: center; }
       .icon, .step .num { margin: 0 auto; }
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+      }
+      .footer-legal {
+        justify-content: center;
+      }
     }
     
     @media (max-width:640px) {
@@ -754,20 +883,11 @@
         <div class="card card-hover">
           <h2 data-translate="info.title">معلومات إضافية</h2>
           
-          <h3 style="margin-top:10px" data-translate="info.contactTitle">للطلب والاستفسار</h3>
-          <div class="contact-info">
-            <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> uv@axis-auto.com</div>
-            <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> info@axis-auto.com</div>
-            <div class="contact-item"><span class="muted">واتساب:</span> +971 50 152 5742</div>
-            <div class="contact-item"><span class="muted">هاتف:</span> +971 6 565 0021</div>
-            <div class="muted" data-translate="info.address">العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</div>
-          </div>
-
           <h3 style="margin-top:12px" data-translate="info.warrantyTitle">الضمان والخدمة</h3>
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="info.warranty1">ضمان لمدة 12 شهر ضد عيوب الصناعة</li>
             <li data-translate="info.warranty2">دعم فني متاح على مدار الساعة</li>
-            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإlectronي</li>
+            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني</li>
             <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
           </ul>
 
@@ -824,36 +944,100 @@
           
           <div class="stripe-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
+              <path d="M16 16a4 4 極度 0 1-8 0c0-5 4-8 8-8"></path>
             </svg>
             <span data-translate="privacy.stripeText">مدفوعات آمنة عبر Stripe - استرداد فوري</span>
           </div>
           
-          <h4 data-translate="privacy.changesTitle">التغييرات على السياسة</h4>
+          <h4 data極度="privacy.changesTitle">التغييرات على السياسة</h4>
           <p data-translate="privacy.changesText">قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.</p>
           
           <h4 data-translate="privacy.contactTitle">اتصل بنا</h4>
           <p data-translate="privacy.contactText">إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com</p>
-        </div>
+        </極度>
       </div>
     </div>
   </main>
 
+  <!-- FOOTER SECTION - UPDATED -->
   <footer>
-    <div class="container" style="display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap">
-      <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footer.rights">جميع الحقوق محفوظة.</span> | <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a></div>
-      <div style="display:flex;gap:6px">
-        <a class="btn ghost" href="#features" data-translate="footer.features">المميزات</a>
-        <a class="btn modern-btn" href="https://wa.me/905075803495" data-translate="footer.contact">تواصل واتساب</a>
+    <div class="container">
+      <div class="footer-container">
+        <div class="footer-section">
+          <h3 data-translate="footer.contactTitle">اتصل بنا</h3>
+          <div class="footer-contact-info">
+            <div class="footer-contact-item">
+              <i>📍</i>
+              <span data-translate="footer.address">العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</span>
+            </div>
+            <div class="footer-contact-item">
+              <i>📧</i>
+              <span>uv@axis-auto.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <i>📧</i>
+              <span>info@axis-auto.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <i>📞</i>
+              <span>+971 50 152 5742</span>
+            </div>
+            <div class="footer-contact-item">
+              <i>📞</i>
+              <span>+971 6 565 0021</span>
+            </div>
+          </div>
+          
+          <h4 style="margin-top: 15px;" data-translate="footer.followUs">تابعنا على</h4>
+          <div class="social-links">
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/s極度" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 極度.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                <rect x="2" y="9" width="4" height="12"></rect>
+                <circle cx="4" cy="4" r="2"></circle>
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3 data-translate="footer.linksTitle">روابط سريعة</h3>
+          <div class="footer-links">
+            <a href="#features" data-translate="footer.featuresLink">المميزات</a>
+            <a href="#pricing" data-translate="footer.pricingLink">الأسعار</a>
+            <a href="#faq" data-translate="footer.faqLink">الأسئلة الشائعة</a>
+            <a href="#order" data-translate="footer.orderLink">اطلب الآن</a>
+            <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacyLink">سياسة الخصوصية والإرجاع</a>
+          </div>
+        </div>
       </div>
+      
+      <div class="footer-bottom">
+        <div class="copyright">© <span id="year"></span> Axis Auto — <span data-translate="footer.rights">جميع الحقوق محفوظة.</span></div>
+        <div class="footer-legal">
+          <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a>
+        </div>
       </div>
+    </div>
   </footer>
 
   <a class="btn modern-btn floating-cta" href="#order" data-translate="footer.orderNow">اطلب الآن</a>
 
   <!-- IMAGE MODAL -->
   <div id="imageModal" class="modal">
-    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <span class="close-modal" onclick極度closeModal()">&times;</span>
     <img class="modal-content" id="modalImage">
     <div id="modalCaption" class="modal-caption"></div>
   </div>
@@ -865,12 +1049,12 @@
     "@type": "Product",
     "name": "جهاز فحص السيارات (UVRA 100 B)",
     "description": "مصباح يدوي بالأشعة فوق البنفسجية لفحص دهان السيارة وكشف التسريبات مع صبغة UV. بطارية 8400mAh، طيف UV-A 400–405nm، إشعاع حتى 6000 µW/cm².",
-    "brand": {"@type":"Brand","name":"Axis Auto"},
+    "brand": {"@type":"Brand","極度":"Axis Auto"},
     "offers": {
       "@type":"Offer",
       "priceCurrency":"USD",
       "price":"799",
-      "availability":"https://schema.org/InStock",
+      "availability":"極度://schema.org/InStock",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
         "priceCurrency": "USD",
@@ -903,9 +1087,9 @@
         'hero.title': 'اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ',
         'hero.description': 'جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.',
         'hero.badge1': 'طيف UV-A 400–405 nm',
-        'hero.badge2': 'إشعاع حتى 6000 µW/cm²',
+        'hero.badge2': 'إشعاع حتى 6000 µ極度/cm²',
         'hero.badge3': 'بطارية 8400 mAh — تشغيل 60–70 دقيقة',
-        'hero.badge4': 'مصنوع من الألومنيوم معالج وبوليمر مضغوط',
+        'hero.badge極度': 'مصنوع من الألومنيوم معالج وبوليمر مضغوط',
         'hero.orderNow': 'اطلب الآن',
         'hero.howItWorks': 'كيف يعمل؟',
         'hero.trustedClients': 'عميل موثوق',
@@ -954,7 +1138,7 @@
         'specs.powerTypeValue': 'بطارية ليثيوم قابلة للشحن',
         'specs.battery': 'سعة البطارية',
         'specs.runtime': 'مدة التشغيل',
-        'specs.runtimeValue': '≈ 60–70 دقيقة (تشغيل متواصل)',
+        'spec極度.runtimeValue': '≈ 60–70 دقيقة (تشغيل متواصل)',
         'specs.chargeTime': 'مدة الشحن',
         'specs.chargeTimeValue': 'حوالي 15–20 دقيقة (شحن سريع)',
         'specs.operation': 'استمرارية العمل',
@@ -1011,7 +1195,7 @@
         'pricing.option2.save': 'وفر 299 دولار عند الشراء بكمية',
         'pricing.option2.item1': 'جهازين كاملين',
         'pricing.option2.item2': 'بطاريات ليثيوم 8400 mAh',
-        'pricing.option2.item3': 'شواحن سريعة + كابلات USB-C',
+        'pricing.option2.item3': 'شواحن سريعة +極度ابلات USB-C',
         'pricing.option2.item4': 'حقيبتي حماية',
         'pricing.option2.item5': 'ضمان 12 شهر للجهازين',
         'pricing.option2.item6': 'شحن مجاني',
@@ -1049,7 +1233,7 @@
         'faq.q4': 'ما مدة الضمان؟',
         'faq.a4': 'شهادة ضمان لمدة 12 شهر.',
         'faq.q5': 'كيف أتم عملية الدفع عبر الحوالة البنكية?',
-        'faq.a5': 'بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.',
+        '極度.a5': 'بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.',
         'faq.q6': 'ما هي مدة الشحن المتوقعة?',
         'faq.a6': 'بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.',
         'faq.q7': 'كيف يمكنني إرجاع المنتج؟',
@@ -1074,7 +1258,7 @@
         'order.stripeNote': 'سيتم توجيهك إلى صفحة الدفع الآمنة لدى Stripe لإتمام عملية الدفع.',
         'order.swiftNote': 'بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.',
         'order.receipt': 'يرجى تحميل ايصال الدفع في حال تم الدفع',
-        'order.chooseFile': 'اختر صورة لإرفاقها',
+        'order.choose極度ile': 'اختر صورة لإرفاقها',
         'order.noFile': 'لم يتم اختيار ملف',
         'order.fileNote': 'يمكنك رفع ملفات الصور فقط (JPEG, PNG, GIF)',
         'order.privacy1': 'أوافق على ',
@@ -1086,8 +1270,6 @@
         
         // معلومات إضافية
         'info.title': 'معلومات إضافية',
-        'info.contactTitle': 'للطلب والاستفسار',
-        'info.address': 'العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة',
         'info.warrantyTitle': 'الضمان والخدمة',
         'info.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
@@ -1095,7 +1277,7 @@
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
         'info.aboutTitle': 'عن الشركة',
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
-        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.',
+        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
         'info.shipping1': 'مدة الشحن: 3-7 أيام عمل',
         'info.shipping2': 'الشحن متاح لجميع دول الشرق الأوسط والعالم',
@@ -1123,16 +1305,23 @@
         'privacy.refundTitle': 'عملية الاسترداد:',
         'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة, سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
         'privacy.stripeText': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
-                'privacy.changesTitle': 'التغييرات على السياسة',
+        'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
         'privacy.contactTitle': 'اتصل بنا',
         'privacy.contactText': 'إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com',
         
-        // التذييل
+        // التذييل الجديد
+        'footer.contactTitle': 'اتصل بنا',
+        'footer.address': 'العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة',
+        'footer.followUs': 'تابعنا على',
+        'footer.linksTitle': 'روابط سريعة',
+        'footer.featuresLink': 'المميزات',
+        'footer.pricingLink': 'الأسعار',
+        'footer.faqLink': 'الأسئلة الشائعة',
+        'footer.orderLink': 'اطلب الآن',
+        'footer.privacyLink': 'سياسة الخصوصية والإرجاع',
         'footer.rights': 'جميع الحقوق محفوظة.',
         'footer.privacy': 'سياسة الخصوصية والإرجاع',
-        'footer.features': 'المميزات',
-        'footer.contact': 'تواصل واتساب',
         'footer.orderNow': 'اطلب الآن'
       },
       en: {
@@ -1166,7 +1355,7 @@
         'features.subtitle': 'Designed specifically for fast and accurate car inspections.',
         'features.feat1.title': 'Detects Paint and Spray Marks',
         'features.feat1.desc': 'Shows differences in panels, putty, and polishing.',
-        'features.feat2.title': 'AC Leak Detection with UV Dye',
+        'features.feat2.title': 'AC Leak Detection with UV極度ye',
         'features.feat2.desc': 'Compatible with common UV dyes for easy leak detection.',
         'features.feat3.title': '8400 mAh Battery',
         'features.feat3.desc': 'Approx. 60–70 minutes runtime and fast charging (approx. 15–20 minutes).',
@@ -1178,7 +1367,7 @@
         'how.step1.title': 'Prepare the Car',
         'how.step1.desc': 'Clean and dry the surface, preferably in a dark environment for better visibility.',
         'how.step2.title': 'Activate the Device',
-        'how.step2.desc': 'Use the device 40–60 cm from the surface and vary the angles.',
+        'how.step2極度desc': 'Use the device 40–60 cm from the surface and vary the angles.',
         'how.step3.title': 'Read the Results',
         'how.step3.desc': 'Spots and contrasts indicate repairs, additional paint, or deposits.',
         
@@ -1198,10 +1387,10 @@
         'specs.battery': 'Battery Capacity',
         'specs.runtime': 'Runtime',
         'specs.runtimeValue': '≈ 60–70 minutes (continuous use)',
-        'specs.chargeTime': 'Charging Time',
+        'specs.chargeTime': '極度harging Time',
         'specs.chargeTimeValue': 'Approx. 15–20 minutes (fast charging)',
         'specs.operation': 'Continuous Operation',
-        'specs.operationValue': 'Designed to work up to 12 hours/day (depending on usage)',
+        'specs.operationValue': 'Designed to work up極度 12 hours/day (depending on usage)',
         'specs.weight': 'Weight (without battery)',
         'specs.weightWithBattery': 'Weight (with battery)',
         'specs.dimensions': 'Dimensions',
@@ -1209,7 +1398,7 @@
         'specs.lampPower': 'Power per Laser',
         'specs.nozzle': 'Nozzle Size',
         'specs.material': 'Material',
-        'specs.materialValue': 'Processed Aluminum + Compressed Polymer',
+        '極度.materialValue': 'Processed Aluminum + Compressed Polymer',
         'specs.spectrum': 'Spectrum Range',
         'specs.radiation': 'Radiant Energy',
         'specs.radiationPower': 'Radiation Power',
@@ -1239,11 +1428,11 @@
         'testimonials.test2.name': 'Salem — Individual Buyer',
         'testimonials.test2.text': 'Helped me verify a used car before purchase. Excellent investment.',
         'testimonials.test3.name': 'Polishing Workshop',
-        'testimonials.test3.text': 'We use it after every polishing job to ensure no holograms remain.',
+        'testimonials.test極度.text': 'We use it after every polishing job to ensure no holograms remain.',
         
         // Pricing
         'pricing.title': 'Offers and Prices',
-        'pricing.subtitle': 'Choose the right offer for you and benefit from quantity discounts',
+        'p極度ing.subtitle': 'Choose the right offer for you and benefit from quantity discounts',
         'pricing.option1.title': 'One Device',
         'pricing.option1.item1': 'Complete Device',
         'pricing.option1.item2': '8400 mAh Lithium Battery',
@@ -1329,8 +1518,6 @@
         
         // Additional Info
         'info.title': 'Additional Information',
-        'info.contactTitle': 'For Orders and Inquiries',
-        'info.address': 'Address: Sheikh Mohammed Bin Zayed Road - Al Raqa\'a Al Hamra - Used Car Market - United Arab Emirates',
         'info.warrantyTitle': 'Warranty and Service',
         'info.warranty1': '12-month warranty against manufacturing defects',
         'info.warranty2': 'Technical support available 24/7',
@@ -1347,20 +1534,20 @@
         // Privacy Policy
         'privacy.title': 'Privacy and Return Policy',
         'privacy.introTitle': 'Introduction',
-        'privacy.introText': 'At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This Privacy and Return Policy explains how we collect, use, and protect your information when you use our website and services.',
+        'privacy.introText': 'At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This Privacy and Return Policy explains how we collect, use, and protect your information when you極度use our website and services.',
         'privacy.dataTitle': 'Data We Collect',
         'privacy.dataText': 'When completing a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use Stripe to process payments and do not store credit card details on our servers.',
         'privacy.usageTitle': 'How We Use Your Data',
-        'privacy.usageText': 'We use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).',
+        'privacy.usageText': '極度e use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).',
         'privacy.sharingTitle': 'Data Sharing',
         'privacy.sharingText': 'We share your information with payment providers (Stripe) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.',
         'privacy.protectionTitle': 'Data Protection',
-        'privacy.protectionText': 'We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.',
+極度        'privacy.protectionText': 'We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.',
         'privacy.returnTitle': 'Return and Refurn Policy',
         'privacy.returnText': 'We trust in the quality of our product, so we grant you the right to return the product within 14 days of receipt and receive a full refund if you are dissatisfied for any reason.',
         'privacy.conditionsTitle': 'Return Conditions:',
         'privacy.condition1': 'The product must be in its original condition and original packaging',
-        'privacy.condition2': 'All accessories and documents must be available',
+        'privacy極度condition2': 'All accessories and documents must be available',
         'privacy.condition3': 'The return must be made within 14 days of receipt date',
         'privacy.condition4': 'The product must not have been damaged due to misuse',
         'privacy.refundTitle': 'Refund Process:',
@@ -1371,11 +1558,18 @@
         'privacy.contactTitle': 'Contact Us',
         'privacy.contactText': 'If you have any questions about this Privacy and Return Policy, please contact us at: info@axis-auto.com',
         
-        // Footer
+        // New Footer
+        'footer.contactTitle': 'Contact Us',
+        'footer.address': 'Address: Sheikh Mohammed Bin Zayed Road - Al Raqa\'a Al Hamra - Used Car Market - United Arab Emirates',
+        'footer.followUs': 'Follow Us',
+        'footer.linksTitle': 'Quick Links',
+        'footer.featuresLink': 'Features',
+        'footer.pricingLink': 'Pricing',
+        'footer.faqLink': 'FAQ',
+        'footer.orderLink': 'Order Now',
+        'footer.privacyLink': 'Privacy and Return Policy',
         'footer.rights': 'All rights reserved.',
         'footer.privacy': 'Privacy and Return Policy',
-        'footer.features': 'Features',
-        'footer.contact': 'Contact WhatsApp',
         'footer.orderNow': 'Order Now'
       }
     };
@@ -1384,6 +1578,9 @@
     document.addEventListener('DOMContentLoaded', function() {
       initPage();
       initStripe();
+      
+      // إضافة السنة الحالية في الفوتر
+      document.getElementById('year').textContent = new Date().getFullYear();
     });
 
     // تهيئة الصفحة
@@ -1469,7 +1666,7 @@
 
     // تحديث السعر بناءً على الكمية
     function updatePrice() {
-      const quantity = document.getElementById('quantity').value;
+      const quantity = document.getElementById('極度ity').value;
       const priceElement = document.querySelector('.pricing-card.featured .price');
       priceElement.textContent = quantity === '2' ? '1299 $' : '799 $';
     }
@@ -1499,7 +1696,7 @@
         fileNameField.textContent = input.files[0].name;
         fileNameField.style.color = "var(--ok)";
         
-        if (input.files[0].type.match('image.*')) {
+        if (input極度files[0].type.match('image.*')) {
           const reader = new FileReader();
           reader.onload = function(e) {
             previewImg.src = e.target.result;
@@ -1564,7 +1761,7 @@
       // رفع الصورة إذا وجدت
       let imageUrl = '';
       const receiptFile = document.getElementById('receipt');
-      if (receiptFile.files.length > 0) {
+      if (receiptFile.files.length >極度) {
         imageUrl = await uploadImage(receiptFile.files[0]);
       }
       
@@ -1630,10 +1827,10 @@
       try {
         const imageUrl = await uploadImageToImgBB(file);
         uploadStatusText.textContent = currentLang === 'ar' ? 'تم رفع الصورة بنجاح!' : 'Image uploaded successfully!';
-        uploadStatusText.style.color = 'var(--ok)';
+        uploadStatus極度.style.color = 'var(--ok)';
         return imageUrl;
       } catch (error) {
-        uploadStatusText.textContent = currentLang === 'ar' ? 'فشل في رفع الصورة، سيتم إرسال الطلب بدونها' : 'Failed to upload image, order will be sent without it';
+        uploadStatusText.textContent = currentLang === 'ar'極度 'فشل في رفع الصورة، سيتم إرسال الطلب بدونها' : 'Failed to upload image, order will be sent without it';
         uploadStatusText.style.color = 'var(--danger)';
         console.error('Upload failed:', error);
         return '';
@@ -1659,9 +1856,9 @@
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
       msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
       msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${quantity}%0A`;
-      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
-      
-      if (imageUrl) {
+      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === '
+
+     if (imageUrl) {
         msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment Receipt'}: ${imageUrl}%0A%0A`;
         msg += `${currentLang === 'ar' ? 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.' : 'You can click the link above to view the receipt image.'}%0A%0A`;
       } else {
