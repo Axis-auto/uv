@@ -101,7 +101,7 @@
     .grid.cols-3 { grid-template-columns: repeat(3,1fr); }
     .grid.cols-4 { grid-template-columns: repeat(4,1fr); }
     
-    section { padding: 16px 0; }
+    section { padding: 12px 0; }
     h2 { font-size: clamp(20px,2.8vw,26px); margin: 0 0 8px; }
     h3 { font-size: clamp(16px,2.2vw,20px); margin: 0 0 6px; }
     .muted { color: var(--muted); }
@@ -144,7 +144,22 @@
     .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     .form-note { font-size: 14px; color: var(--muted); margin-top: 4px; }
     
-    footer { padding: 16px 0; border-top: 1px solid #e2e8f0; background: #fff; margin-top: 20px; }
+    footer { padding: 30px 0 20px; border-top: 1px solid #e2e8f0; background: #fff; margin-top: 20px; }
+    .footer-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    .footer-section { margin-bottom: 20px; }
+    .footer-section h3 { font-size: 18px; margin-bottom: 15px; color: var(--brand); }
+    .footer-contact { display: flex; flex-direction: column; gap: 10px; }
+    .footer-contact-item { display: flex; align-items: center; gap: 10px; }
+    .footer-contact-item svg { width: 18px; height: 18px; color: var(--brand); }
+    .footer-social { display: flex; gap: 12px; margin-top: 15px; }
+    .footer-social a { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; transition: var(--transition); }
+    .footer-social a:hover { background: var(--brand-light); transform: translateY(-3px); }
+    .footer-social svg { width: 20px; height: 20px; color: var(--brand); }
+    .footer-links { display: flex; flex-direction: column; gap: 8px; }
+    .footer-links a { color: var(--muted); transition: var(--transition); }
+    .footer-links a:hover { color: var(--brand); }
+    .footer-bottom { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: var(--muted); font-size: 14px; }
+    
     .floating-cta { position: fixed; left: 12px; bottom: 12px; z-index: 60; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     
     .gradient-bg { background: linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%); }
@@ -218,6 +233,7 @@
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
       .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
+      .footer-content { grid-template-columns: 1fr; }
     }
     
     @media (max-width:768px) {
@@ -611,7 +627,7 @@
             <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.</div>
           </details>
           <details><summary data-translate="faq.q8">هل الدفع عبر Stripe آمن؟</summary>
-            <div class="muted" data-translate="faq.a8">نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.</div>
+            <div class="muted" data-translate="faq.a8">نعم, Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.</div>
           </details>
         </div>
       </div>
@@ -724,20 +740,11 @@
         <div class="card card-hover">
           <h2 data-translate="info.title">معلومات إضافية</h2>
           
-          <h3 style="margin-top:10px" data-translate="info.contactTitle">للطلب والاستفسار</h3>
-          <div class="contact-info">
-            <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> uv@axis-auto.com</div>
-            <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> info@axis-auto.com</div>
-            <div class="contact-item"><span class="muted">واتساب:</span> +971 50 152 5742</div>
-            <div class="contact-item"><span class="muted">هاتف:</span> +971 6 565 0021</div>
-            <div class="muted" data-translate="info.address">العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</div>
-          </div>
-
-          <h3 style="margin-top:12px" data-translate="info.warrantyTitle">الضمان والخدمة</h3>
+          <h3 style="margin-top:10px" data-translate="info.warrantyTitle">الضمان والخدمة</h3>
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="info.warranty1">ضمان لمدة 12 شهر ضد عيوب الصناعة</li>
             <li data-translate="info.warranty2">دعم فني متاح على مدار الساعة</li>
-            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإlectronي</li>
+            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني</li>
             <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
           </ul>
 
@@ -809,14 +816,87 @@
     </div>
   </main>
 
+  <!-- FOOTER SECTION -->
   <footer>
-    <div class="container" style="display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap">
-      <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footer.rights">جميع الحقوق محفوظة.</span> | <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a></div>
-      <div style="display:flex;gap:6px">
-        <a class="btn ghost" href="#features" data-translate="footer.features">المميزات</a>
-        <a class="btn modern-btn" href="https://wa.me/905075803495" data-translate="footer.contact">تواصل واتساب</a>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>معلومات الاتصال</h3>
+          <div class="footer-contact">
+            <div class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</span>
+            </div>
+            <div class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 极 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <span>+971 6 565 0021</span>
+            </div>
+            <div class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+              <span>uv@axis-auto.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 极 0 1-2.06 0L2 7"></path>
+              </svg>
+              <span>info@axis-auto.com</span>
+            </div>
+          </div>
+          
+          <div class="footer-social">
+            <a href="https://wa.me/971501525742" target="_blank" aria-label="واتساب">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path>
+                <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"></path>
+              </svg>
+            </a>
+            <a href="#" aria-label="فيسبوك">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 极 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </a>
+            <a href="#" aria-label="إنستغرام">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="极.5"></line>
+              </svg>
+            </a>
+            <a href="#" aria-label="تيك توك">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12a4 4 0 1 0 4-4v8"></path>
+                <path d="M17 5v8a4 4 0 1 1-4-4"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>روابط سريعة</h3>
+          <div class="footer-links">
+            <a href="#features" data-translate="nav.features">المميزات</a>
+            <a href="#pricing" data-translate="nav.pricing">السعر</a>
+            <a href="#faq" data-translate="nav.faq">الأسئلة الشائعة</a>
+            <a href="#order" data-translate="nav.order">اطلب الآن</a>
+            <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a>
+            <a href="https://wa.me/905075803495" data-translate="footer.contact">تواصل معنا عبر واتساب</a>
+          </div>
+        </div>
       </div>
+      
+      <div class="footer-bottom">
+        <p>© <span id="y"></span> AXIS AUTO — <span data-translate="footer.rights">جميع الحقوق محفوظة.</span></p>
       </div>
+    </div>
   </footer>
 
   <a class="btn modern-btn floating-cta" href="#order" data-translate="footer.orderNow">اطلب الآن</a>
@@ -838,7 +918,7 @@
     "brand": {"@type":"Brand","name":"Axis Auto"},
     "offers": {
       "@type":"Offer",
-      "priceCurrency":"USD",
+      "極cy":"USD",
       "price":"799",
       "availability":"https://schema.org/InStock",
       "priceSpecification": {
@@ -893,7 +973,7 @@
         'features.subtitle': 'مصمم خصيصًا لفحص السيارات بسرعة وبدقّة عالية.',
         'features.feat1.title': 'يكشف آثار الدهان والرش',
         'features.feat1.desc': 'يُبين اختلافات الطبلات، المعجون والتلميع.',
-        'features.feat2.title': 'كشف تسريبات AC مع صبغة UV',
+        '極.feat2.title': 'كشف تسريبات AC مع صبغة UV',
         'features.feat2.desc': 'متوافق مع أصباغ UV الشائعة لسهولة كشف التسريب.',
         'features.feat3.title': 'بطارية 8400 mAh',
         'features.feat3.desc': 'تشغيل نحو 60–70 دقيقة وشحن سريع (15–20 دقيقة تقريبًا).',
@@ -907,7 +987,7 @@
         'how.step2.title': 'فعّل الجهاز',
         'how.step2.desc': 'استخدم الجهاز على مسافة 40–60 سم من السطح وزاوج الزوايا.',
         'how.step3.title': 'اقرأ النتائج',
-        'how.step3.desc': 'البقع والتباينات تشير إلى إصلاحات أو طلاء إضافي أو ترسبات.',
+        'how.step極.desc': 'البقع والتباينات تشير إلى إصلاحات أو طلاء إضافي أو ترسبات.',
         
         // التحذيرات
         'warnings.title': 'تنبيهات أمان هامة:',
@@ -1025,7 +1105,7 @@
         'faq.q7': 'كيف يمكنني إرجاع المنتج؟',
         'faq.a7': 'اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.',
         'faq.q8': 'هل الدفع عبر Stripe آمن؟',
-        'faq.a8': 'نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.',
+        'faq.a8': 'نعم, Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.',
         
         // الطلب
         'order.title': 'اطلبه الآن',
@@ -1056,8 +1136,6 @@
         
         // معلومات إضافية
         'info.title': 'معلومات إضافية',
-        'info.contactTitle': 'للطلب والاستفسار',
-        'info.address': 'العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة',
         'info.warrantyTitle': 'الضمان والخدمة',
         'info.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
@@ -1067,7 +1145,7 @@
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
         'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
-        'info.shipping1': 'مدة الشحن: 3-7 أيام عمل',
+        'info.shipping1': 'مدة الشحن: 极-7 أيام عمل',
         'info.shipping2': 'الشحن متاح لجميع دول الشرق الأوسط والعالم',
         'info.shipping3': 'تتبع الشحنة متاح عبر البريد الإلكتروني',
         
@@ -1096,12 +1174,11 @@
         'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
         'privacy.contactTitle': 'اتصل بنا',
-        'privacy.contactText': 'إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com',
+        'privacy.contact极xt': 'إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com',
         
         // التذييل
         'footer.rights': 'جميع الحقوق محفوظة.',
         'footer.privacy': 'سياسة الخصوصية والإرجاع',
-        'footer.features': 'المميزات',
         'footer.contact': 'تواصل واتساب',
         'footer.orderNow': 'اطلب الآن'
       },
@@ -1164,7 +1241,7 @@
         'specs.model': 'Brand Name / Model',
         'specs.power': 'Electrical Power',
         'specs.powerType': 'Power Type',
-        'specs.powerTypeValue': 'Rechargeable Lithium Battery',
+        'spec極.powerTypeValue': 'Rechargeable Lithium Battery',
         'specs.battery': 'Battery Capacity',
         'specs.runtime': 'Runtime',
         'specs.runtimeValue': '≈ 60–70 minutes (continuous use)',
@@ -1228,7 +1305,7 @@
         'pricing.option2.item4': 'Two Protective Cases',
         'pricing.option2.item5': '12-Month Warranty for Both Devices',
         'pricing.option2.item6': 'Free Shipping',
-        'pricing.orderNow': 'Order Now',
+        'pricing.orderNow': '極r Now',
         
         // Payment
         'payment.title': 'Payment and Shipping Methods',
@@ -1262,10 +1339,10 @@
         'faq.q4': 'What is the warranty period?',
         'faq.a4': '12-month warranty certificate.',
         'faq.q5': 'How do I complete payment via bank transfer?',
-        'faq.a5': 'After confirming your order, we will send you bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm your order and send the invoice and shipping bill.',
+        '極.a5': 'After confirming your order, we will send you bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm your order and send the invoice and shipping bill.',
         'faq.q6': 'What is the expected shipping time?',
         'faq.a6': 'After payment confirmation, shipping takes 24-48 hours and the product arrives within 3-7 business days depending on destination.',
-        'faq.q7': 'How can I return the product?',
+        'faq.q7': '极w can I return the product?',
         'faq.a7': 'Contact us via WhatsApp within 14 days of receipt, and we will provide you with return instructions. When we receive the product in its original condition, we will refund the amount within 5-7 business days.',
         'faq.q8': 'Is payment via Stripe secure?',
         'faq.a8': 'Yes, Stripe is a secure and globally accredited payment platform. We do not store any credit card data on our servers, and all payments are processed through Stripe\'s secure servers.',
@@ -1281,7 +1358,7 @@
         'order.option1': 'One Device - $799',
         'order.option2': 'Two Devices - $1299',
         'order.paymentMethod': 'Payment Method',
-        'order.paymentStripe': 'Card Payment (Stripe)',
+        'order.payment极ripe': 'Card Payment (Stripe)',
         'order.paymentSwift': 'Bank Transfer (SWIFT)',
         'order.cardDetails': 'Card Details',
         'order.stripeNote': 'You will be redirected to Stripe\'s secure payment page to complete the payment process.',
@@ -1299,8 +1376,6 @@
         
         // Additional Info
         'info.title': 'Additional Information',
-        'info.contactTitle': 'For Orders and Inquiries',
-        'info.address': 'Address: Sheikh Mohammed Bin Zayed Road - Al Raqa\'a Al Hamra - Used Car Market - United Arab Emirates',
         'info.warrantyTitle': 'Warranty and Service',
         'info.warranty1': '12-month warranty against manufacturing defects',
         'info.warranty2': 'Technical support available 24/7',
@@ -1334,7 +1409,7 @@
         'privacy.condition3': 'The return must be made within 14 days of receipt date',
         'privacy.condition4': 'The product must not have been damaged due to misuse',
         'privacy.refundTitle': 'Refund Process:',
-        'privacy.refundText': 'When the product is returned according to the mentioned conditions, the paid amount will be refunded using the original payment method within 5-7 business days. For card payments, the amount will appear in your statement within 1-2 billing cycles.',
+        'privacy.refundText': 'When the product is returned according to the mentioned conditions, the paid amount will be refunded using the original payment method within 5极 business days. For card payments, the amount will appear in your statement within 1-2 billing cycles.',
         'privacy.stripeText': 'Secure payments via Stripe - Instant refund',
         'privacy.changesTitle': 'Policy Changes',
         'privacy.changesText': 'We may update this Privacy and Return Policy from time to time. Any changes will be posted on this page and we will notify you by email if the changes are substantial.',
@@ -1344,7 +1419,6 @@
         // Footer
         'footer.rights': 'All rights reserved.',
         'footer.privacy': 'Privacy and Return Policy',
-        'footer.features': 'Features',
         'footer.contact': 'Contact WhatsApp',
         'footer.orderNow': 'Order Now'
       }
@@ -1448,7 +1522,7 @@
     function togglePaymentDetails() {
       const method = document.getElementById('paymentMethod').value;
       document.getElementById('stripePayment').style.display = method === 'stripe' ? 'block' : 'none';
-      document.getElementById('swiftDetails').style.display = method === 'swift' ? 'block' : 'none';
+      document.getElementById('swiftDetails').style.display = method === 'swift' ? 'block极 : 'none';
     }
 
     // اختيار طريقة الدفع
@@ -1509,7 +1583,7 @@
     // إظهار رسالة تنبيه
     function showAlert(message, type) {
       const alertBox = document.getElementById('alertBox');
-      alertBox.textContent = message;
+      alert极.textContent = message;
       alertBox.className = `alert alert-${type}`;
       alertBox.style.display = 'block';
       
@@ -1598,7 +1672,7 @@
       uploadStatusText.style.color = 'var(--brand)';
       
       try {
-        const imageUrl = await uploadImageToImgBB(file);
+        const imageUrl = await upload极mageToImgBB(file);
         uploadStatusText.textContent = currentLang === 'ar' ? 'تم رفع الصورة بنجاح!' : 'Image uploaded successfully!';
         uploadStatusText.style.color = 'var(--ok)';
         return imageUrl;
@@ -1619,13 +1693,13 @@
       const phone = document.getElementById('phone').value.trim();
       const country = document.getElementById('country').value.trim();
       const address = document.getElementById('address').value.trim();
-      const quantity = document.getElementById('quantity').value;
+      const quantity = document.getElementById('極antity').value;
       const paymentMethod = document.getElementById('paymentMethod').value;
       
       let msg = currentLang === 'ar' ? `طلب جهاز فحص السيارات%0A%0A` : `Car Inspection Device Order%0A%0A`;
       msg += `${currentLang === 'ar' ? 'الاسم' : 'Name'}: ${name}%0A`;
       msg += `${currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email'}: ${email}%0A`;
-      msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone'}: ${phone}%0A`;
+      msg += `${currentLang === 'ar'极 'رقم الهاتف' : 'Phone'}: ${phone}%0A`;
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
       msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
       msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${quantity}%0A`;
