@@ -29,15 +29,14 @@
     
     header {
       position: sticky; top: 0; 
-      background: rgba(0, 0, 0, 0.7); /* خلفية شبه شفافة داكنة لتحسين قراءة النص */
+      background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(10px); 
       z-index: 50; 
       box-shadow: var(--shadow);
-      /* إضافة صورة الخلفية */
       background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
       background-size: cover;
       background-position: center;
-      background-attachment: fixed; /* نفس تأثير الخلفية الثابتة في الهيرو */
+      background-attachment: fixed;
     }
     
     header .inner {
@@ -90,13 +89,12 @@
     .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
     .product-card { display: grid; gap: 8px; }
     
-    .product-img {
-      aspect-ratio: 4/3; border-radius: 10px; background: linear-gradient(135deg,#dbeafe,#eff6ff); 
-      display: grid; place-items: center; border: 1px dashed #93c5fd; color: #2563eb; 
-      font-weight: 700; overflow: hidden;
-    }
-    
-    .product-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; }
+    .product-img-container img { width: 100%; height: auto; max-height: 400px; object-fit: contain; }
+    .sub-image-container img { width: 100%; height: auto; max-height: 150px; object-fit: contain; }
+    .image-container { position: relative; width: 100%; overflow: hidden; cursor: pointer; }
+    .image-container img { transition: transform 0.3s ease; object-fit: contain; }
+    .image-container:hover img { transform: scale(1.05); }
     
     .grid { display: grid; gap: 10px; }
     .grid.cols-2 { grid-template-columns: repeat(2,1fr); }
@@ -108,11 +106,10 @@
     h3 { font-size: clamp(16px,2.2vw,20px); margin: 0 0 6px; }
     .muted { color: var(--muted); }
     
-    .features .feat { display: flex; gap: 8px; align-items: flex-start; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; transition: transform 0.2s; }
-    .features .feat:hover { transform: translateY(-3px); }
+    .features .feat, .steps .step { display: flex; gap: 8px; align-items: flex-start; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; transition: transform 0.2s; }
+    .features .feat:hover, .steps .step:hover { transform: translateY(-3px); }
     .icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg,var(--brand),var(--brand-2)); display: grid; place-items: center; color: #fff; flex: 0 0 auto; }
     
-    .steps .step { display: flex; gap: 8px; }
     .step .num { width: 24px; height: 24px; border-radius: 6px; background: #dbeafe; color: #2563eb; display: grid; place-items: center; font-weight: 800; }
     
     .table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
@@ -128,7 +125,6 @@
     .faq summary { font-weight: 700; cursor: pointer; }
     
     .price { font-size: 24px; font-weight: 900; color: var(--brand); }
-    .strike { opacity: .5; text-decoration: line-through; }
     
     .pricing-options { display: flex; gap: 12px; margin: 12px 0; }
     .pricing-card { flex: 1; border: 2px solid #e2e8f0; border-radius: var(--radius); padding: 14px; text-align: center; transition: var(--transition); }
@@ -139,15 +135,13 @@
     .pricing-card .price { font-size: 28px; margin: 10px 0; }
     .pricing-card ul { list-style: none; padding: 0; margin: 12px 0; text-align: right; }
     .pricing-card li { padding: 4px 0; border-bottom: 1px solid #f1f5f9; }
+    .pricing-card img { max-width: 100%; height: auto; max-height: 150px; object-fit: contain; margin-bottom: 10px; border-radius: 8px; }
     
     .form { display: grid; gap: 8px; }
-    input, select, textarea { padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font: inherit; width: 100%; color: var(--text); }
-    label { display: block; font-weight: 600; margin-bottom: 4px; }
     .form-group { margin-bottom: 12px; }
     .form-label { display: block; font-weight: 600; margin-bottom: 4px; color: var(--text); }
-    .form-input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; color: var(--text); }
-    .form-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .form-select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; background-color: white; color: var(--text); }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; color: var(--text); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     .form-note { font-size: 14px; color: var(--muted); margin-top: 4px; }
     
     footer { padding: 16px 0; border-top: 1px solid #e2e8f0; background: #fff; margin-top: 20px; }
@@ -166,8 +160,7 @@
     
     .payment-methods { display: flex; gap: 12px; margin: 12px 0; }
     .payment-method { flex: 1; border: 2px solid #e2e8f0; border-radius: var(--radius); padding: 14px; text-align: center; cursor: pointer; transition: var(--transition); }
-    .payment-method:hover { border-color: var(--brand); background-color: var(--brand-light); }
-    .payment-method.selected { border-color: var(--brand); background-color: var(--brand-light); }
+    .payment-method:hover, .payment-method.selected { border-color: var(--brand); background-color: var(--brand-light); }
     .payment-method .payment-icon { font-size: 32px; margin-bottom: 8px; }
     .payment-details { display: none; margin-top: 12px; padding: 12px; border: 1px solid #e2e8f0; border-radius: var(--radius); background-color: #f8fafc; }
     .payment-details.active { display: block; }
@@ -192,7 +185,6 @@
     .modal-content { display: block; margin: auto; max-width: 90%; max-height: 80%; margin-top: 5%; object-fit: contain; }
     .close-modal { position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; }
     .close-modal:hover { color: #bbb; }
-    .modal-caption { margin: auto; display: block; width: 80%; max-width: 700px; text-align: center; color: #ccc; padding: 10px 0; height: 150px; }
     
     .shipping-timeline { display: flex; justify-content: space-between; position: relative; margin: 16px 0; }
     .shipping-timeline::before { content: ''; position: absolute; top: 12px; left: 0; right: 0; height: 2px; background: #e2e8f0; }
@@ -211,13 +203,6 @@
     .lang-switcher { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: var(--transition); color: white; }
     .lang-switcher:hover { background: rgba(255,255,255,0.3); }
     
-    .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; }
-    .product-img-container img { width: 100%; height: auto; max-height: 400px; object-fit: contain; }
-    .sub-image-container img { width: 100%; height: auto; max-height: 150px; object-fit: contain; }
-    .image-container { position: relative; width: 100%; overflow: hidden; cursor: pointer; }
-    .image-container img { transition: transform 0.3s ease; object-fit: contain; }
-    .image-container:hover img { transform: scale(1.05); }
-    
     .guarantee-badge { display: flex; align-items: center; gap: 6px; margin: 12px 0; padding: 8px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; }
     
     .contact-info { display: flex; flex-direction: column; gap: 6px; }
@@ -229,16 +214,6 @@
     [dir="ltr"] .warnings ul { padding-right: 0; padding-left: 16px; }
     [dir="ltr"] .features .feat, [dir="ltr"] .steps .step { flex-direction: row-reverse; }
     [dir="ltr"] .car-theme-border { border-left: none; border-right: 4px solid var(--brand); }
-    
-    /* تنسيق جديد للصور في بطاقات الأسعار */
-    .pricing-card img {
-      max-width: 100%;
-      height: auto;
-      max-height: 150px;
-      object-fit: contain;
-      margin-bottom: 10px;
-      border-radius: 8px;
-    }
     
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
@@ -318,7 +293,6 @@
     </div>
   </header>
 
-  <!-- باقي المحتوى يبقى كما هو -->
   <main>
     <!-- HERO SECTION -->
     <section class="hero">
@@ -363,7 +337,6 @@
             </div>
             <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
               <div class="muted" style="font-size:11px" data-translate="hero.sideView">منظر جانبي</div>
-              <!-- تم استبدال الصورة الجانبية هنا -->
               <div class="sub-image-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp')">
                 <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp" alt="منظر جانبي للجهاز" />
               </div>
@@ -373,7 +346,6 @@
       </div>
     </section>
 
-    <!-- باقي المحتوى يبقى كما هو -->
     <!-- FEATURES SECTION -->
     <section id="features">
       <div class="container">
@@ -523,7 +495,6 @@
 
         <div class="pricing-options">
           <div class="pricing-card card-hover">
-            <!-- إضافة صورة لقطعة واحدة -->
             <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp" alt="جهاز واحد" />
             <h3 data-translate="pricing.option1.title">جهاز واحد</h3>
             <div class="price">799 $</div>
@@ -538,7 +509,6 @@
           </div>
           
           <div class="pricing-card featured card-hover">
-            <!-- إضافة صورة لقطعتين -->
             <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp" alt="جهازين" />
             <h3 data-translate="pricing.option2.title">جهازين</h3>
             <div class="price">1299 $</div>
@@ -676,7 +646,7 @@
 
             <div class="form-group">
               <label class="form-label" data-translate="order.address">العنوان</label>
-              <textarea id="address" class="form-input" rows="3" required placeholder="مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد"></textarea>
+              <textarea id="address" class="form-textarea" rows="3" required placeholder="مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد"></textarea>
             </div>
             
             <div class="form-group">
@@ -941,7 +911,7 @@
         
         // التحذيرات
         'warnings.title': 'تنبيهات أمان هامة:',
-        'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 или ANSI.',
+        'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.',
         'warnings.item2': 'لا تعرض الجلد لأشعة UV لفترات طويلة.',
         'warnings.item3': 'لا تستخدم الجهاز بالقرب من الماء أو السوائل.',
         'warnings.item4': 'حافظ على الجهاز بعيداً عن متناول الأطفال.',
@@ -1095,7 +1065,7 @@
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
         'info.aboutTitle': 'عن الشركة',
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
-        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.',
+        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
         'info.shipping1': 'مدة الشحن: 3-7 أيام عمل',
         'info.shipping2': 'الشحن متاح لجميع دول الشرق الأوسط والعالم',
@@ -1112,7 +1082,7 @@
         'privacy.sharingTitle': 'مشاركة البيانات',
         'privacy.sharingText': 'نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.',
         'privacy.protectionTitle': 'حماية البيانات',
-        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
+        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية والإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
         'privacy.returnText': 'نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.',
         'privacy.conditionsTitle': 'شروط الإرجاع:',
@@ -1123,7 +1093,7 @@
         'privacy.refundTitle': 'عملية الاسترداد:',
         'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة, سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
         'privacy.stripeText': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
-                'privacy.changesTitle': 'التغييرات على السياسة',
+        'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
         'privacy.contactTitle': 'اتصل بنا',
         'privacy.contactText': 'إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com',
