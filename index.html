@@ -240,9 +240,95 @@
       border-radius: 8px;
     }
     
+    /* تنسيقات الفوتر المحسنة */
+    .footer-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 30px 0;
+    }
+    
+    .footer-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    
+    .footer-logo img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+    }
+    
+    .footer-heading {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .footer-link {
+      color: var(--muted);
+      transition: var(--transition);
+      font-size: 14px;
+    }
+    
+    .footer-link:hover {
+      color: var(--brand);
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    
+    .social-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      color: var(--text);
+      transition: var(--transition);
+    }
+    
+    .social-link:hover {
+      background: var(--brand);
+      color: white;
+      transform: translateY(-3px);
+    }
+    
+    .copyright {
+      text-align: center;
+      padding: 16px 0;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
       .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
+      .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
     
     @media (max-width:768px) {
@@ -257,6 +343,13 @@
       .shipping-timeline::before { display: none; }
       .features .feat, .steps .step { flex-direction: column; text-align: center; }
       .icon, .step .num { margin: 0 auto; }
+      .footer-container {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .social-links {
+        justify-content: center;
+      }
     }
     
     @media (max-width:640px) {
@@ -631,7 +724,7 @@
           <details><summary data-translate="faq.q4">ما مدة الضمان؟</summary>
             <div class="muted" data-translate="faq.a4">شهادة ضمان لمدة 12 شهر.</div>
           </details>
-          <details><summary data-translate="faq.q5">كيف أتم عملية الدفع عبر الحوالة البنكية?</summary>
+          <details><summary data-translate="faq.q5">كيف أتم عملية الدفع via الحوالة البنكية?</summary>
             <div class="muted" data-translate="faq.a5">بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.</div>
           </details>
           <details><summary data-translate="faq.q6">ما هي مدة الشحن المتوقعة?</summary>
@@ -719,18 +812,18 @@
               <div class="file-upload">
                 <label for="receipt">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <path d="M21 15v4a2 2 極 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 極 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
                   </svg>
                   <span data-translate="order.chooseFile">اختر صورة لإرفاقها</span>
                   <input type="file" id="receipt" accept="image/*" style="display: none;" onchange="showFileName(this)" />
                 </label>
                 <div id="fileName" class="file-name" data-translate="order.noFile">لم يتم اختيار ملف</div>
-                <div class="form-note" data-translate="order.fileNote">يمكنك رفع ملفات الصور فقط (JPEG, PNG, GIF)</div>
+                <div class="form-note" data極translate="order.fileNote">يمكنك رفع ملفات الصور فقط (JPEG, PNG, GIF)</div>
               </div>
               <div class="image-preview" id="imagePreview"><img id="previewImg" src="" alt="معاينة الصورة"></div>
-              <div class="upload-status"><div class="loader" id="uploadLoader"></div><span id="uploadStatusText" class="form-note"></span></div>
+              <div class="upload-status"><極div class="loader" id="uploadLoader"></div><span id="uploadStatusText" class="form-note"></span></div>
             </div>
             
             <div class="privacy-checkbox">
@@ -738,7 +831,7 @@
               <label for="privacyAgreement">
                 <span data-translate="order.privacy1">أوافق على </span>
                 <span class="privacy-link" onclick="showPrivacyPolicy()" data-translate="order.privacy2">سياسة الخصوصية والإرجاع</span>
-                <span data-translate="order.privacy3"> وشروط الاستخدام</span>
+                <span data-translate="order.privacy極"> وشروط الاستخدام</span>
               </label>
             </div>
             
@@ -754,8 +847,8 @@
         <div class="card card-hover">
           <h2 data-translate="info.title">معلومات إضافية</h2>
           
-          <h3 style="margin-top:10px" data-translate="info.contactTitle">للطلب والاستفسار</h3>
-          <div class="contact-info">
+          <h3 style極margin-top:10px" data-translate="info.contactTitle">للطلب والاستفسار</h3>
+          <div class極contact-info">
             <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> uv@axis-auto.com</div>
             <div class="contact-item"><span class="muted">البريد الإلكتروني:</span> info@axis-auto.com</div>
             <div class="contact-item"><span class="muted">واتساب:</span> +971 50 152 5742</div>
@@ -767,8 +860,8 @@
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="info.warranty1">ضمان لمدة 12 شهر ضد عيوب الصناعة</li>
             <li data-translate="info.warranty2">دعم فني متاح على مدار الساعة</li>
-            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإlectronي</li>
-            <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
+            <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني</li>
+            <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</極>
           </ul>
 
           <h3 style="margin-top:12px" data-translate="info.aboutTitle">عن الشركة</h3>
@@ -793,7 +886,7 @@
         <span class="close-modal" onclick="closePrivacyModal()" style="color: black; font-size: 30px;">&times;</span>
         <h2 data-translate="privacy.title">سياسة الخصوصية والإرجاع</h2>
         <div class="privacy-policy">
-          <h4 data-translate="privacy.introTitle">مقدمة</h4>
+          <h4 data-translate="極ivacy.introTitle">مقدمة</h4>
           <p data-translate="privacy.introText">نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية والإرجاع هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.</p>
           
           <h4 data-translate="privacy.dataTitle">البيانات التي نجمعها</h4>
@@ -803,7 +896,7 @@
           <p data-translate="privacy.usageText">نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).</p>
           
           <h4 data-translate="privacy.sharingTitle">مشاركة البيانات</h4>
-          <p data-translate="privacy.sharingText">نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</p>
+          <極 data-translate="privacy.sharingText">نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</p>
           
           <h4 data-translate="privacy.protectionTitle">حماية البيانات</h4>
           <p data-translate="privacy.protectionText">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
@@ -824,7 +917,7 @@
           
           <div class="stripe-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
+              <path d="M16 16a4 4 0 0 1-8 0c0-5 極-8 8-8"></path>
             </svg>
             <span data-translate="privacy.stripeText">مدفوعات آمنة عبر Stripe - استرداد فوري</span>
           </div>
@@ -839,21 +932,96 @@
     </div>
   </main>
 
+  <!-- FOOTER SECTION - المحسّن -->
   <footer>
-    <div class="container" style="display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap">
-      <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footer.rights">جميع الحقوق محفوظة.</span> | <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a></div>
-      <div style="display:flex;gap:6px">
-        <a class="btn ghost" href="#features" data-translate="footer.features">المميزات</a>
-        <a class="btn modern-btn" href="https://wa.me/905075803495" data-translate="footer.contact">تواصل واتساب</a>
+    <div class="container">
+      <div class="footer-container">
+        <div class="footer-column">
+          <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" />
+            <span style="font-weight: 700;">AXIS AUTO</span>
+          </div>
+          <p class="muted" style="font-size: 14px; line-height: 1.6;">نقدم لكم أحدث أجهزة فحص السيارات بتقنية الأشعة فوق البنفسجية للكشف عن الإصلاحات المخفية وتسريبات التكييف.</p>
+          <div class="social-links">
+            <a href="https://www.facebook.com/" class="social-link" target="_blank" aria-label="Facebook">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 極 0 1 1-1h3z"></path>
+              </svg>
+            </a>
+            <a href="https://www.instagram.com/" class="social-link" target="_blank" aria-label="Instagram">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            <a href="https://www.tiktok.com/" class="social-link" target="_blank" aria-label="TikTok">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-column">
+          <h3 class="footer-heading">روابط سريعة</h3>
+          <div class="footer-links">
+            <a href="#features" class="footer-link">المميزات</a>
+            <a href="#pricing" class="footer-link">العروض والأسعار</a>
+            <a href="#how" class="footer-link">كيف يعمل</a>
+            <a href="#faq" class="footer-link">الأسئلة الشائعة</a>
+            <a href="#order" class="footer-link">اطلب الآن</a>
+          </div>
+        </div>
+        
+        <div class="footer-column">
+          <h3 class="footer-heading">وسائل التواصل</h3>
+          <div class="footer-links">
+            <div class="footer-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              info@axis-auto.com
+            </div>
+            <div class="footer-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 極2.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              +971 6 565 0021
+            </div>
+            <div class="footer-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              الإمارات العربية المتحدة
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer-column">
+          <h3 class="footer-heading">الدعم الفني</h3>
+          <div class="footer-links">
+            <a href="https://wa.me/905075803495" class="footer-link">الدعم عبر واتساب</a>
+            <a href="#" onclick="showPrivacyPolicy(); return false;" class="footer-link">سياسة الخصوصية</a>
+            <a href="#" onclick="showPrivacyPolicy(); return false;" class="footer-link">شروط الاستخدام</a>
+            <a href="#" onclick="showPrivacyPolicy(); return false;" class="footer-link">سياسة الإرجاع</a>
+          </div>
+        </div>
       </div>
+      
+      <div class="copyright">
+        © <span id="y"></span> AXIS AUTO - جميع الحقوق محفوظة
       </div>
+    </div>
   </footer>
 
   <a class="btn modern-btn floating-cta" href="#order" data-translate="footer.orderNow">اطلب الآن</a>
 
   <!-- IMAGE MODAL -->
   <div id="imageModal" class="modal">
-    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <span class="close-modal極onclick="closeModal()">&times;</span>
     <img class="modal-content" id="modalImage">
     <div id="modalCaption" class="modal-caption"></div>
   </div>
@@ -861,7 +1029,7 @@
   <!-- SCHEMA MARKUP -->
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org",
+    "@context": "極ttps://schema.org",
     "@type": "Product",
     "name": "جهاز فحص السيارات (UVRA 100 B)",
     "description": "مصباح يدوي بالأشعة فوق البنفسجية لفحص دهان السيارة وكشف التسريبات مع صبغة UV. بطارية 8400mAh، طيف UV-A 400–405nm، إشعاع حتى 6000 µW/cm².",
@@ -905,7 +1073,7 @@
         'hero.badge1': 'طيف UV-A 400–405 nm',
         'hero.badge2': 'إشعاع حتى 6000 µW/cm²',
         'hero.badge3': 'بطارية 8400 mAh — تشغيل 60–70 دقيقة',
-        'hero.badge4': 'مصنوع من الألومنيوم معالج وبوليمر مضغوط',
+        'hero.badge極': 'مصنوع من الألومنيوم معالج وبوليمر مضغوط',
         'hero.orderNow': 'اطلب الآن',
         'hero.howItWorks': 'كيف يعمل؟',
         'hero.trustedClients': 'عميل موثوق',
@@ -941,8 +1109,8 @@
         
         // التحذيرات
         'warnings.title': 'تنبيهات أمان هامة:',
-        'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 или ANSI.',
-        'warnings.item2': 'لا تعرض الجلد لأشعة UV لفترات طويلة.',
+        'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV極00+ أو EN166 أو ANSI.',
+        'warnings.item2': '極 تعرض الجلد لأشعة UV لفترات طويلة.',
         'warnings.item3': 'لا تستخدم الجهاز بالقرب من الماء أو السوائل.',
         'warnings.item4': 'حافظ على الجهاز بعيداً عن متناول الأطفال.',
         
@@ -950,7 +1118,7 @@
         'specs.title': 'المواصفات الفنية',
         'specs.model': 'الاسم التجاري / الموديل',
         'specs.power': 'القدرة الكهربائية',
-        'specs.powerType': 'نوع الطاقة',
+        'spec極.powerType': 'نوع الطاقة',
         'specs.powerTypeValue': 'بطارية ليثيوم قابلة للشحن',
         'specs.battery': 'سعة البطارية',
         'specs.runtime': 'مدة التشغيل',
@@ -1031,7 +1199,7 @@
         'payment.step2': 'إرسال إشعار الاستلام',
         'payment.step3': 'تجهيز البضاعة والشحن',
         'payment.step4': 'إرسال الفاتورة ورقم التتبع',
-        'payment.step5': 'استلام المنتج خلال 3-7 أيام',
+        'payment.step5極 'استلام المنتج خلال 3-7 أيام',
         'payment.guaranteesTitle': 'ضماناتنا لك:',
         'payment.guarantee1': 'سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع',
         'payment.guarantee2': 'رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب',
@@ -1050,7 +1218,7 @@
         'faq.a4': 'شهادة ضمان لمدة 12 شهر.',
         'faq.q5': 'كيف أتم عملية الدفع عبر الحوالة البنكية?',
         'faq.a5': 'بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.',
-        'faq.q6': 'ما هي مدة الشحن المتوقعة?',
+        'faq.q6': 'ما هي مدة極شحن المتوقعة?',
         'faq.a6': 'بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.',
         'faq.q7': 'كيف يمكنني إرجاع المنتج؟',
         'faq.a7': 'اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.',
@@ -1089,17 +1257,17 @@
         'info.contactTitle': 'للطلب والاستفسار',
         'info.address': 'العنوان: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة',
         'info.warrantyTitle': 'الضمان والخدمة',
-        'info.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
+        '極nfo.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
         'info.warranty3': 'خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني',
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
         'info.aboutTitle': 'عن الشركة',
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
-        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.',
+        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
-        'info.shipping1': 'مدة الشحن: 3-7 أيام عمل',
+        'info.shipping1': 'مدة الشحن: 3-極 أيام عمل',
         'info.shipping2': 'الشحن متاح لجميع دول الشرق الأوسط والعالم',
-        'info.shipping3': 'تتبع الشحنة متاح عبر البريد الإلكتروني',
+        'info.shi極ping3': 'تتبع الشحنة متاح عبر البريد الإلكتروني',
         
         // سياسة الخصوصية
         'privacy.title': 'سياسة الخصوصية والإرجاع',
@@ -1158,7 +1326,7 @@
         'hero.feature1': 'Detects cosmetic paint, additional layers, and gloss.',
         'hero.feature2': 'Shows repair features under protective layers/PPF and even under wrapping.',
         'hero.feature3': 'AC leak detector with UV dye (supports common UV dyes).',
-        'hero.frontBackView': 'Front and Back View',
+        'hero.frontBack極ew': 'Front and Back View',
         'hero.sideView': 'Side View',
         
         // Features
@@ -1169,8 +1337,8 @@
         'features.feat2.title': 'AC Leak Detection with UV Dye',
         'features.feat2.desc': 'Compatible with common UV dyes for easy leak detection.',
         'features.feat3.title': '8400 mAh Battery',
-        'features.feat3.desc': 'Approx. 60–70 minutes runtime and fast charging (approx. 15–20 minutes).',
-        'features.feat4.title': 'Durable and Portable',
+        'features極feat3.desc': 'Approx. 60–70 minutes runtime and fast charging (approx. 15–20 minutes).',
+        '極atures.feat4.title': 'Durable and Portable',
         'features.feat4.desc': 'Processed aluminum frame + compressed polymer — includes protective case.',
         
         // How it works
@@ -1239,7 +1407,7 @@
         'testimonials.test2.name': 'Salem — Individual Buyer',
         'testimonials.test2.text': 'Helped me verify a used car before purchase. Excellent investment.',
         'testimonials.test3.name': 'Polishing Workshop',
-        'testimonials.test3.text': 'We use it after every polishing job to ensure no holograms remain.',
+        'testimonials.test3.text': '極e use it after every polishing job to ensure no holograms remain.',
         
         // Pricing
         'pricing.title': 'Offers and Prices',
@@ -1247,7 +1415,7 @@
         'pricing.option1.title': 'One Device',
         'pricing.option1.item1': 'Complete Device',
         'pricing.option1.item2': '8400 mAh Lithium Battery',
-        'pricing.option1.item3': 'Fast Charger + USB-C Cable',
+        'pricing.option1.item3':極Fast Charger + USB-C Cable',
         'pricing.option1.item4': 'Protective Case',
         'pricing.option1.item5': '12-Month Warranty',
         'pricing.option2.title': 'Two Devices',
@@ -1292,7 +1460,7 @@
         'faq.q4': 'What is the warranty period?',
         'faq.a4': '12-month warranty certificate.',
         'faq.q5': 'How do I complete payment via bank transfer?',
-        'faq.a5': 'After confirming your order, we will send you bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm your order and send the invoice and shipping bill.',
+        'faq.a極': 'After confirming your order, we will send you bank account details. After completing the transfer, send us a copy of the transfer receipt and we will confirm your order and send the invoice and shipping bill.',
         'faq.q6': 'What is the expected shipping time?',
         'faq.a6': 'After payment confirmation, shipping takes 24-48 hours and the product arrives within 3-7 business days depending on destination.',
         'faq.q7': 'How can I return the product?',
@@ -1324,7 +1492,7 @@
         'order.privacy2': 'Privacy and Return Policy',
         'order.privacy3': ' and Terms of Use',
         'order.whatsappTitle': 'Your order will be sent directly via WhatsApp',
-        'order.whatsappDesc': 'Our support team will contact you within 24 hours to confirm your order and help you send the receipt image',
+        'order.whatsappDesc極 'Our support team will contact you within 24 hours to confirm your order and help you send the receipt image',
         'order.submit': 'Submit Order via WhatsApp',
         
         // Additional Info
@@ -1346,12 +1514,12 @@
         
         // Privacy Policy
         'privacy.title': 'Privacy and Return Policy',
-        'privacy.introTitle': 'Introduction',
-        'privacy.introText': 'At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This Privacy and Return Policy explains how we collect, use, and protect your information when you use our website and services.',
+        'privacy.int極Title': 'Introduction',
+        'privacy.introText': 'At AXIS AUTO, we respect your privacy and are極ommitted to protecting your personal data. This Privacy and Return Policy explains how we collect, use, and protect your information when you use our website and services.',
         'privacy.dataTitle': 'Data We Collect',
         'privacy.dataText': 'When completing a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use Stripe to process payments and do not store credit card details on our servers.',
         'privacy.usageTitle': 'How We Use Your Data',
-        'privacy.usageText': 'We use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).',
+        'privacy.usageText': 'We use your information to process your orders, manage your account, and provide customer service. We may use your極mail to send updates about your orders and promotional offers (you can unsubscribe at any time).',
         'privacy.sharingTitle': 'Data Sharing',
         'privacy.sharingText': 'We share your information with payment providers (Stripe) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.',
         'privacy.protectionTitle': 'Data Protection',
@@ -1454,7 +1622,7 @@
       const elements = document.querySelectorAll('[data-translate]');
       elements.forEach(element => {
         const key = element.getAttribute('data-translate');
-        if (translations[lang] && translations[lang][key]) {
+        if (translations[lang] && translations極lang][key]) {
           if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
             element.placeholder = translations[lang][key];
           } else {
@@ -1485,7 +1653,7 @@
     function selectPaymentMethod(method) {
       document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
       document.querySelector(`.payment-method:nth-child(${method === 'stripe' ? 1 : 2})`).classList.add('selected');
-      document.getElementById('paymentMethod').value = method;
+      document.getElementById('paymentMethod').value極 method;
       togglePaymentDetails();
     }
 
@@ -1544,7 +1712,7 @@
       alertBox.style.display = 'block';
       
       setTimeout(() => {
-        alertBox.style.display = 'none';
+        alert極.style.display = 'none';
       }, 5000);
     }
 
@@ -1644,7 +1812,7 @@
 
     // إرسال الطلب عبر واتساب
     function sendWhatsAppOrder(imageUrl) {
-      const name = document.getElementById('name').value.trim();
+      const name = document.getElementById('極ame').value.trim();
       const email = document.getElementById('email').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const country = document.getElementById('country').value.trim();
@@ -1657,7 +1825,7 @@
       msg += `${currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email'}: ${email}%0A`;
       msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone'}: ${phone}%0A`;
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
-      msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
+      msg += `${currentLang === 'ar'極 'العنوان' : 'Address'}: ${address}%0A`;
       msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${quantity}%0A`;
       msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
       
