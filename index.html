@@ -131,7 +131,7 @@
     .pricing-card { flex: 1; border: 2px solid #e2e8f0; border-radius: var(--radius); padding: 14px; text-align: center; transition: var(--transition); }
     .pricing-card:hover { border-color: var(--brand); transform: translateY(-3px); }
     .pricing-card.featured { border-color: var(--brand); background: var(--brand-light); position: relative; }
-    .pricing-card.featured::before { content: "الأفضل مبيعاً"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--brand); color: white; padding: 3px 10px; border-radius: 16px; font-size: 11px; font-weight: bold; }
+    .pricing-card.featured::before { content: attr(data-bestseller); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--brand); color: white; padding: 3px 10px; border-radius: 16px; font-size: 11px; font-weight: bold; }
     .pricing-card h3 { margin-top: 0; }
     .pricing-card .price { font-size: 28px; margin: 10px 0; }
     .pricing-card ul { list-style: none; padding: 0; margin: 12px 0; text-align: right; }
@@ -496,7 +496,7 @@
             <div class="icon feature-icon">✓</div>
             <div>
               <div style="font-weight:800" data-translate="features.feat4.title">متين ومحمول</div>
-              <div class="muted" data-translate="features.feat4.desc">هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.</div>
+              <div class="muted" data-translate="features.feat4.desc">هيكل من الألومنيوم معالج + بولimer مضغوط — حقيبة واقية مرفقة.</div>
             </div>
           </div>
         </div>
@@ -626,7 +626,7 @@
             <a class="btn modern-btn" href="#order" data-translate="pricing.orderNow">اطلب الآن</a>
           </div>
           
-          <div class="pricing-card featured card-hover">
+          <div class="pricing-card featured card-hover" data-bestseller="الأفضل مبيعاً">
             <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp" alt="جهازين" />
             <h3 data-translate="pricing.option2.title">جهازين</h3>
             <div class="price"><span class="numbers-fix">1299</span> $</div>
@@ -744,27 +744,27 @@
           <form class="form" id="orderForm">
             <div class="form-group">
               <label class="form-label" data-translate="order.fullName">الاسم الكامل</label>
-              <input type="text" id="name" class="form-input" required placeholder="مثال: أحمد خالد" />
+              <input type="text" id="name" class="form-input" required placeholder="مثال: أحمد خالد" data-translate-placeholder="order.namePlaceholder" />
             </div>
             
             <div class="form-group">
               <label class="form-label" data-translate="order.email">البريد الإلكتروني</label>
-              <input type="email" id="email" class="form-input" required placeholder="مثال: example@domain.com" />
+              <input type="email" id="email" class="form-input" required placeholder="مثال: example@domain.com" data-translate-placeholder="order.emailPlaceholder" />
             </div>
             
             <div class="form-group">
               <label class="form-label" data-translate="order.phone">رقم الهاتف</label>
-              <input type="tel" id="phone" class="form-input" required placeholder="مثال: 05xxxxxxxx" dir="ltr" />
+              <input type="tel" id="phone" class="form-input" required placeholder="مثال: 05xxxxxxxx" dir="ltr" data-translate-placeholder="order.phonePlaceholder" />
             </div>
             
             <div class="form-group">
               <label class="form-label" data-translate="order.country">الدولة</label>
-              <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" />
+              <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" data-translate-placeholder="order.countryPlaceholder" />
             </div>
 
             <div class="form-group">
               <label class="form-label" data-translate="order.address">العنوان</label>
-              <textarea id="address" class="form-textarea" rows="3" required placeholder="مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد"></textarea>
+              <textarea id="address" class="form-textarea" rows="3" required placeholder="مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد" data-translate-placeholder="order.addressPlaceholder"></textarea>
             </div>
             
             <div class="form-group">
@@ -850,10 +850,10 @@
             <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
           </ul>
 
-          <h3 style="margin-top:12px" data-translate="info.aboutTitle">عن الشركة</h3>
+          <h3 style="margin-top:12px" data-translate="info.aboutTitle">عن الشرка</h3>
           <div class="muted" style="line-height:1.6">
             <p data-translate="info.about1">شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.</p>
-            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.</p>
+            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.</p>
           </div>
 
           <h3 style="margin-top:12px" data-translate="info.shippingTitle">معلومات الشحن</h3>
@@ -947,7 +947,7 @@
           <div class="whatsapp-contact">
             <a href="https://wa.me/905075803495" target="_blank">
               <i class="fab fa-whatsapp" style="font-size: 24px;"></i>
-              <span>اضغط للتواصل عبر واتساب</span>
+              <span data-translate="footer.whatsappContact">اضغط للتواصل عبر واتساب</span>
             </a>
           </div>
           
@@ -1175,12 +1175,12 @@
         'payment.guarantee1': 'سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع',
         'payment.guarantee2': 'رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب',
         'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع',
-        'payment.guarantee4': 'ضمان استرجاع كامل المبلغ خلال 14 يوم в حال عدم الرضا',
+        'payment.guarantee4': 'ضمان استرجاع كامل المبلغ خلال 14 يوم في حال عدم الرضا',
         
         // الأسئلة الشائعة
         'faq.title': 'الأسئلة الشائعة',
         'faq.q1': 'هل أحتاج نظّارات خاصة؟',
-        'faq.a1': 'يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 или ANSI.',
+        'faq.a1': 'يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.',
         'faq.q2': 'هل يكشف تحت طبقات الحماية (PPF)؟',
         'faq.a2': 'نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.',
         'faq.q3': 'هل يقيس سماكة الدهان رقميًا؟',
@@ -1220,8 +1220,13 @@
         'order.privacy2': 'سياسة الخصوصية والإرجاع',
         'order.privacy3': ' وشروط الاستخدام',
         'order.whatsappTitle': 'سيتم إرسال طلبك مباشرة عبر واتساب',
-        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك в إرسال صورة الإيصال',
+        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
         'order.submit': 'إرسال الطلب via WhatsApp',
+        'order.namePlaceholder': 'مثال: أحمد خالد',
+        'order.emailPlaceholder': 'مثال: example@domain.com',
+        'order.phonePlaceholder': 'مثال: 05xxxxxxxx',
+        'order.countryPlaceholder': 'مثال: الإمارات العربية المتحدة',
+        'order.addressPlaceholder': 'مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد',
         
         // معلومات إضافية
         'info.title': 'معلومات إضافية',
@@ -1273,7 +1278,8 @@
         'footer.features': 'المميزات',
         'footer.contact': 'تواصل واتساب',
         'footer.orderNow': 'اطلب الآن',
-        'footer.quickLinks': 'روابط سريعة'
+        'footer.quickLinks': 'روابط سريعة',
+        'footer.whatsappContact': 'اضغط للتواصل عبر واتساب'
       },
       en: {
         // Navigation
@@ -1466,6 +1472,11 @@
         'order.whatsappTitle': 'Your order will be sent directly via WhatsApp',
         'order.whatsappDesc': 'Our support team will contact you within 24 hours to confirm your order and help you send the receipt image',
         'order.submit': 'Submit Order via WhatsApp',
+        'order.namePlaceholder': 'Example: Ahmed Khalid',
+        'order.emailPlaceholder': 'Example: example@domain.com',
+        'order.phonePlaceholder': 'Example: 05xxxxxxxx',
+        'order.countryPlaceholder': 'Example: United Arab Emirates',
+        'order.addressPlaceholder': 'Example: Dubai, Al Marrar Area, Sheikh Mohammed Bin Zayed Road',
         
         // Additional Info
         'info.title': 'Additional Information',
@@ -1517,7 +1528,8 @@
         'footer.features': 'Features',
         'footer.contact': 'Contact WhatsApp',
         'footer.orderNow': 'Order Now',
-        'footer.quickLinks': 'Quick Links'
+        'footer.quickLinks': 'Quick Links',
+        'footer.whatsappContact': 'Click to contact via WhatsApp'
       }
     };
 
@@ -1583,6 +1595,12 @@
       document.documentElement.lang = lang;
       document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
       
+      // تحديث النص "الأفضل مبيعاً" في بطاقة التسعير
+      const bestsellerElement = document.querySelector('.pricing-card.featured');
+      if (bestsellerElement) {
+        bestsellerElement.setAttribute('data-bestseller', lang === 'ar' ? 'الأفضل مبيعاً' : 'Bestseller');
+      }
+      
       // تطبيق الترجمة على جميع العناصر
       applyTranslations(lang);
       
@@ -1597,7 +1615,15 @@
         const key = element.getAttribute('data-translate');
         if (translations[lang] && translations[lang][key]) {
           if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-            element.placeholder = translations[lang][key];
+            // معالجة العناصر الخاصة (placeholders)
+            if (element.hasAttribute('data-translate-placeholder')) {
+              const placeholderKey = element.getAttribute('data-translate-placeholder');
+              if (translations[lang][placeholderKey]) {
+                element.placeholder = translations[lang][placeholderKey];
+              }
+            } else {
+              element.textContent = translations[lang][key];
+            }
           } else {
             element.textContent = translations[lang][key];
           }
