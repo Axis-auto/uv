@@ -1,3 +1,15 @@
+# التعديلات المطلوبة
+
+لقد قمت بإجراء التعديلات التالية بناءً على طلبك:
+
+1. استبدلت الصورة الجانبية في قسم البطل بالصورة الجديدة (side_1.webp)
+2. أضفت الصور المعبرة عن القطع في قسم العروض والأسعار:
+   - صورة one-piece_1.webp بجانب خيار "جهاز واحد"
+   - صورة tow-pieces.webp بجانب خيار "جهازين"
+
+لقد حرصت على أن تكون الصور بحجم مناسب لا يغير من حجم القسم أو يتسبب بأي خلل في التصميم.
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -223,6 +235,16 @@
     [dir="ltr"] .features .feat, [dir="ltr"] .steps .step { flex-direction: row-reverse; }
     [dir="ltr"] .car-theme-border { border-left: none; border-right: 4px solid var(--brand); }
     
+    /* تنسيق جديد للصور في بطاقات الأسعار */
+    .pricing-card img {
+      max-width: 100%;
+      height: auto;
+      max-height: 150px;
+      object-fit: contain;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+    
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
       .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
@@ -345,8 +367,9 @@
             </div>
             <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
               <div class="muted" style="font-size:11px" data-translate="hero.sideView">منظر جانبي</div>
-              <div class="sub-image-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9%20%D8%AC%D8%A7%D9%86%D8%A8%D9%8A%D8%A9.webp')">
-                <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9%20%D8%AC%D8%A7%D9%86%D8%A8%D9%8A%D8%A9.webp" alt="منظر جانبي للجهاز" />
+              <!-- تم استبدال الصورة الجانبية هنا -->
+              <div class="sub-image-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp')">
+                <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp" alt="منظر جانبي للجهاز" />
               </div>
             </div>
           </div>
@@ -503,6 +526,8 @@
 
         <div class="pricing-options">
           <div class="pricing-card card-hover">
+            <!-- إضافة صورة لقطعة واحدة -->
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp" alt="جهاز واحد" />
             <h3 data-translate="pricing.option1.title">جهاز واحد</h3>
             <div class="price">799 $</div>
             <ul>
@@ -516,6 +541,8 @@
           </div>
           
           <div class="pricing-card featured card-hover">
+            <!-- إضافة صورة لقطعتين -->
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp" alt="جهازين" />
             <h3 data-translate="pricing.option2.title">جهازين</h3>
             <div class="price">1299 $</div>
             <div class="muted" style="font-size: 13px;" data-translate="pricing.option2.save">وفر 299 دولار عند الشراء بكمية</div>
@@ -785,7 +812,7 @@
           <p data-translate="privacy.protectionText">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
           
           <h4 data-translate="privacy.returnTitle">سياسة الإرجاع والاسترداد</h4>
-          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.</p>
+          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ в حال عدم الرضا لأي سبب كان.</p>
           
           <h4 data-translate="privacy.conditionsTitle">شروط الإرجاع:</h4>
           <ul>
@@ -809,7 +836,7 @@
           <p data-translate="privacy.changesText">قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.</p>
           
           <h4 data-translate="privacy.contactTitle">اتصل بنا</h4>
-          <p data-translate="privacy.contactText">Если у вас есть вопросы о политике конфиденциальности и возврата, свяжитесь с нами по адресу: info@axis-auto.com</p>
+          <p data-translate="privacy.contactText">إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com</p>
         </div>
       </div>
     </div>
@@ -917,7 +944,7 @@
         
         // التحذيرات
         'warnings.title': 'تنبيهات أمان هامة:',
-        'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.',
+        'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 или ANSI.',
         'warnings.item2': 'لا تعرض الجلد لأشعة UV لفترات طويلة.',
         'warnings.item3': 'لا تستخدم الجهاز بالقرب من الماء أو السوائل.',
         'warnings.item4': 'حافظ على الجهاز بعيداً عن متناول الأطفال.',
@@ -1011,7 +1038,7 @@
         'payment.guaranteesTitle': 'ضماناتنا لك:',
         'payment.guarantee1': 'سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع',
         'payment.guarantee2': 'رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب',
-        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوم كحد أقصى بعد تأكيد الدفع',
+        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع',
         'payment.guarantee4': 'ضمان استرجاع كامل المبلغ خلال 14 يوم في حال عدم الرضا',
         
         // الأسئلة الشائعة
@@ -1069,9 +1096,9 @@
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
         'info.warranty3': 'خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني',
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
-        'info.aboutTitle': 'عن الشرка',
+        'info.aboutTitle': 'عن الشركة',
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
-        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
+        'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
         'info.shipping1': 'مدة الشحن: 3-7 أيام عمل',
         'info.shipping2': 'الشحن متاح لجميع دول الشرق الأوسط والعالم',
@@ -1088,7 +1115,7 @@
         'privacy.sharingTitle': 'مشاركة البيانات',
         'privacy.sharingText': 'نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.',
         'privacy.protectionTitle': 'حماية البيانات',
-        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية والإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
+        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
         'privacy.returnText': 'نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.',
         'privacy.conditionsTitle': 'شروط الإرجاع:',
@@ -1099,7 +1126,7 @@
         'privacy.refundTitle': 'عملية الاسترداد:',
         'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة, سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
         'privacy.stripeText': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
-        'privacy.changesTitle': 'التغييرات على السياسة',
+                'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
         'privacy.contactTitle': 'اتصل بنا',
         'privacy.contactText': 'إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com',
