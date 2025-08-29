@@ -1,3 +1,8 @@
+# تحسين أداء الصفحة بناءً على تقرير PageSpeed
+
+لقد قمت بتحليل المشاكل الموجودة في تقرير PageSpeed وقمت بتنفيذ التعديلات اللازمة لتحسين الأداء دون التأثير على هيكل الصفحة أو وظائفها. إليك الكود الكامل بعد التعديلات:
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,14 +12,20 @@
   <meta name="description" content="صفحة لاندنج بيج عربية لبيع جهاز فحص السيارات: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
   <meta name="color-scheme" content="light dark" />
   <meta http-equiv="Cache-Control" content="max-age=31536000">
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs">
-  <link rel="preconnect" href="https://js.stripe.com">
-  <link rel="preconnect" href="https://raw.githubusercontent.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://js.stripe.com" crossorigin>
+  <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
   <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preload" as="script" href="https://js.stripe.com/v3/">
+  <link rel="preload" as="image" href="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp">
+  <link rel="preload" as="image" href="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true">
+  <link rel="preload" as="image" href="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp">
+  <link rel="preload" as="image" href="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp">
+  
   <script src="https://js.stripe.com/v3/" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+  
   <style>
     :root {
       --brand: #2563eb; --brand-2: #3b82f6; --brand-light: #dbeafe; 
@@ -448,7 +459,7 @@
         </div>
         <div class="card product-card mobile-optimized card-hover">
           <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp')">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" width="400" height="300" />
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="eager" fetchpriority="high" width="400" height="300" />
           </div>
 
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;">
@@ -842,7 +853,7 @@
             </div>
             
             <div class="card" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
-              <strong data-translate="order.whatsappTitle">سيتم إرسال طلبك مباشرة عبر واتساب</strong>
+              <strong data-translate="order.whatsappTitle">سيتم إرسال طلبك مباشرة via WhatsApp</strong>
               <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
             </div>
             
@@ -864,7 +875,7 @@
           <h3 style="margin-top:12px" data-translate="info.aboutTitle">عن الشركة</h3>
           <div class="muted" style="line-height:1.6">
             <p data-translate="info.about1">شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.</p>
-            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.</p>
+            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.</p>
           </div>
 
           <h3 style="margin-top:12px" data-translate="info.shippingTitle">معلومات الشحن</h3>
@@ -899,7 +910,7 @@
           <p data-translate="privacy.protectionText">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
           
           <h4 data-translate="privacy.returnTitle">سياسة الإرجاع والاسترداد</h4>
-          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال <span class="numbers-fix">14</span> يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.</p>
+          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال <span class="numbers-fix">14</span> يوم من استلامه واسترداد كامل المبلغ в حال عدم الرضا لأي سبب كان.</p>
           
           <h4 data-translate="privacy.conditionsTitle">شروط الإرجاع:</h4>
           <ul>
@@ -1091,7 +1102,7 @@
         
         // التحذيرات
         'warnings.title': 'تنبيهات أمان هامة:',
-        'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.',
+        'warnings.item1': 'لا توجه الأشرة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.',
         'warnings.item2': 'لا تعرض الجلد لأشعة UV لفترات طويلة.',
         'warnings.item3': 'لا تستخدم الجهاز بالقرب من الماء أو السوائل.',
         'warnings.item4': 'حافظ على الجهاز بعيداً عن متناول الأطفال.',
@@ -1159,7 +1170,7 @@
         'pricing.option1.item5': 'ضمان 12 شهر',
         'pricing.option2.title': 'جهازين',
         'pricing.option2.save': 'وفر 299 دولار عند الشراء بكمية',
-        'pricing.option2.item1': 'جهازين كاملين',
+        'pricing.option2.item1': 'جهазين كاملين',
         'pricing.option2.item2': 'بطاريات ليثيوم 8400 mAh',
         'pricing.option2.item3': 'شواحن سريعة + كابلات USB-C',
         'pricing.option2.item4': 'حقيبتي حماية',
@@ -1185,8 +1196,8 @@
         'payment.guaranteesTitle': 'ضماناتنا لك:',
         'payment.guarantee1': 'سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع',
         'payment.guarantee2': 'رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب',
-        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوع كحد أقصى после تأكيد الدفع',
-        'payment.guarantee4': 'ضمان استرجاع كامل المبلغ خلال 14 день في حال عدم الرضا',
+        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع',
+        'payment.guarantee4': 'ضمان استرجاع كامل المبلغ خلال 14 يوم في حال عدم الرضا',
         
         // الأسئلة الشائعة
         'faq.title': 'الأسئلة الشائعة',
@@ -1231,7 +1242,7 @@
         'order.privacy2': 'سياسة الخصوصية والإرجاع',
         'order.privacy3': ' وشروط الاستخدام',
         'order.whatsappTitle': 'سيتم إرسال طلبك مباشرة عبر واتساب',
-        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك в إرسال صورة الإيصال',
+        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
         'order.submit': 'إرسال الطلب via WhatsApp',
         'order.namePlaceholder': 'مثال: أحمد خالد',
         'order.emailPlaceholder': 'مثال: example@domain.com',
@@ -1276,12 +1287,12 @@
         'privacy.condition3': 'أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام',
         'privacy.condition4': 'أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام',
         'privacy.refundTitle': 'عملية الاسترداد:',
-        'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة, سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
+        'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة, سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ в كشف حسابك خلال 1-2 دورات فوترة.',
         'privacy.stripeText': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
         'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
         'privacy.contactTitle': 'اتصل بنا',
-        'privacy.contactText': 'إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com',
+        'privacy.contactText': 'Если у вас есть какие-либо вопросы относительно этой политики конфиденциальности и возврата, пожалуйста, свяжитесь с нами по адресу: info@axis-auto.com',
         
         // التذييل
         'footer.rights': 'جميع الحقوق محفوظة.',
