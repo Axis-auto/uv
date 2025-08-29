@@ -15,6 +15,7 @@
       --ok: #16a34a; --warn: #f59e0b; --danger: #dc2626; 
       --radius: 12px; --shadow: 0 5px 15px rgba(0,0,0,0.08); 
       --transition: all 0.3s ease;
+      --header-bg: rgba(0, 0, 0, 0.7);
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,11 +31,11 @@
     
     header {
       position: sticky; top: 0; 
-      background: rgba(0, 0, 0, 0.7);
+      background: var(--header-bg);
       backdrop-filter: blur(10px); 
       z-index: 50; 
       box-shadow: var(--shadow);
-      background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
+      background-image: linear-gradient(var(--header-bg), var(--header-bg)), url('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
@@ -91,10 +92,10 @@
     .product-card { display: grid; gap: 8px; }
     
     .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; }
-    .product-img-container img { width: 100%; height: auto; max-height: 400px; object-fit: contain; }
-    .sub-image-container img { width: 100%; height: auto; max-height: 150px; object-fit: contain; }
+    .product-img-container img, .sub-image-container img { width: 100%; height: auto; object-fit: contain; transition: transform 0.3s ease; }
+    .product-img-container img { max-height: 400px; }
+    .sub-image-container img { max-height: 150px; }
     .image-container { position: relative; width: 100%; overflow: hidden; cursor: pointer; }
-    .image-container img { transition: transform 0.3s ease; object-fit: contain; }
     .image-container:hover img { transform: scale(1.05); }
     
     .grid { display: grid; gap: 10px; }
@@ -216,7 +217,7 @@
     .guarantee-badge { display: flex; align-items: center; gap: 6px; margin: 12px 0; padding: 8px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; }
     
     .contact-info { display: flex; flex-direction: column; gap: 6px; }
-    .contact-item { display: flex; align-items: center; gap: 6px; direction: ltr; unicode-bidi: embed; }
+    .contact-item { display: flex; align-items: center; gap: 6px; }
     
     /* Footer styles */
     .footer-content {
@@ -318,18 +319,21 @@
     
     /* Fix for numbers display */
     .numbers-fix {
-      unicode-bidi: embed;
+      unicode-bidi: plaintext;
       direction: ltr;
       display: inline-block;
     }
     
+    /* LTR overrides */
     [dir="ltr"] { text-align: left; direction: ltr; }
     [dir="ltr"] .table th { text-align: left; }
     [dir="ltr"] .pricing-card ul { text-align: left; padding-left: 16px; }
     [dir="ltr"] .warnings ul { padding-right: 0; padding-left: 16px; }
     [dir="ltr"] .features .feat, [dir="ltr"] .steps .step { flex-direction: row-reverse; }
     [dir="ltr"] .car-theme-border { border-left: none; border-right: 4px solid var(--brand); }
+    [dir="ltr"] .footer-contact-item { direction: ltr; }
     
+    /* Responsive styles */
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
       .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
@@ -389,7 +393,7 @@
   <header>
     <div class="container inner">
       <div class="logo">
-        <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" />
+        <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" />
         <span>AXIS AUTO</span>
       </div>
       <nav style="display:flex;gap:8px;align-items:center">
@@ -437,7 +441,7 @@
         </div>
         <div class="card product-card mobile-optimized card-hover">
           <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp')">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" />
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" />
           </div>
 
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;">
@@ -450,13 +454,13 @@
             <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
               <div class="muted" style="font-size:11px" data-translate="hero.frontBackView">منظر أمامي وخلفي</div>
               <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true')">
-                <img src="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true" alt="منظر أمامي وخلفي للجهاز" />
+                <img src="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true" alt="منظر أمامي وخلفي للجهاز" loading="lazy" />
               </div>
             </div>
             <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
               <div class="muted" style="font-size:11px" data-translate="hero.sideView">منظر جانبي</div>
               <div class="sub-image-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp')">
-                <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp" alt="منظر جانبي للجهاز" />
+                <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp" alt="منظر جانبي للجهاز" loading="lazy" />
               </div>
             </div>
           </div>
@@ -496,7 +500,7 @@
             <div class="icon feature-icon">✓</div>
             <div>
               <div style="font-weight:800" data-translate="features.feat4.title">متين ومحمول</div>
-              <div class="muted" data-translate="features.feat4.desc">هيكل من الألومنيوم معالج + بولimer مضغوط — حقيبة واقية مرفقة.</div>
+              <div class="muted" data-translate="features.feat4.desc">هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.</div>
             </div>
           </div>
         </div>
@@ -613,7 +617,7 @@
 
         <div class="pricing-options">
           <div class="pricing-card card-hover">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp" alt="جهاز واحد" />
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp" alt="جهاز واحد" loading="lazy" />
             <h3 data-translate="pricing.option1.title">جهاز واحد</h3>
             <div class="price"><span class="numbers-fix">799</span> $</div>
             <ul>
@@ -627,7 +631,7 @@
           </div>
           
           <div class="pricing-card featured card-hover" data-bestseller="الأفضل مبيعاً">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp" alt="جهازين" />
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp" alt="جهازين" loading="lazy" />
             <h3 data-translate="pricing.option2.title">جهازين</h3>
             <div class="price"><span class="numbers-fix">1299</span> $</div>
             <div class="muted" style="font-size: 13px;" data-translate="pricing.option2.save">وفر <span class="numbers-fix">299</span> دولار عند الشراء بكمية</div>
@@ -696,7 +700,7 @@
             <li data-translate="payment.guarantee1">سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع</li>
             <li data-translate="payment.guarantee2">رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب</li>
             <li data-translate="payment.guarantee3">المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع</li>
-            <li data-translate="payment.guarantee4">ضمان استرجاع كامل المبلغ خلال <span class="numbers-fix">14</span> يوم في حال عدم الرضا</li>
+            <li data-translate="payment.guarantee4">ضمان استرجاع كامل المبلغ خلال <span class="numbers-fix">14</span> يوم в حال عدم الرضا</li>
           </ul>
         </div>
       </div>
@@ -850,10 +854,10 @@
             <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
           </ul>
 
-          <h3 style="margin-top:12px" data-translate="info.aboutTitle">عن الشرка</h3>
+          <h3 style="margin-top:12px" data-translate="info.aboutTitle">عن الشركة</h3>
           <div class="muted" style="line-height:1.6">
             <p data-translate="info.about1">شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.</p>
-            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.</p>
+            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.</p>
           </div>
 
           <h3 style="margin-top:12px" data-translate="info.shippingTitle">معلومات الشحن</h3>
@@ -888,7 +892,7 @@
           <p data-translate="privacy.protectionText">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
           
           <h4 data-translate="privacy.returnTitle">سياسة الإرجاع والاسترداد</h4>
-          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال <span class="numbers-fix">14</span> يوم من استلامه واسترداد كامل المبلغ в حال عدم الرضا لأي سبب كان.</p>
+          <p data-translate="privacy.returnText">نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال <span class="numbers-fix">14</span> يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.</p>
           
           <h4 data-translate="privacy.conditionsTitle">شروط الإرجاع:</h4>
           <ul>
@@ -899,7 +903,7 @@
           </ul>
           
           <h4 data-translate="privacy.refundTitle">عملية الاسترداد:</h4>
-          <p data-translate="privacy.refundText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال <span class="numbers-fix">5-7</span> أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ в كشف حسابك خلال <span class="numbers-fix">1-2</span> دورات فوترة.</p>
+          <p data-translate="privacy.refundText">عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال <span class="numbers-fix">5-7</span> أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال <span class="numbers-fix">1-2</span> دورات فوترة.</p>
           
           <div class="stripe-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -933,11 +937,11 @@
           </div>
           <div class="footer-contact-item">
             <i class="fab fa-whatsapp"></i>
-            <span>+971 50 152 5742</span>
+            <span class="numbers-fix">+971 50 152 5742</span>
           </div>
           <div class="footer-contact-item">
             <i class="fas fa-phone"></i>
-            <span>+971 6 565 0021</span>
+            <span class="numbers-fix">+971 6 565 0021</span>
           </div>
           <div class="footer-contact-item">
             <i class="fas fa-map-marker-alt"></i>
@@ -1174,7 +1178,7 @@
         'payment.guaranteesTitle': 'ضماناتنا لك:',
         'payment.guarantee1': 'سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع',
         'payment.guarantee2': 'رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب',
-        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع',
+        'payment.guarantee3': 'المنتج سيصل إليك خلال أسبوع كحد أقصى после تأكيد الدفع',
         'payment.guarantee4': 'ضمان استرجاع كامل المبلغ خلال 14 يوم في حال عدم الرضا',
         
         // الأسئلة الشائعة
@@ -1256,7 +1260,7 @@
         'privacy.sharingTitle': 'مشاركة البيانات',
         'privacy.sharingText': 'نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.',
         'privacy.protectionTitle': 'حماية البيانات',
-        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية والإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
+        'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
         'privacy.returnText': 'نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.',
         'privacy.conditionsTitle': 'شروط الإرجاع:',
