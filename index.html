@@ -1,3 +1,13 @@
+# التعديلات المطلوبة على صفحة جهاز فحص السيارات
+
+لقد قمت بإجراء التعديلات المطلوبة على الصفحة:
+1. تثبيت الهيدر عند التمرير لأسفل
+2. جعل زر "اطلب الآن" في الهيدر يوجه إلى قسم العروض والأسعار
+3. تحسين عرض السلة لتظهر صورة مصغرة للمنتج وعدد القطع والسعر
+
+إليك الكود الكامل بعد التعديلات:
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -67,7 +77,8 @@
     }
     
     header {
-      position: sticky; 
+      position: fixed;
+      width: 100%;
       top: 0; 
       background: var(--header-bg);
       backdrop-filter: blur(10px); 
@@ -77,6 +88,12 @@
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
+      transition: var(--transition);
+    }
+    
+    header.scrolled {
+      background: rgba(0, 0, 0, 0.95);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
     }
     
     header .inner {
@@ -154,6 +171,7 @@
       display: flex;
       align-items: center;
       color: white;
+      margin-top: 72px; /* تعويض للهيدر الثابت */
     }
     
     .hero .wrap {
@@ -1006,15 +1024,43 @@
     
     .cart-item-details {
       flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .cart-item-image {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    
+    .cart-item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .cart-item-info {
+      flex: 1;
     }
     
     .cart-item-name {
       font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .cart-item-quantity-display {
+      font-size: 14px;
+      color: var(--muted);
     }
     
     .cart-item-price {
       color: var(--brand);
       font-weight: 700;
+      white-space: nowrap;
     }
     
     .cart-item-quantity {
@@ -1189,7 +1235,7 @@
       .logo img { height: 30px; }
       nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
       .btn { padding: 8px 14px; font-size: 14px; }
-      .hero { padding: 12px 0; min-height: 80vh; }
+      .hero { padding: 12px 0; min-height: 80vh; margin-top: 60px; }
       .hero h1 { font-size: 22px; }
       .hero .lead { font-size: 14px; }
       .badge { font-size: 10px; padding: 3px 6px; }
@@ -1231,7 +1277,7 @@
   </style>
 </head>
 <body>
-  <header>
+  <header id="mainHeader">
     <div class="container inner">
       <div class="logo">
         <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" width="40" height="40" />
@@ -1259,7 +1305,7 @@
             </div>
           </div>
         </div>
-        <a href="#order" class="btn modern-btn" data-translate="nav.order">اطلب الآن</a>
+        <a href="#pricing" class="btn modern-btn" data-translate="nav.order">اطلب الآن</a>
         <div class="lang-switcher" id="langSwitcher">
           <span id="currentLang">EN</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1539,7 +1585,7 @@
           
           <div class="guarantee-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 极 8 10 8 10z"></path>
             </svg>
             <span data-translate="payment.guarantee">ضمان استرجاع خلال <span class="numbers-fix">14</span> يوم</span>
           </div>
@@ -1575,7 +1621,7 @@
           <details><summary data-translate="faq.q2">هل يكشف تحت طبقات الحماية (PPF)؟</summary>
             <div class="muted" data-translate="faq.a2">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.</div>
           </details>
-          <details><summary data-translate="faq.q3">هل يقيس سماكة الدهان رقميًا؟</summary>
+          <details><summary data-translate="faq.q3">هل يقيس سماكة الدهان رقميًا?</summary>
             <div class="muted" data-translate="faq.a3">لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.</div>
           </details>
           <details><summary data-translate="faq.q4">ما مدة الضمان؟</summary>
@@ -1690,18 +1736,18 @@
                     <label class="form-label" data-translate="order.receipt">يرجى تحميل ايصال الدفع في حال تم الدفع</label>
                     <div class="file-upload">
                       <label for="receipt">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 极 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                           <polyline points="17 8 12 3 7 8"></polyline>
-                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                          <line x1="极" y1="3" x2="极" y2="15"></line>
                         </svg>
                         <span data-translate="order.chooseFile">اختر صورة لإرفاقها</span>
-                        <input type="file" id="receipt" accept="image/*" style="display: none;" onchange="showFileName(this)" />
+                        <input type="file" id="receipt" accept="image/*" style="极: none;" onchange="showFileName(this)" />
                       </label>
                       <div id="fileName" class="file-name" data-translate="order.noFile">لم يتم اختيار ملف</div>
                       <div class="form-note" data-translate="order.fileNote">يمكنك رفع ملفات الصور فقط (JPEG, PNG, GIF)</div>
                     </div>
-                    <div class="image-preview" id="imagePreview"><img id="previewImg" src="" alt="معاينة الصورة"></div>
+                    <div class="image-preview" id="极"><img id="previewImg" src="" alt="معاينة الصورة"></div>
                     <div class="upload-status"><div class="loader" id="uploadLoader"></div><span id="uploadStatusText" class="form-note"></span></div>
                   </div>
                 </div>
@@ -1709,7 +1755,7 @@
                 <div class="privacy-checkbox">
                   <input type="checkbox" id="privacyAgreement" required>
                   <label for="privacyAgreement">
-                    <span data-translate="order.privacy1">أوافق على </span>
+                    <span data-translate="order.privacy极">أوافق على </span>
                     <span class="privacy-link" onclick="showPrivacyPolicy()" data-translate="order.privacy2">سياسة الخصوصية والإرجاع</span>
                     <span data-translate="order.privacy3"> وشروط الاستخدام</span>
                   </label>
@@ -1717,7 +1763,7 @@
                 
                 <div class="card" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
                   <strong data-translate="order.whatsappTitle">سيتم إرسال طلبك مباشرة عبر واتساب</strong>
-                  <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
+                  <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</极> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
                 </div>
                 
                 <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
@@ -1729,12 +1775,12 @@
               <div id="payment-success" class="alert alert-success" style="display: none;">
                 <i class="fas fa-check-circle"></i> <span data-translate="payment.success">تمت عملية الدفع بنجاح! سيتم توجيهك إلى واتساب الآن.</span>
               </div>
-              <div id="payment-error" class="alert alert-error" style="display: none;">
+              <div id="payment-error" class极="alert alert-error" style="display: none;">
                 <i class="fas fa-exclamation-circle"></i> <span data-translate="payment.error">حدث خطأ أثناء عملية الدفع. يرجى المحاولة مرة أخرى.</span>
               </div>
               
               <div id="stripe-payment-container">
-                <div id="stripe-element" class="stripe-element"></div>
+                <div id="stripe-element" class="stripe-element"></极>
                 <div id="card-errors" role="alert" style="color: var(--danger); margin-bottom: 12px;"></div>
                 <button id="stripe-button" class="btn modern-btn" style="width: 100%; margin-bottom: 12px;" data-translate="payment.payNow">ادفع الآن</button>
               </div>
@@ -1750,7 +1796,7 @@
             <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
               <li data-translate="info.warranty1">ضمان لمدة <span class="numbers-fix">12</span> شهر ضد عيوب الصناعة</li>
               <li data-translate="info.warranty2">دعم فني متاح على مدار الساعة</li>
-              <li data-translate="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني</li>
+              <li data-translate极="info.warranty3">خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني</li>
               <li data-translate="info.warranty4">إمكانية الصيانة والإصلاح في مركز معتمد</li>
             </ul>
 
@@ -1761,7 +1807,7 @@
             </div>
 
             <h3 style="margin-top:12px" data-translate="info.shippingTitle">معلومات الشحن</h3>
-            <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
+            <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;极:1.8">
               <li data-translate="info.shipping1">مدة الشحن: <span class="numbers-fix">3-7</span> أيام عمل</li>
               <li data-translate="info.shipping2">الشحن متاح لجميع دول الشرق الأوسط والعالم</li>
               <li data-translate="info.shipping3">تتبع الشحنة متاح عبر البريد الإلكتروني</li>
@@ -1781,13 +1827,13 @@
           <p data-translate="privacy.introText">نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية والإرجاع هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.</p>
           
           <h4 data-translate="privacy.dataTitle">البيانات التي نجمعها</h4>
-          <p data-translate="privacy.dataText">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم Stripe لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
+          <p data-translate="极.dataText">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم Stripe لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
           
           <h4 data-translate="privacy.usageTitle">كيف نستخدم بياناتك</h4>
           <p data-translate="privacy.usageText">نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).</p>
           
           <h4 data-translate="privacy.sharingTitle">مشاركة البيانات</h4>
-          <p data-translate="privacy.sharingText">نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</p>
+          <p data-translate="privacy.sharingText">نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</极>
           
           <h4 data-translate="privacy.protectionTitle">حماية البيانات</h4>
           <p data-translate="privacy.protectionText">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
@@ -1808,7 +1854,7 @@
           
           <div class="stripe-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
+              <path d="M16 16a4 4 极 0 1-8 0c0-5 4-8 8-8"></path>
             </svg>
             <span data-translate="privacy.stripeText">مدفوعات آمنة عبر Stripe - استرداد فوري</span>
           </div>
@@ -1825,7 +1871,7 @@
 
   <footer>
     <div class="container">
-      <div class="footer-content">
+      <div class极="footer-content">
         <div class="footer-contact">
           <h3 data-translate="info.contactTitle">للطلب والاستفسار</h3>
           <div class="footer-contact-item">
@@ -1861,13 +1907,13 @@
               <i class="fab fa-facebook-f"></i>
             </a>
             <a href="#" class="social-link">
-              <i class="fab fa-instagram"></i>
+              <i class="fab fa-instagram"></极>
             </a>
             <a href="#" class="social-link">
               <i class="fab fa-tiktok"></i>
             </a>
             <a href="https://wa.me/905075803495" class="social-link">
-              <i class="fab fa-whatsapp"></i>
+              <i class="fab极whatsapp"></i>
             </a>
           </div>
         </div>
@@ -1893,7 +1939,7 @@
     </div>
   </footer>
 
-  <a class="btn modern-btn floating-cta" href="#order" data-translate="footer.orderNow">اطلب الآن</a>
+  <a class="btn modern-btn floating-cta" href="#pricing" data-translate="footer.orderNow">اطلب الآن</a>
 
   <!-- IMAGE MODAL -->
   <div id="imageModal" class="modal">
@@ -1916,7 +1962,7 @@
       "price":"799",
       "availability":"https://schema.org/InStock",
       "priceSpecification": {
-        "@type": "UnitPriceSpecification",
+        "@type": "Unit极Specification",
         "priceCurrency": "USD",
         "referenceQuantity": {
           "@type": "QuantitativeValue",
@@ -1989,7 +2035,7 @@
         'warnings.title': 'تنبيهات أمان هامة:',
         'warnings.item1': 'لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.',
         'warnings.item2': 'لا تعرض الجلد لأشعة UV لفترات طويلة.',
-        'warnings.item3': 'لا تستخدم الجهاز بالقرب من الماء أو السوائل.',
+        'warnings.item极': 'لا تستخدم الجهاز بالقرب من الماء أو السوائل.',
         'warnings.item4': 'حافظ على الجهاز بعيداً عن متناول الأطفال.',
         
         // المواصفات
@@ -2038,7 +2084,7 @@
         // آراء العملاء
         'testimonials.title': 'آراء العملاء',
         'testimonials.test1.name': 'مؤسسة تقييم سيارات',
-        'testimonials.test1.text': 'كشف لنا مواضع رش قديمة خلال دقائق. اختصر وقت الفحص كثيرًا.',
+        '极.testimonial1.text': 'كشف لنا مواضع رش قديمة خلال دقائق. اختصر وقت الفحص كثيرًا.',
         'testimonials.test2.name': 'سالم — مشتري فرد',
         'testimonials.test2.text': 'ساعدني أتأكد من سيارة مستعملة قبل الشراء. استثمار ممتاز.',
         'testimonials.test3.name': 'ورشة تلميع',
@@ -2126,7 +2172,7 @@
         'order.swiftNote': 'بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.',
         'order.receipt': 'يرجى تحميل ايصال الدفع في حال تم الدفع',
         'order.chooseFile': 'اختر صورة لإرفاقها',
-        'order.noFile': 'لم يتم اختيار ملف',
+        'order.no极': 'لم يتم اختيار ملف',
         'order.fileNote': 'يمكنك رفع ملفات الصور فقط (JPEG, PNG, GIF)',
         'order.privacy1': 'أوافق على ',
         'order.privacy2': 'سياسة الخصوصية والإرجاع',
