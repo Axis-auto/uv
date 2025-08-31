@@ -351,7 +351,7 @@
     @media (max-width:768px) {
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
-      .logo span { font-size: 14px; } /* تصغير حجم النص "AXIS AUTO" */
+      .logo span { font-size: 14px; display: none; } /* إخفاء نص "AXIS AUTO" على الشاشات الصغيرة */
       header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } /* Adjusted padding for better alignment */
       nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* Added padding to nav */
       nav::-webkit-scrollbar { display: none; }
@@ -783,7 +783,7 @@
             <div class="muted" data-translate="faq.a6">بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.</div>
           </details>
           <details><summary data-translate="faq.q7">كيف يمكنني إرجاع المنتج؟</summary>
-            <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.</div>
+            <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، أقوم باسترداد المبلغ خلال 5-7 أيام عمل.</div>
           </details>
           <details><summary data-translate="faq.q8">هل الدفع عبر Stripe آمن؟</summary>
             <div class="muted" data-translate="faq.a8">نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.</div>
@@ -1257,7 +1257,7 @@
         'faq.q6': 'ما هي مدة الشحن المتوقعة?',
         'faq.a6': 'بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.',
         'faq.q7': 'كيف يمكنني إرجاع المنتج؟',
-        'faq.a7': 'اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.',
+        'faq.a7': 'اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، أقوم باسترداد المبلغ خلال 5-7 أيام عمل.',
         'faq.q8': 'هل الدفع عبر Stripe آمن؟',
         'faq.a8': 'نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.',
         
