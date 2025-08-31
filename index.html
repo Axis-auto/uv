@@ -350,7 +350,9 @@
     @media (max-width:768px) {
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
-      header .inner { flex-wrap: wrap; }
+      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; }
+      nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; }
+      .btn.ghost { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
       .hero h1, .hero .lead { text-align: center; }
       .badges, .cta-row { justify-content: center; }
       .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
@@ -361,14 +363,17 @@
       .icon, .step .num { margin: 0 auto; }
       .footer-bottom { flex-direction: column; text-align: center; }
       .footer-links { justify-content: center; }
+      .lang-switcher { padding: 4px 8px; font-size: 12px; gap: 4px; }
+      .cart-icon .fa-shopping-cart { font-size: 16px; }
+      .cart-count { font-size: 10px; min-width: 16px; padding: 1px 4px; top: -6px; right: -6px; }
     }
     
     @media (max-width:640px) {
       .container { padding: 8px; }
       header .inner { padding: 6px 0; }
-      .logo { font-size: 14px; }
+      .logo { font-size: 14px; gap: 6px; }
       .logo img { height: 30px; }
-      nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+      nav { gap: 4px; }
       .btn { padding: 8px 14px; font-size: 14px; }
       .hero { padding: 12px 0; min-height: 80vh; }
       .hero h1 { font-size: 22px; }
@@ -393,6 +398,12 @@
       .hero h1 { font-size: 20px; }
       .badge { font-size: 9px; }
       .kpis { grid-template-columns: 1fr; }
+      header .inner { gap: 4px; }
+      nav { gap: 2px; }
+      .btn.ghost { padding: 4px 8px; font-size: 10px; }
+      .lang-switcher { padding: 2px 4px; font-size: 10px; gap: 2px; }
+      .cart-icon .fa-shopping-cart { font-size: 14px; }
+      .cart-count { font-size: 8px; min-width: 14px; padding: 0px 3px; top: -4px; right: -4px; }
     }
 
     /* Cart Styles */
