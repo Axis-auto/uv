@@ -407,6 +407,14 @@
     .quantity-controls button { padding: 5px 10px; background: var(--brand); color: white; border: none; cursor: pointer; }
     .cart-total { margin-top: 20px; font-weight: bold; text-align: right; }
     .checkout-btn { display: block; width: 100%; margin-top: 20px; }
+
+    /* Cart Summary Styles */
+    .cart-summary { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-bottom: 16px; }
+    .cart-summary-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+    .cart-summary-item img { width: 80px; height: auto; object-fit: contain; border-radius: 8px; }
+    .cart-summary-details { flex: 1; }
+    .cart-summary-subtotal, .cart-summary-shipping, .cart-summary-grandtotal { display: flex; justify-content: space-between; padding: 4px 0; }
+    .cart-summary-grandtotal { font-weight: bold; border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px; }
   </style>
 </head>
 <body>
@@ -649,7 +657,7 @@
               <li data-translate="pricing.option1.item2">بطارية ليثيوم <span class="numbers-fix">8400</span> mAh</li>
               <li data-translate="pricing.option1.item3">شاحن سريع + كابل USB-C</li>
               <li data-translate="pricing.option1.item4">حقيبة حماية</li>
-              <li data-translate="pricing.option1.item5">ضمان <span class="numbers-fix">12</span> месяц</li>
+              <li data-translate="pricing.option1.item5">ضمان <span class="numbers-fix">12</span> شهر</li>
             </ul>
             <button class="btn modern-btn" onclick="addToCart(1)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
           </div>
@@ -769,6 +777,7 @@
         <div class="card card-hover">
           <h2 data-translate="order.title">اطلبه الآن</h2>
           <div id="alertBox" class="alert" style="display: none;"></div>
+          <div id="cartSummary" class="cart-summary"></div>
           <form class="form" id="orderForm">
             <div class="form-group">
               <label class="form-label" data-translate="order.fullName">الاسم الكامل</label>
@@ -945,7 +954,9 @@
           <span class="close-modal" onclick="closeCartModal()">&times;</span>
         </div>
         <div id="cartItems"></div>
-        <div class="cart-total" id="cartTotal"></div>
+        <div class="cart-total" id="cartSubtotal"></div>
+        <div class="cart-total" id="cartShipping"></div>
+        <div class="cart-total" id="cartGrandTotal"></div>
         <button class="btn modern-btn checkout-btn" onclick="proceedToCheckout()" data-translate="cart.checkout">الانتقال إلى الدفع</button>
       </div>
     </div>
@@ -1237,9 +1248,6 @@
         'order.phone': 'رقم الهاتف',
         'order.country': 'الدولة',
         'order.address': 'العنوان',
-        'order.quantity': 'الكمية',
-        'order.option1': 'جهاز واحد - 799 $',
-        'order.option2': 'جهازين - 1299 $',
         'order.paymentMethod': 'طريقة الدفع',
         'order.paymentStripe': 'الدفع بالبطاقة (Stripe)',
         'order.paymentSwift': 'حوالة بنكية (SWIFT)',
@@ -1322,6 +1330,9 @@
         'cart.item': 'جهاز فحص السيارات',
         'cart.quantity': 'الكمية',
         'cart.price': 'السعر',
+        'cart.subtotal': 'المجموع الفرعي',
+        'cart.shipping': 'الشحن',
+        'cart.grandtotal': 'الإجمالي الكلي',
         'cart.total': 'الإجمالي'
       },
       en: {
@@ -1496,9 +1507,6 @@
         'order.phone': 'Phone Number',
         'order.country': 'Country',
         'order.address': 'Address',
-        'order.quantity': 'Quantity',
-        'order.option1': 'One Device - $799',
-        'order.option2': 'Two Devices - $1299',
         'order.paymentMethod': 'Payment Method',
         'order.paymentStripe': 'Card Payment (Stripe)',
         'order.paymentSwift': 'Bank Transfer (SWIFT)',
@@ -1581,6 +1589,9 @@
         'cart.item': 'Car Inspection Device',
         'cart.quantity': 'Quantity',
         'cart.price': 'Price',
+        'cart.subtotal': 'Subtotal',
+        'cart.shipping': 'Shipping',
+        'cart.grandtotal': 'Grand Total',
         'cart.total': 'Total'
       }
     };
@@ -1590,6 +1601,7 @@
       initPage();
       initStripe();
       loadCart();
+      updateCartSummary();
     });
 
     // تهيئة الصفحة
@@ -1658,6 +1670,7 @@
       
       // إعادة عرض السلة باللغة الجديدة
       updateCartDisplay();
+      updateCartSummary();
       
       // حفظ اللغة المفضلة
       localStorage.setItem('preferredLanguage', lang);
@@ -1879,7 +1892,9 @@
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
       msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
       msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${cartQuantity}%0A`;
-      msg += `${currentLang === 'ar' ? 'الإجمالي' : 'Total'}: ${calculateTotal()} $%0A`;
+      msg += `${currentLang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}: ${calculateSubtotal()} $%0A`;
+      msg += `${currentLang === 'ar' ? 'الشحن' : 'Shipping'}: ${calculateShipping()} $%0A`;
+      msg += `${currentLang === 'ar' ? 'الإجمالي الكلي' : 'Grand Total'}: ${calculateGrandTotal()} $%0A`;
       msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
       
       if (imageUrl) {
@@ -1935,13 +1950,36 @@
       saveCart();
       updateCartCount();
       showAlert(currentLang === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', 'success');
+      updateCartDisplay();
+      updateCartSummary();
       openCartModal();
     }
 
-    // تحديث عرض السلة
+    // حساب المجموع الفرعي
+    function calculateSubtotal() {
+      if (cartQuantity === 0) return 0;
+      if (cartQuantity === 1) return 799;
+      if (cartQuantity === 2) return 1299;
+      return 1299 + (cartQuantity - 2) * 700;
+    }
+
+    // حساب الشحن
+    function calculateShipping() {
+      return cartQuantity === 1 ? 40 : 0;
+    }
+
+    // حساب الإجمالي الكلي
+    function calculateGrandTotal() {
+      return calculateSubtotal() + calculateShipping();
+    }
+
+    // تحديث عرض السلة في المودال
     function updateCartDisplay() {
       const cartItems = document.getElementById('cartItems');
-      const cartTotal = document.getElementById('cartTotal');
+      const cartSubtotal = document.getElementById('cartSubtotal');
+      const cartShipping = document.getElementById('cartShipping');
+      const cartGrandTotal = document.getElementById('cartGrandTotal');
+      
       if (cartQuantity === 0) {
         cartItems.innerHTML = `<p>${translations[currentLang]['cart.empty']}</p>`;
       } else {
@@ -1953,11 +1991,47 @@
               <span>${cartQuantity}</span>
               <button onclick="changeQuantity(1)">+</button>
             </div>
-            <span>${calculateTotal()} $</span>
+            <span>${calculateSubtotal()} $</span>
           </div>
         `;
       }
-      cartTotal.innerHTML = `${translations[currentLang]['cart.total']}: ${calculateTotal()} $`;
+      cartSubtotal.innerHTML = `${translations[currentLang]['cart.subtotal']}: ${calculateSubtotal()} $`;
+      cartShipping.innerHTML = `${translations[currentLang]['cart.shipping']}: ${calculateShipping()} $`;
+      cartGrandTotal.innerHTML = `${translations[currentLang]['cart.grandtotal']}: ${calculateGrandTotal()} $`;
+    }
+
+    // تحديث عرض ملخص السلة فوق النموذج
+    function updateCartSummary() {
+      const cartSummary = document.getElementById('cartSummary');
+      if (cartQuantity === 0) {
+        cartSummary.innerHTML = `<p>${translations[currentLang]['cart.empty']}</p>`;
+      } else {
+        cartSummary.innerHTML = `
+          <div class="cart-summary-item">
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="${translations[currentLang]['cart.item']}">
+            <div class="cart-summary-details">
+              <h4>${translations[currentLang]['cart.item']}</h4>
+              <div class="quantity-controls">
+                <button onclick="changeQuantity(-1)">-</button>
+                <span>${cartQuantity}</span>
+                <button onclick="changeQuantity(1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="cart-summary-subtotal">
+            <span>${translations[currentLang]['cart.subtotal']}:</span>
+            <span>${calculateSubtotal()} $</span>
+          </div>
+          <div class="cart-summary-shipping">
+            <span>${translations[currentLang]['cart.shipping']}:</span>
+            <span>${calculateShipping()} $</span>
+          </div>
+          <div class="cart-summary-grandtotal">
+            <span>${translations[currentLang]['cart.grandtotal']}:</span>
+            <span>${calculateGrandTotal()} $</span>
+          </div>
+        `;
+      }
     }
 
     // تغيير الكمية
@@ -1966,12 +2040,7 @@
       saveCart();
       updateCartCount();
       updateCartDisplay();
-    }
-
-    // حساب الإجمالي
-    function calculateTotal() {
-      if (cartQuantity === 0) return 0;
-      return 799 + (cartQuantity - 1) * 700;
+      updateCartSummary();
     }
 
     // حفظ السلة
@@ -1985,16 +2054,12 @@
       updateCartCount();
     }
 
-    // تحديث عدد السلة
-    function updateCartCount() {
-      document.getElementById('cartCount').textContent = cartQuantity;
-    }
-
     // مسح السلة
     function clearCart() {
       cartQuantity = 0;
       saveCart();
       updateCartCount();
+      updateCartSummary();
     }
 
     // الانتقال إلى الدفع
