@@ -352,7 +352,8 @@
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
       header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } /* Adjusted padding for better alignment */
-      nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; } /* Added padding to nav */
+      nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* Added padding to nav */
+      nav::-webkit-scrollbar { display: none; }
       .btn.ghost { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
       .hero h1, .hero .lead { text-align: center; }
       .badges, .cta-row { justify-content: center; }
@@ -375,7 +376,8 @@
       header .inner { padding: 6px 0; gap: 4px; } /* تقليل الفجوة بين العناصر */
       .logo { font-size: 14px; gap: 6px; }
       .logo img { height: 30px; }
-      nav { gap: 4px; flex-wrap: nowrap; overflow-x: auto; } /* ضمان عدم الالتفاف وإضافة تمرير أفقي */
+      nav { gap: 4px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* ضمان عدم الالتفاف وإضافة تمرير أفقي */
+      nav::-webkit-scrollbar { display: none; }
       .btn { padding: 8px 14px; font-size: 14px; white-space: nowrap; } /* منع الالتفاف للأزرار */
       .btn.ghost { padding: 4px 8px; font-size: 12px; } /* تقليل حجم الأزرار للشاشات الصغيرة */
       .hero { padding: 12px 0; min-height: 80vh; }
@@ -402,7 +404,8 @@
       .badge { font-size: 9px; }
       .kpis { grid-template-columns: 1fr; }
       header .inner { gap: 4px; }
-      nav { gap: 2px; }
+      nav { gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
+      nav::-webkit-scrollbar { display: none; }
       .btn.ghost { padding: 4px 8px; font-size: 10px; }
       .lang-switcher { padding: 2px 4px; font-size: 10px; gap: 2px; }
       .cart-icon .fa-shopping-cart { font-size: 14px; }
@@ -1344,7 +1347,7 @@
         'cart.item': 'جهاز فحص السيارات',
         'cart.quantity': 'الكمية',
         'cart.price': 'السعر',
-        'cart.subtotal': 'المجموع الفرعي',
+        'cart.subtotal': 'المجموع',
         'cart.shipping': 'الشحن',
         'cart.grandtotal': 'الإجمالي الكلي',
         'cart.total': 'الإجمالي'
