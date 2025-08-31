@@ -340,185 +340,6 @@
     [dir="ltr"] .car-theme-border { border-left: none; border-right: 4px solid var(--brand); }
     [dir="ltr"] .footer-contact-item { direction: ltr; }
     
-    /* Shopping Cart Styles */
-    .cart-container {
-      background: white;
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow);
-    }
-    
-    .cart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .cart-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    
-    .cart-items {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    
-    .cart-item {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-      border: 1px solid #e2e8f0;
-      border-radius: var(--radius);
-      background: #f8fafc;
-    }
-    
-    .cart-item-image {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-left: 12px;
-      flex-shrink: 0;
-    }
-    
-    .cart-item-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .cart-item-details {
-      flex: 1;
-    }
-    
-    .cart-item-name {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    
-    .cart-item-price {
-      color: var(--brand);
-      font-weight: 700;
-    }
-    
-    .cart-item-quantity {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 6px;
-    }
-    
-    .quantity-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 1px solid #cbd5e1;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    
-    .quantity-btn:hover {
-      background: var(--brand-light);
-      border-color: var(--brand);
-    }
-    
-    .quantity-value {
-      min-width: 30px;
-      text-align: center;
-      font-weight: 600;
-    }
-    
-    .cart-item-remove {
-      color: var(--danger);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      font-size: 16px;
-    }
-    
-    .cart-summary {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #e2e8f0;
-    }
-    
-    .cart-summary-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    
-    .cart-total {
-      font-weight: 800;
-      font-size: 18px;
-      color: var(--brand);
-    }
-    
-    .empty-cart {
-      text-align: center;
-      padding: 20px;
-      color: var(--muted);
-    }
-    
-    .add-to-cart-btn {
-      width: 100%;
-      margin-top: 10px;
-      padding: 8px 12px;
-      font-size: 14px;
-    }
-    
-    /* Header Cart Styles */
-    .header-cart {
-      position: relative;
-      cursor: pointer;
-    }
-    
-    .header-cart-icon {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      transition: var(--transition);
-    }
-    
-    .header-cart-icon:hover {
-      background: white;
-      color: var(--brand);
-    }
-    
-    .cart-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: var(--brand);
-      color: white;
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: bold;
-    }
-    
     /* Responsive styles */
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
@@ -540,24 +361,6 @@
       .icon, .step .num { margin: 0 auto; }
       .footer-bottom { flex-direction: column; text-align: center; }
       .footer-links { justify-content: center; }
-      
-      .cart-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-      
-      .cart-item-image {
-        margin-left: 0;
-        margin-bottom: 8px;
-      }
-      
-      .cart-item-actions {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        align-items: center;
-      }
     }
     
     @media (max-width:640px) {
@@ -590,16 +393,20 @@
       .hero h1 { font-size: 20px; }
       .badge { font-size: 9px; }
       .kpis { grid-template-columns: 1fr; }
-      
-      .cart-item-image {
-        width: 50px;
-        height: 50px;
-      }
-      
-      .cart-item-name {
-        font-size: 14px;
-      }
     }
+
+    /* Cart Styles */
+    .cart-icon { position: relative; cursor: pointer; color: white; }
+    .cart-icon .fa-shopping-cart { font-size: 20px; }
+    .cart-count { position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; min-width: 20px; text-align: center; }
+    .cart-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+    .cart-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px; }
+    .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+    .quantity-controls { display: flex; align-items: center; gap: 10px; }
+    .quantity-controls button { padding: 5px 10px; background: var(--brand); color: white; border: none; cursor: pointer; }
+    .cart-total { margin-top: 20px; font-weight: bold; text-align: right; }
+    .checkout-btn { display: block; width: 100%; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -614,12 +421,6 @@
         <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
         <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         <a href="#order" class="btn modern-btn" data-translate="nav.order">اطلب الآن</a>
-        <div class="header-cart" onclick="scrollToOrder()">
-          <div class="header-cart-icon">
-            <i class="fas fa-shopping-cart"></i>
-            <div class="cart-badge" id="headerCartBadge">0</div>
-          </div>
-        </div>
         <div class="lang-switcher" id="langSwitcher">
           <span id="currentLang">EN</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -629,6 +430,10 @@
             <path d="M3 5h4"></path>
             <path d="M17 19h4"></path>
           </svg>
+        </div>
+        <div class="cart-icon" onclick="openCartModal()">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count" id="cartCount">0</span>
         </div>
       </nav>
     </div>
@@ -648,7 +453,7 @@
             <div class="badge" data-translate="hero.badge4">مصنوع من الألومنيوم معالج وبوليمر مضغوط</div>
           </div>
           <div class="cta-row">
-            <a id="ctaTop" class="btn modern-btn" href="#order" data-translate="hero.orderNow">اطلب الآن</a>
+            <button class="btn modern-btn" onclick="addToCart(1)" data-translate="hero.orderNow">اطلب الآن</button>
             <a class="btn ghost" href="#how" data-translate="hero.howItWorks">كيف يعمل؟</a>
           </div>
           <div class="kpis" style="margin-top:10px">
@@ -757,7 +562,7 @@
         <div class="warnings">
           <h4 data-translate="warnings.title">تنبيهات أمان هامة:</h4>
           <ul>
-            <li data-translate="warnings.item1">لا توجه الأشرة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.</li>
+            <li data-translate="warnings.item1">لا توجه الأشعة نحو العينين أبداً. استخدم نظارات واقية بمعايير UV400+ أو EN166 أو ANSI.</li>
             <li data-translate="warnings.item2">لا تعرض الجلد لأشعة UV لفترات طويلة.</li>
             <li data-translate="warnings.item3">لا تستخدم الجهاز بالقرب من الماء أو السوائل.</li>
             <li data-translate="warnings.item4">حافظ على الجهاز بعيداً عن متناول الأطفال.</li>
@@ -846,7 +651,7 @@
               <li data-translate="pricing.option1.item4">حقيبة حماية</li>
               <li data-translate="pricing.option1.item5">ضمان <span class="numbers-fix">12</span> месяц</li>
             </ul>
-            <button class="btn modern-btn add-to-cart-btn" data-product='{"id":1,"name":"جهاز واحد","price":799,"image":"https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp"}' data-translate="pricing.addToCart">أضف إلى السلة</button>
+            <button class="btn modern-btn" onclick="addToCart(1)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
           </div>
           
           <div class="pricing-card featured card-hover" data-bestseller="الأفضل مبيعاً">
@@ -862,7 +667,7 @@
               <li data-translate="pricing.option2.item5">ضمان <span class="numbers-fix">12</span> شهر للجهازين</li>
               <li data-translate="pricing.option2.item6">شحن مجاني</li>
             </ul>
-            <button class="btn modern-btn add-to-cart-btn" data-product='{"id":2,"name":"جهازين","price":1299,"image":"https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp"}' data-translate="pricing.addToCart">أضف إلى السلة</button>
+            <button class="btn modern-btn" onclick="addToCart(2)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
           </div>
         </div>
 
@@ -918,7 +723,7 @@
           <ul>
             <li data-translate="payment.guarantee1">سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع</li>
             <li data-translate="payment.guarantee2">رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب</li>
-            <li data-translate="payment.guarantee3">المنتج سيصل إليك خلال أسبوم كحد أقصى بعد تأكيد الدفع</li>
+            <li data-translate="payment.guarantee3">المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع</li>
             <li data-translate="payment.guarantee4">ضمان استرجاع كامل المبلغ خلال <span class="numbers-fix">14</span> день в حال عدم الرضا</li>
           </ul>
         </div>
@@ -931,10 +736,10 @@
         <h2 data-translate="faq.title">الأسئلة الشائعة</h2>
         <div class="grid cols-2">
           <details open><summary data-translate="faq.q1">هل أحتاج نظّارات خاصة؟</summary>
-            <div class="muted" data-translate="faq.a1">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.</div>
+            <div class="muted" data-translate="faq.a1">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 или ANSI.</div>
           </details>
           <details><summary data-translate="faq.q2">هل يكشف تحت طبقات الحماية (PPF)؟</summary>
-            <div class="muted" data-translate="faq.a2">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF или اللفّات الواقية.</div>
+            <div class="muted" data-translate="faq.a2">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.</div>
           </details>
           <details><summary data-translate="faq.q3">هل يقيس سماكة الدهان رقميًا؟</summary>
             <div class="muted" data-translate="faq.a3">لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.</div>
@@ -963,34 +768,6 @@
       <div class="container grid cols-2">
         <div class="card card-hover">
           <h2 data-translate="order.title">اطلبه الآن</h2>
-          
-          <!-- Shopping Cart -->
-          <div class="cart-container">
-            <div class="cart-header">
-              <div class="cart-title" data-translate="cart.title">سلة التسوق</div>
-              <div class="cart-items-count" id="cartItemsCount" data-translate="cart.items">0 منتج</div>
-            </div>
-            
-            <div class="cart-items" id="cartItems">
-              <div class="empty-cart" id="emptyCart" data-translate="cart.empty">سلة التسوق فارغة</div>
-            </div>
-            
-            <div class="cart-summary" id="cartSummary" style="display: none;">
-              <div class="cart-summary-row">
-                <span data-translate="cart.subtotal">المجموع الفرعي</span>
-                <span class="numbers-fix" id="cartSubtotal">0</span> $
-              </div>
-              <div class="cart-summary-row">
-                <span data-translate="cart.shipping">الشحن</span>
-                <span class="numbers-fix" id="cartShipping">0</span> $
-              </div>
-              <div class="cart-summary-row">
-                <span data-translate="cart.total">المجموع</span>
-                <span class="cart-total numbers-fix" id="cartTotal">0</span> $
-              </div>
-            </div>
-          </div>
-          
           <div id="alertBox" class="alert" style="display: none;"></div>
           <form class="form" id="orderForm">
             <div class="form-group">
@@ -1010,7 +787,7 @@
             
             <div class="form-group">
               <label class="form-label" data-translate="order.country">الدولة</label>
-              <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" data-transplaceholdertranslate="order.countryPlaceholder" />
+              <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" data-translate-placeholder="order.countryPlaceholder" />
             </div>
 
             <div class="form-group">
@@ -1078,7 +855,7 @@
               <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
             </div>
             
-            <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="order.submit" id="submitOrderBtn" disabled>إرسال الطلب via WhatsApp</button>
+            <button class="btn modern-btn" type="submit" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
           </form>
         </div>
         
@@ -1159,6 +936,19 @@
         </div>
       </div>
     </div>
+
+    <!-- CART MODAL -->
+    <div id="cartModal" class="cart-modal">
+      <div class="cart-content">
+        <div class="cart-header">
+          <h2 data-translate="cart.title">سلة التسوق</h2>
+          <span class="close-modal" onclick="closeCartModal()">&times;</span>
+        </div>
+        <div id="cartItems"></div>
+        <div class="cart-total" id="cartTotal"></div>
+        <button class="btn modern-btn checkout-btn" onclick="proceedToCheckout()" data-translate="cart.checkout">الانتقال إلى الدفع</button>
+      </div>
+    </div>
   </main>
 
   <footer>
@@ -1225,7 +1015,7 @@
       <div class="footer-bottom">
         <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footer.rights">جميع الحقوق محفوظة.</span></div>
         <div class="footer-links">
-            <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a>
+          <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a>
         </div>
       </div>
     </div>
@@ -1271,7 +1061,7 @@
     let currentLang = 'ar';
     let stripe = null;
     let cardElement = null;
-    let cartItems = [];
+    let cartQuantity = 0;
 
     // كائن الترجمة
     const translations = {
@@ -1390,7 +1180,6 @@
         'pricing.option1.item3': 'شاحن سريع + كابل USB-C',
         'pricing.option1.item4': 'حقيبة حماية',
         'pricing.option1.item5': 'ضمان 12 شهر',
-        'pricing.addToCart': 'أضف إلى السلة',
         'pricing.option2.title': 'جهازين',
         'pricing.option2.save': 'وفر 299 دولار عند الشراء بكمية',
         'pricing.option2.item1': 'جهازين كاملين',
@@ -1399,16 +1188,7 @@
         'pricing.option2.item4': 'حقيبتي حماية',
         'pricing.option2.item5': 'ضمان 12 شهر للجهازين',
         'pricing.option2.item6': 'شحن مجاني',
-        'pricing.orderNow': 'اطلب الآن',
-        
-        // سلة التسوق
-        'cart.title': 'سلة التسوق',
-        'cart.items': 'منتج',
-        'cart.empty': 'سلة التسوق فارغة',
-        'cart.subtotal': 'المجموع الفرعي',
-        'cart.shipping': 'الشحن',
-        'cart.total': 'المجموع',
-        'cart.remove': 'إزالة',
+        'pricing.orderNow': 'إضافة إلى السلة',
         
         // الدفع
         'payment.title': 'طرق الدفع والشحن',
@@ -1457,6 +1237,9 @@
         'order.phone': 'رقم الهاتف',
         'order.country': 'الدولة',
         'order.address': 'العنوان',
+        'order.quantity': 'الكمية',
+        'order.option1': 'جهاز واحد - 799 $',
+        'order.option2': 'جهازين - 1299 $',
         'order.paymentMethod': 'طريقة الدفع',
         'order.paymentStripe': 'الدفع بالبطاقة (Stripe)',
         'order.paymentSwift': 'حوالة بنكية (SWIFT)',
@@ -1488,7 +1271,7 @@
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
         'info.warranty3': 'خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني',
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
-        'info.aboutTitle': 'عن الشرка',
+        'info.aboutTitle': 'عن الشركة',
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
         'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
@@ -1511,12 +1294,12 @@
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
         'privacy.returnText': 'نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.',
         'privacy.conditionsTitle': 'شروط الإرجاع:',
-        'privacy.condition1': 'أن يكون المنتج в حالته الأصلية وبغلافه الأصلي',
+        'privacy.condition1': 'أن يكون المنتج في حالته الأصلية وبغلافه الأصلي',
         'privacy.condition2': 'أن تكون جميع الملحقات والوثائق متوفرة',
         'privacy.condition3': 'أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام',
         'privacy.condition4': 'أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام',
         'privacy.refundTitle': 'عملية الاسترداد:',
-        'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
+        'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة, سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
         'privacy.stripeText': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
         'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
@@ -1530,7 +1313,16 @@
         'footer.contact': 'تواصل واتساب',
         'footer.orderNow': 'اطلب الآن',
         'footer.quickLinks': 'روابط سريعة',
-        'footer.whatsappContact': 'اضغط للتواصل عبر واتساب'
+        'footer.whatsappContact': 'اضغط للتواصل عبر واتساب',
+        
+        // السلة
+        'cart.title': 'سلة التسوق',
+        'cart.checkout': 'الانتقال إلى الدفع',
+        'cart.empty': 'السلة فارغة',
+        'cart.item': 'جهاز فحص السيارات',
+        'cart.quantity': 'الكمية',
+        'cart.price': 'السعر',
+        'cart.total': 'الإجمالي'
       },
       en: {
         // Navigation
@@ -1541,12 +1333,12 @@
         
         // Hero
         'hero.title': 'Discover Hidden Car Repairs and Paint in Seconds',
-        'hero.description': 'A powerful, portable device for inspecting car body, paint, AC leaks with UV dye, and hidden repair traces. Ideal for car dealerships, inspectors, and individual buyers.',
+        'hero.description': 'A powerful, portable device for inspecting car body, paint, AC leakswith UV dye, and hidden repair traces. Ideal for car dealerships, inspectors, and individual buyers.',
         'hero.badge1': 'UV-A Spectrum 400–405 nm',
         'hero.badge2': 'Radiation up to 6000 µW/cm²',
         'hero.badge3': '8400 mAh Battery — 60–70 min runtime',
         'hero.badge4': 'Made of processed aluminum and compressed polymer',
-        'hero.orderNow': 'Order Now',
+        'hero.orderNow': 'Add to Cart',
         'hero.howItWorks': 'How It Works',
         'hero.trustedClients': 'Trusted Clients',
         'hero.warranty': 'Month Warranty',
@@ -1647,7 +1439,6 @@
         'pricing.option1.item3': 'Fast Charger + USB-C Cable',
         'pricing.option1.item4': 'Protective Case',
         'pricing.option1.item5': '12-Month Warranty',
-        'pricing.addToCart': 'Add to Cart',
         'pricing.option2.title': 'Two Devices',
         'pricing.option2.save': 'Save $299 when buying in quantity',
         'pricing.option2.item1': 'Two Complete Devices',
@@ -1656,16 +1447,7 @@
         'pricing.option2.item4': 'Two Protective Cases',
         'pricing.option2.item5': '12-Month Warranty for Both Devices',
         'pricing.option2.item6': 'Free Shipping',
-        'pricing.orderNow': 'Order Now',
-        
-        // Shopping Cart
-        'cart.title': 'Shopping Cart',
-        'cart.items': 'item',
-        'cart.empty': 'Your cart is empty',
-        'cart.subtotal': 'Subtotal',
-        'cart.shipping': 'Shipping',
-        'cart.total': 'Total',
-        'cart.remove': 'Remove',
+        'pricing.orderNow': 'Add to Cart',
         
         // Payment
         'payment.title': 'Payment and Shipping Methods',
@@ -1714,6 +1496,9 @@
         'order.phone': 'Phone Number',
         'order.country': 'Country',
         'order.address': 'Address',
+        'order.quantity': 'Quantity',
+        'order.option1': 'One Device - $799',
+        'order.option2': 'Two Devices - $1299',
         'order.paymentMethod': 'Payment Method',
         'order.paymentStripe': 'Card Payment (Stripe)',
         'order.paymentSwift': 'Bank Transfer (SWIFT)',
@@ -1765,7 +1550,7 @@
         'privacy.sharingText': 'We share your information with payment providers (Stripe) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.',
         'privacy.protectionTitle': 'Data Protection',
         'privacy.protectionText': 'We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.',
-        'privacy.returnTitle': 'Return and Refund Policy',
+        'privacy.returnTitle': 'Return and Refurn Policy',
         'privacy.returnText': 'We trust in the quality of our product, so we grant you the right to return the product within 14 days of receipt and receive a full refund if you are dissatisfied for any reason.',
         'privacy.conditionsTitle': 'Return Conditions:',
         'privacy.condition1': 'The product must be in its original condition and original packaging',
@@ -1787,7 +1572,16 @@
         'footer.contact': 'Contact WhatsApp',
         'footer.orderNow': 'Order Now',
         'footer.quickLinks': 'Quick Links',
-        'footer.whatsappContact': 'Click to contact via WhatsApp'
+        'footer.whatsappContact': 'Click to contact via WhatsApp',
+        
+        // Cart
+        'cart.title': 'Shopping Cart',
+        'cart.checkout': 'Proceed to Checkout',
+        'cart.empty': 'Cart is empty',
+        'cart.item': 'Car Inspection Device',
+        'cart.quantity': 'Quantity',
+        'cart.price': 'Price',
+        'cart.total': 'Total'
       }
     };
 
@@ -1795,7 +1589,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       initPage();
       initStripe();
-      initCart();
+      loadCart();
     });
 
     // تهيئة الصفحة
@@ -1813,166 +1607,6 @@
       // إضافة مستمعي الأحداث
       document.getElementById('orderForm').addEventListener('submit', handleOrder);
       document.getElementById('langSwitcher').addEventListener('click', toggleLanguage);
-      
-      // إضافة مستمعين لأزرار إضافة إلى السلة
-      document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', function() {
-          const product = JSON.parse(this.getAttribute('data-product'));
-          addToCart(product);
-        });
-      });
-    }
-
-    // تهيئة سلة التسوق
-    function initCart() {
-      // تحميل سلة التسوق من localStorage إذا كانت موجودة
-      const savedCart = localStorage.getItem('shoppingCart');
-      if (savedCart) {
-        cartItems = JSON.parse(savedCart);
-        updateCartDisplay();
-      }
-    }
-
-    // إضافة منتج إلى السلة
-    function addToCart(product) {
-      // التحقق مما إذا كان المنتج موجودًا بالفعل في السلة
-      const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
-      
-      if (existingItemIndex !== -1) {
-        // إذا كان المنتج موجودًا، قم بزيادة الكمية
-        cartItems[existingItemIndex].quantity += 1;
-      } else {
-        // إذا لم يكن المنتج موجودًا، أضفه جديدًا
-        cartItems.push({
-          ...product,
-          quantity: 1
-        });
-      }
-      
-      // حفظ السلة في localStorage
-      saveCart();
-      
-      // تحديث عرض السلة
-      updateCartDisplay();
-      
-      // إظهار رسالة نجاح
-      showAlert(
-        currentLang === 'ar' 
-          ? `تمت إضافة ${product.name} إلى السلة` 
-          : `${product.name} has been added to cart`,
-        'success'
-      );
-    }
-
-    // تحديث كمية منتج في السلة
-    function updateCartItemQuantity(productId, newQuantity) {
-      const itemIndex = cartItems.findIndex(item => item.id === productId);
-      
-      if (itemIndex !== -1) {
-        if (newQuantity <= 0) {
-          // إذا كانت الكمية 0 أو أقل، قم بإزالة المنتج من السلة
-          cartItems.splice(itemIndex, 1);
-        } else {
-          // تحديث الكمية
-          cartItems[itemIndex].quantity = newQuantity;
-        }
-        
-        // حفظ السلة في localStorage
-        saveCart();
-        
-        // تحديث عرض السلة
-        updateCartDisplay();
-      }
-    }
-
-    // حفظ السلة في localStorage
-    function saveCart() {
-      localStorage.setItem('shoppingCart', JSON.stringify(cartItems));
-    }
-
-    // تحديث عرض السلة
-    function updateCartDisplay() {
-      const cartItemsContainer = document.getElementById('cartItems');
-      const emptyCartElement = document.getElementById('emptyCart');
-      const cartSummaryElement = document.getElementById('cartSummary');
-      const cartItemsCountElement = document.getElementById('cartItemsCount');
-      const headerCartBadge = document.getElementById('headerCartBadge');
-      const submitOrderBtn = document.getElementById('submitOrderBtn');
-      
-      // حساب إجمالي عدد المنتجات
-      const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-      
-      // تحديث عدد المنتجات
-      if (cartItemsCountElement) {
-        cartItemsCountElement.textContent = `${totalItems} ${currentLang === 'ar' ? 'منتج' : 'item'}`;
-      }
-      
-      // تحديث شارة السلة في الهيدر
-      if (headerCartBadge) {
-        headerCartBadge.textContent = totalItems;
-        headerCartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
-      }
-      
-      // إذا كانت السلة فارغة
-      if (cartItems.length === 0) {
-        emptyCartElement.style.display = 'block';
-        cartSummaryElement.style.display = 'none';
-        submitOrderBtn.disabled = true;
-        return;
-      }
-      
-      // إذا كانت السلة تحتوي على منتجات
-      emptyCartElement.style.display = 'none';
-      cartSummaryElement.style.display = 'block';
-      submitOrderBtn.disabled = false;
-      
-      // مسح محتوى السلة الحالي
-      cartItemsContainer.innerHTML = '';
-      
-      // إضافة المنتجات إلى السلة
-      let subtotal = 0;
-      
-      cartItems.forEach(item => {
-        const itemTotal = item.price * item.quantity;
-        subtotal += itemTotal;
-        
-        const cartItemElement = document.createElement('div');
-        cartItemElement.className = 'cart-item';
-        cartItemElement.innerHTML = `
-          <div class="cart-item-image">
-            <img src="${item.image}" alt="${item.name}" loading="lazy">
-          </div>
-          <div class="cart-item-details">
-            <div class="cart-item-name">${item.name}</div>
-            <div class="cart-item-price">${item.price} $</div>
-            <div class="cart-item-quantity">
-              <button class="quantity-btn" onclick="updateCartItemQuantity(${item.id}, ${item.quantity - 1})">-</button>
-              <span class="quantity-value">${item.quantity}</span>
-              <button class="quantity-btn" onclick="updateCartItemQuantity(${item.id}, ${item.quantity + 1})">+</button>
-            </div>
-          </div>
-          <button class="cart-item-remove" onclick="updateCartItemQuantity(${item.id}, 0)" data-translate="cart.remove">×</button>
-        `;
-        
-        cartItemsContainer.appendChild(cartItemElement);
-      });
-      
-      // تحديث الترجمة للأزرار
-      applyTranslations(currentLang);
-      
-      // حساب الشحن (مجاني للطلبات فوق 1000 دولار)
-      const shipping = subtotal >= 1000 ? 0 : 50;
-      const total = subtotal + shipping;
-      
-      // تحديث الملخص
-      document.getElementById('cartSubtotal').textContent = subtotal;
-      document.getElementById('cartShipping').textContent = shipping;
-      document.getElementById('cartTotal').textContent = total;
-    }
-
-    // التمرير إلى قسم الطلب
-    function scrollToOrder() {
-      document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
     }
 
     // تهيئة Stripe
@@ -2022,7 +1656,7 @@
       // تطبيق الترجمة على جميع العناصر
       applyTranslations(lang);
       
-      // تحديث عرض السلة
+      // إعادة عرض السلة باللغة الجديدة
       updateCartDisplay();
       
       // حفظ اللغة المفضلة
@@ -2129,23 +1763,12 @@
       }, 5000);
     }
 
-    // معالجة الطلب
+    // معالج الطلب
     async function handleOrder(event) {
       event.preventDefault();
       
       // التحقق من صحة البيانات
       if (!validateForm()) return;
-      
-      // التحقق من وجود منتجات في السلة
-      if (cartItems.length === 0) {
-        showAlert(
-          currentLang === 'ar' 
-            ? 'يجب إضافة منتجات إلى السلة قبل إكمال الطلب' 
-            : 'Please add products to cart before completing order',
-          'error'
-        );
-        return;
-      }
       
       // معالجة الدفع إذا كان عبر Stripe
       if (document.getElementById('paymentMethod').value === 'stripe') {
@@ -2163,8 +1786,9 @@
       // إرسال الطلب عبر واتساب
       sendWhatsAppOrder(imageUrl);
       
-      // إعادة تعيين النموذج
+      // إعادة تعيين النموذج والسلة
       resetForm();
+      clearCart();
     }
 
     // التحقق من صحة النموذج
@@ -2180,6 +1804,11 @@
       
       if (!document.getElementById('privacyAgreement').checked) {
         showAlert(currentLang === 'ar' ? 'يجب الموافقة على سياسة الخصوصية والإرجاع وشروط الاستخدام' : 'You must agree to the Privacy and Return Policy and Terms of Use', 'error');
+        return false;
+      }
+      
+      if (cartQuantity === 0) {
+        showAlert(currentLang === 'ar' ? 'السلة فارغة' : 'Cart is empty', 'error');
         return false;
       }
       
@@ -2243,27 +1872,14 @@
       const address = document.getElementById('address').value.trim();
       const paymentMethod = document.getElementById('paymentMethod').value;
       
-      // حساب المجموع الكلي
-      const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-      const shipping = subtotal >= 1000 ? 0 : 50;
-      const total = subtotal + shipping;
-      
-      let msg = currentLang === 'ar' ? `طلب جديد من الموقع%0A%0A` : `New order from website%0A%0A`;
+      let msg = currentLang === 'ar' ? `طلب جهاز فحص السيارات%0A%0A` : `Car Inspection Device Order%0A%0A`;
       msg += `${currentLang === 'ar' ? 'الاسم' : 'Name'}: ${name}%0A`;
       msg += `${currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email'}: ${email}%0A`;
       msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone'}: ${phone}%0A`;
       msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
-      msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A%0A`;
-      
-      msg += `${currentLang === 'ar' ? 'المنتجات المطلوبة' : 'Order Items'}:%0A`;
-      cartItems.forEach(item => {
-        msg += `${item.name} × ${item.quantity} - ${item.price * item.quantity} $%0A`;
-      });
-      
-      msg += `%0A${currentLang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}: ${subtotal} $%0A`;
-      msg += `${currentLang === 'ar' ? 'الشحن' : 'Shipping'}: ${shipping} $%0A`;
-      msg += `${currentLang === 'ar' ? 'المجموع الكلي' : 'Total'}: ${total} $%0A%0A`;
-      
+      msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
+      msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${cartQuantity}%0A`;
+      msg += `${currentLang === 'ar' ? 'الإجمالي' : 'Total'}: ${calculateTotal()} $%0A`;
       msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
       
       if (imageUrl) {
@@ -2287,11 +1903,6 @@
       document.getElementById('fileName').style.color = "var(--muted)";
       document.getElementById('imagePreview').style.display = 'none';
       document.getElementById('uploadStatusText').textContent = '';
-      
-      // تفريغ سلة التسوق
-      cartItems = [];
-      saveCart();
-      updateCartDisplay();
     }
 
     // فتح نافذة الصورة
@@ -2307,12 +1918,99 @@
       document.getElementById('imageModal').style.display = "none";
     }
 
+    // فتح سلة التسوق
+    function openCartModal() {
+      updateCartDisplay();
+      document.getElementById('cartModal').style.display = "block";
+    }
+
+    // إغلاق سلة التسوق
+    function closeCartModal() {
+      document.getElementById('cartModal').style.display = "none";
+    }
+
+    // إضافة إلى السلة
+    function addToCart(qty) {
+      cartQuantity += qty;
+      saveCart();
+      updateCartCount();
+      showAlert(currentLang === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', 'success');
+      openCartModal();
+    }
+
+    // تحديث عرض السلة
+    function updateCartDisplay() {
+      const cartItems = document.getElementById('cartItems');
+      const cartTotal = document.getElementById('cartTotal');
+      if (cartQuantity === 0) {
+        cartItems.innerHTML = `<p>${translations[currentLang]['cart.empty']}</p>`;
+      } else {
+        cartItems.innerHTML = `
+          <div class="cart-item">
+            <span>${translations[currentLang]['cart.item']}</span>
+            <div class="quantity-controls">
+              <button onclick="changeQuantity(-1)">-</button>
+              <span>${cartQuantity}</span>
+              <button onclick="changeQuantity(1)">+</button>
+            </div>
+            <span>${calculateTotal()} $</span>
+          </div>
+        `;
+      }
+      cartTotal.innerHTML = `${translations[currentLang]['cart.total']}: ${calculateTotal()} $`;
+    }
+
+    // تغيير الكمية
+    function changeQuantity(delta) {
+      cartQuantity = Math.max(0, cartQuantity + delta);
+      saveCart();
+      updateCartCount();
+      updateCartDisplay();
+    }
+
+    // حساب الإجمالي
+    function calculateTotal() {
+      if (cartQuantity === 0) return 0;
+      return 799 + (cartQuantity - 1) * 700;
+    }
+
+    // حفظ السلة
+    function saveCart() {
+      localStorage.setItem('cartQuantity', cartQuantity);
+    }
+
+    // تحميل السلة
+    function loadCart() {
+      cartQuantity = parseInt(localStorage.getItem('cartQuantity') || '0');
+      updateCartCount();
+    }
+
+    // تحديث عدد السلة
+    function updateCartCount() {
+      document.getElementById('cartCount').textContent = cartQuantity;
+    }
+
+    // مسح السلة
+    function clearCart() {
+      cartQuantity = 0;
+      saveCart();
+      updateCartCount();
+    }
+
+    // الانتقال إلى الدفع
+    function proceedToCheckout() {
+      closeCartModal();
+      document.querySelector('#order').scrollIntoView({ behavior: 'smooth' });
+    }
+
     // إغلاق النافذة عند النقر خارجها
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
       const privacyModal = document.getElementById('privacyModal');
+      const cartModal = document.getElementById('cartModal');
       if (event.target === modal) closeModal();
       if (event.target === privacyModal) closePrivacyModal();
+      if (event.target === cartModal) closeCartModal();
     }
 
     // عرض سياسة الخصوصية
