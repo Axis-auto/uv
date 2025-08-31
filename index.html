@@ -1768,12 +1768,12 @@
     function showAlert(message, type) {
       const alertBox = document.getElementById('alertBox');
       alertBox.textContent = message;
-      alertBox.className = `alert alert-${type}`;
+      alertBox.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
       alertBox.style.display = 'block';
       
       setTimeout(() => {
         alertBox.style.display = 'none';
-      }, 5000);
+      }, 3000);
     }
 
     // معالج الطلب
@@ -2008,7 +2008,7 @@
       } else {
         cartSummary.innerHTML = `
           <div class="cart-summary-item">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="${translations[currentLang]['cart.item']}">
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp" alt="${translations[currentLang]['cart.item']}">
             <div class="cart-summary-details">
               <h4>${translations[currentLang]['cart.item']}</h4>
               <div class="quantity-controls">
@@ -2060,6 +2060,11 @@
       saveCart();
       updateCartCount();
       updateCartSummary();
+    }
+
+    // تحديث عدد السلة في الهيدر
+    function updateCartCount() {
+      document.getElementById('cartCount').textContent = cartQuantity;
     }
 
     // الانتقال إلى الدفع
