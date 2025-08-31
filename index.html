@@ -53,8 +53,9 @@
       gap: 12px; padding: 6px 0;
     }
     
-    .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; color: white; }
+    .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; color: white; flex-direction: row; }
     .logo img { height: 40px; width: auto; object-fit: contain; }
+    .logo span { font-size: 18px; font-weight: 800; color: white; }
     
     .btn {
       display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; 
@@ -350,8 +351,8 @@
     @media (max-width:768px) {
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
-      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; }
-      nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; }
+      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } /* Adjusted padding for better alignment */
+      nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; } /* Added padding to nav */
       .btn.ghost { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
       .hero h1, .hero .lead { text-align: center; }
       .badges, .cta-row { justify-content: center; }
@@ -366,6 +367,7 @@
       .lang-switcher { padding: 4px 8px; font-size: 12px; gap: 4px; }
       .cart-icon .fa-shopping-cart { font-size: 16px; }
       .cart-count { font-size: 10px; min-width: 16px; padding: 1px 4px; top: -6px; right: -6px; }
+      .cart-icon { margin-left: 8px; } /* Added margin to prevent cutting off */
     }
     
     @media (max-width:640px) {
@@ -405,6 +407,7 @@
       .lang-switcher { padding: 2px 4px; font-size: 10px; gap: 2px; }
       .cart-icon .fa-shopping-cart { font-size: 14px; }
       .cart-count { font-size: 8px; min-width: 14px; padding: 0px 3px; top: -4px; right: -4px; }
+      .cart-icon { margin-left: 4px; } /* Adjusted margin for small screens */
     }
 
     /* Cart Styles */
@@ -434,6 +437,7 @@
     <div class="container inner">
       <div class="logo">
         <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" width="40" height="40" />
+        <span>Axis Auto</span>
       </div>
       <nav style="display:flex;gap:8px;align-items:center">
         <a href="#features" class="btn ghost" data-translate="nav.features">المميزات</a>
@@ -1063,7 +1067,6 @@
     "offers": {
       "@type":"Offer",
       "priceCurrency":"USD",
-      "price":"799",
       "availability":"https://schema.org/InStock",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
