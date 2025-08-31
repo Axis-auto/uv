@@ -370,11 +370,12 @@
     
     @media (max-width:640px) {
       .container { padding: 8px; }
-      header .inner { padding: 6px 0; }
+      header .inner { padding: 6px 0; gap: 4px; } /* تقليل الفجوة بين العناصر */
       .logo { font-size: 14px; gap: 6px; }
       .logo img { height: 30px; }
-      nav { gap: 4px; }
-      .btn { padding: 8px 14px; font-size: 14px; }
+      nav { gap: 4px; flex-wrap: nowrap; overflow-x: auto; } /* ضمان عدم الالتفاف وإضافة تمرير أفقي */
+      .btn { padding: 8px 14px; font-size: 14px; white-space: nowrap; } /* منع الالتفاف للأزرار */
+      .btn.ghost { padding: 4px 8px; font-size: 12px; } /* تقليل حجم الأزرار للشاشات الصغيرة */
       .hero { padding: 12px 0; min-height: 80vh; }
       .hero h1 { font-size: 22px; }
       .hero .lead { font-size: 14px; }
@@ -433,7 +434,6 @@
     <div class="container inner">
       <div class="logo">
         <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" width="40" height="40" />
-        <span>AXIS AUTO</span>
       </div>
       <nav style="display:flex;gap:8px;align-items:center">
         <a href="#features" class="btn ghost" data-translate="nav.features">المميزات</a>
@@ -764,16 +764,16 @@
             <div class="muted" data-translate="faq.a3">لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.</div>
           </details>
           <details><summary data-translate="faq.q4">ما مدة الضمان؟</summary>
-            <div class="muted" data-translate="faq.a4">شهادة ضمان لمدة <span class="numbers-fix">12</span> شهر.</div>
+            <div class="muted" data-translate="faq.a4">شهادة ضمان لمدة سنة.</div>
           </details>
           <details><summary data-translate="faq.q5">كيف أتم عملية الدفع عبر الحوالة البنكية?</summary>
             <div class="muted" data-translate="faq.a5">بعد تأكيد الطلب، سنرسل لك تفاصيل الحساب البنكي. بعد إتمام التحويل، أرسل لنا صورة من إيصال التحويل وسنقوم بتأكيد الطلب وإرسال الفاتورة وبوليصة الشحن.</div>
           </details>
           <details><summary data-translate="faq.q6">ما هي مدة الشحن المتوقعة?</summary>
-            <div class="muted" data-translate="faq.a6">بعد تأكيد الدفع، يتم الشحن خلال <span class="numbers-fix">24-48</span> ساعة ويصل المنتج خلال <span class="numbers-fix">3-7</span> أيام عمل حسب الوجهة.</div>
+            <div class="muted" data-translate="faq.a6">بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.</div>
           </details>
           <details><summary data-translate="faq.q7">كيف يمكنني إرجاع المنتج؟</summary>
-            <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال <span class="numbers-fix">14</span> يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال <span class="numbers-fix">5-7</span> أيام عمل.</div>
+            <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، سنقوم باسترداد المبلغ خلال 5-7 أيام عمل.</div>
           </details>
           <details><summary data-translate="faq.q8">هل الدفع عبر Stripe آمن؟</summary>
             <div class="muted" data-translate="faq.a8">نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.</div>
