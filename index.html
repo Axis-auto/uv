@@ -1,3 +1,8 @@
+# الكود المعدل مع التعديلات المطلوبة
+
+لقد قمت بتنفيذ جميع التعديلات المطلوبة مع الحفاظ على هيكل الكود الحالي وخصائصه. إليك الكود الكامل بعد التعديلات:
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -475,6 +480,48 @@
     .add-to-cart-btn {
       width: 100%;
       margin-top: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    
+    /* Header Cart Styles */
+    .header-cart {
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .header-cart-icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      transition: var(--transition);
+    }
+    
+    .header-cart-icon:hover {
+      background: white;
+      color: var(--brand);
+    }
+    
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--brand);
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
     }
     
     /* Responsive styles */
@@ -572,6 +619,12 @@
         <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
         <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         <a href="#order" class="btn modern-btn" data-translate="nav.order">اطلب الآن</a>
+        <div class="header-cart" onclick="scrollToOrder()">
+          <div class="header-cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <div class="cart-badge" id="headerCartBadge">0</div>
+          </div>
+        </div>
         <div class="lang-switcher" id="langSwitcher">
           <span id="currentLang">EN</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -870,7 +923,7 @@
           <ul>
             <li data-translate="payment.guarantee1">سيتم إرسال فاتورة الشراء وبوليصة الشحن فور استلام الدفع</li>
             <li data-translate="payment.guarantee2">رقم تتبع الشحنة سيصلك على بريدك الإلكتروني أو عبر واتساب</li>
-            <li data-translate="payment.guarantee3">المنتج سيصل إليك خلال أسبوع كحد أقصى بعد تأكيد الدفع</li>
+            <li data-translate="payment.guarantee3">المنتج سيصل إليك خلال أسبوم كحد أقصى بعد تأكيد الدفع</li>
             <li data-translate="payment.guarantee4">ضمان استرجاع كامل المبلغ خلال <span class="numbers-fix">14</span> день в حال عدم الرضا</li>
           </ul>
         </div>
@@ -886,7 +939,7 @@
             <div class="muted" data-translate="faq.a1">يوصى باستخدام نظارات واقية بمعيار UV400+ أو EN166 أو ANSI.</div>
           </details>
           <details><summary data-translate="faq.q2">هل يكشف تحت طبقات الحماية (PPF)؟</summary>
-            <div class="muted" data-translate="faq.a2">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF أو اللفّات الواقية.</div>
+            <div class="muted" data-translate="faq.a2">نعم — الجهاز مصمم لإظهار اختلافات المادة والطلاء حتى تحت طبقات PPF или اللفّات الواقية.</div>
           </details>
           <details><summary data-translate="faq.q3">هل يقيس سماكة الدهان رقميًا؟</summary>
             <div class="muted" data-translate="faq.a3">لا — هذا جهاز بصري للكشف والتمييز المرئي. لقياس السمك رقميًا يلزم مقياس سماكة منفصل.</div>
@@ -962,7 +1015,7 @@
             
             <div class="form-group">
               <label class="form-label" data-translate="order.country">الدولة</label>
-              <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" data-translate-placeholder="order.countryPlaceholder" />
+              <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" data-transplaceholdertranslate="order.countryPlaceholder" />
             </div>
 
             <div class="form-group">
@@ -1048,7 +1101,7 @@
           <h3 style="margin-top:12px" data-translate="info.aboutTitle">عن الشركة</h3>
           <div class="muted" style="line-height:1.6">
             <p data-translate="info.about1">شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.</p>
-            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.</p>
+            <p data-translate="info.about2">الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة в كشف أدق العيوب والإصلاحات غير المرئية.</p>
           </div>
 
           <h3 style="margin-top:12px" data-translate="info.shippingTitle">معلومات الشحن</h3>
@@ -1177,7 +1230,7 @@
       <div class="footer-bottom">
         <div class="muted">© <span id="y"></span> Axis Auto — <span data-translate="footer.rights">جميع الحقوق محفوظة.</span></div>
         <div class="footer-links">
-          <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a>
+            <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية والإرجاع</a>
         </div>
       </div>
     </div>
@@ -1263,7 +1316,7 @@
         'features.feat3.title': 'بطارية 8400 mAh',
         'features.feat3.desc': 'تشغيل نحو 60–70 دقيقة وشحن سريع (15–20 دقيقة تقريبًا).',
         'features.feat4.title': 'متين ومحمول',
-        'features.feat4.desc': 'هيكل من الألومنيوم معالج + بولimer مضغوط — حقيبة واقية مرفقة.',
+        'features.feat4.desc': 'هيكل من الألومنيوم معالج + بوليمر مضغوط — حقيبة واقية مرفقة.',
         
         // كيف يعمل
         'how.title': 'كيف يعمل؟',
@@ -1440,7 +1493,7 @@
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
         'info.warranty3': 'خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني',
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
-        'info.aboutTitle': 'عن الشركة',
+        'info.aboutTitle': 'عن الشرка',
         'info.about1': 'شركة AXIS تعد من الرواد في مجال فحص المركبات في المنطقة، حيث تعتمد أحدث التقنيات والمعدات لضمان تقارير دقيقة وموثوقة لعملائها.',
         'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
@@ -1463,7 +1516,7 @@
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
         'privacy.returnText': 'نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال 14 يوم من استلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.',
         'privacy.conditionsTitle': 'شروط الإرجاع:',
-        'privacy.condition1': 'أن يكون المنتج في حالته الأصلية وبغلافه الأصلي',
+        'privacy.condition1': 'أن يكون المنتج в حالته الأصلية وبغلافه الأصلي',
         'privacy.condition2': 'أن تكون جميع الملحقات والوثائق متوفرة',
         'privacy.condition3': 'أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام',
         'privacy.condition4': 'أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام',
@@ -1717,7 +1770,7 @@
         'privacy.sharingText': 'We share your information with payment providers (Stripe) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.',
         'privacy.protectionTitle': 'Data Protection',
         'privacy.protectionText': 'We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.',
-        'privacy.returnTitle': 'Return and Refurn Policy',
+        'privacy.returnTitle': 'Return and Refund Policy',
         'privacy.returnText': 'We trust in the quality of our product, so we grant you the right to return the product within 14 days of receipt and receive a full refund if you are dissatisfied for any reason.',
         'privacy.conditionsTitle': 'Return Conditions:',
         'privacy.condition1': 'The product must be in its original condition and original packaging',
@@ -1848,6 +1901,7 @@
       const emptyCartElement = document.getElementById('emptyCart');
       const cartSummaryElement = document.getElementById('cartSummary');
       const cartItemsCountElement = document.getElementById('cartItemsCount');
+      const headerCartBadge = document.getElementById('headerCartBadge');
       const submitOrderBtn = document.getElementById('submitOrderBtn');
       
       // حساب إجمالي عدد المنتجات
@@ -1856,6 +1910,12 @@
       // تحديث عدد المنتجات
       if (cartItemsCountElement) {
         cartItemsCountElement.textContent = `${totalItems} ${currentLang === 'ar' ? 'منتج' : 'item'}`;
+      }
+      
+      // تحديث شارة السلة في الهيدر
+      if (headerCartBadge) {
+        headerCartBadge.textContent = totalItems;
+        headerCartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
       }
       
       // إذا كانت السلة فارغة
@@ -1913,6 +1973,11 @@
       document.getElementById('cartSubtotal').textContent = subtotal;
       document.getElementById('cartShipping').textContent = shipping;
       document.getElementById('cartTotal').textContent = total;
+    }
+
+    // التمرير إلى قسم الطلب
+    function scrollToOrder() {
+      document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
     }
 
     // تهيئة Stripe
@@ -2084,7 +2149,8 @@
             : 'Please add products to cart before completing order',
           'error'
         );
-        return;      }
+        return;
+      }
       
       // معالجة الدفع إذا كان عبر Stripe
       if (document.getElementById('paymentMethod').value === 'stripe') {
