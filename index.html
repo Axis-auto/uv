@@ -873,6 +873,55 @@
   </style>
 
 </head>
+<script>
+  // ضع هنا رابط خدمة Render التي أنشأتها
+  const API_BASE = "https://stripe-checkout-backend-dynamic.onrender.com";
+
+  // (اختياري) إخفاء أي حقول بطاقة قديمة لأننا سنستخدم Stripe Checkout الخارجي
+  document.getElementById('stripePayment')?.style?.setProperty('display', 'none');
+
+  // جلب الكمية: استخدم أي عنصر/متغير عندك يعكس عدد الأجهزة
+  function getQuantity() {
+    // أمثلة: إن كان لديك input id="quantity"
+    const qInput = document.getElementById('quantity');
+    if (qInput && Number(qInput.value) >= 1) return parseInt(qInput.value, 10);
+
+    // أو متغير عام للسلة (إن كان موجوداً)
+    if (window.cartQuantity && Number(window.cartQuantity) >= 1) {
+      return parseInt(window.cartQuantity, 10);
+    }
+
+    // افتراضي: جهاز واحد
+    return 1;
+  }
+
+  document.getElementById('stripe-button').addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const quantity = getQuantity();
+    const name  = document.getElementById('name')?.value  || "";
+    const email = document.getElementById('email')?.value || "";
+    const phone = document.getElementById('phone')?.value || "";
+
+    try {
+      const res = await fetch(API_BASE + '/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity, name, email, phone })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url; // الانتقال لStripe Checkout
+      } else {
+        alert(data.error || 'تعذر إنشاء جلسة الدفع. تحقق من إعدادات الخادم.');
+        console.error(data);
+      }
+    } catch (err) {
+      alert('خطأ بالاتصال بخادم الدفع.');
+      console.error(err);
+    }
+  });
+</script>
 
 <body>
 
