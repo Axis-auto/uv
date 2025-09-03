@@ -1904,7 +1904,7 @@
 
         <div class="cart-total" id="cartGrandTotal"></div>
 
-        <button class="btn modern-btn checkout-btn" onclick="proceedToCheckout()" data-translate="cart.checkout">الانتقال إلى الدفع</button>
+        <button class="btn btn modern-btn checkout-btn" onclick="proceedToCheckout()" data-translate="cart.checkout">الانتقال إلى الدفع</button>
 
       </div>
 
@@ -2123,6 +2123,8 @@
     let cardElement = null;
 
     let cartQuantity = 0;
+
+    const backendUrl = 'https://your-render-app.onrender.com/create-checkout-session'; // استبدل بـ URL الخاص بـ backend على Render
 
     // كائن الترجمة
 
@@ -3178,7 +3180,121 @@
 
       updateCartSummary();
 
+      // إضافة مستمع لزر Stripe (بدلاً من createPaymentMethod، نرسل إلى backend)
+
+      document.getElementById('stripe-button').addEventListener('click', handleStripePayment);
+
     });
+
+    // تهيئة Stripe
+
+    function initStripe() {
+
+      stripe = Stripe('pk_test_51PJhZ2P3pRlqk8Lk9w7s6tT8qY1V2X3z4A5B6C7D8E9F0G1H2I3J4K5L6M7N8O9P0Q'); // استبدل بـ Publishable Key الخاص بك
+
+      const elements = stripe.elements();
+
+     
+
+      cardElement = elements.create('card', {
+
+        style: {
+
+          base: {
+
+            fontSize: '16px',
+
+            color: '#0f172a',
+
+            '::placeholder': { color: '#aab7c4' }
+
+          }
+
+        }
+
+      });
+
+     
+
+      cardElement.mount('#card-element');
+
+      cardElement.on('change', handleCardChange);
+
+    }
+
+    // معالجة الدفع عبر Stripe عبر الـ backend
+
+    async function handleStripePayment(event) {
+
+      event.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+
+      const email = document.getElementById('email').value.trim();
+
+      const phone = document.getElementById('phone').value.trim();
+
+      const country = document.getElementById('country').value.trim();
+
+      const address = document.getElementById('address').value.trim();
+
+      const quantity = cartQuantity;
+
+     
+
+      try {
+
+        const response = await fetch(backendUrl, {
+
+          method: 'POST',
+
+          headers: { 'Content-Type': 'application/json' },
+
+          body: JSON.stringify({
+
+            name,
+
+            email,
+
+            phone,
+
+            country,
+
+            address,
+
+            quantity,
+
+            // يمكن إضافة تفاصيل أخرى إذا لزم الأمر
+
+          })
+
+        });
+
+     
+
+        const { sessionId } = await response.json();
+
+     
+
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+
+     
+
+        if (error) {
+
+          showAlert(error.message, 'error');
+
+        }
+
+      } catch (error) {
+
+        showAlert(currentLang === 'ar' ? 'حدث خطأ أثناء معالجة الدفع' : 'An error occurred during payment processing', 'error');
+
+      }
+
+    }
+
+    // باقي الدوال كما هي...
 
     // تهيئة الصفحة
 
@@ -3209,42 +3325,6 @@
       document.getElementById('orderForm').addEventListener('submit', handleOrder);
 
       document.getElementById('langSwitcher').addEventListener('click', toggleLanguage);
-
-    }
-
-    // تهيئة Stripe
-
-    function initStripe() {
-
-      stripe = Stripe('pk_test_51PJhZ2P3pRlqk8Lk9w7s6tT8qY1V2X3z4A5B6C7D8E9F0G1H2I3J4K5L6M7N8O9P0Q');
-
-      const elements = stripe.elements();
-
-     
-
-      cardElement = elements.create('card', {
-
-        style: {
-
-          base: {
-
-            fontSize: '16px',
-
-            color: '#0f172a',
-
-            '::placeholder': { color: '#aab7c4' }
-
-          }
-
-        }
-
-      });
-
-     
-
-      cardElement.mount('#card-element');
-
-      cardElement.on('change', handleCardChange);
 
     }
 
@@ -3516,43 +3596,39 @@
 
      
 
-      // معالجة الدفع إذا كان عبر Stripe
+      // معالجة الدفع إذا كان عبر Stripe (تم نقلها إلى زر منفصل)
 
-      if (document.getElementById('paymentMethod').value === 'stripe') {
+      // إذا كان swift، استمر كما هو
 
-        const paymentResult = await processStripePayment();
+      if (document.getElementById('paymentMethod').value === 'swift') {
 
-        if (!paymentResult.success) return;
+        // رفع الصورة إذا وجدت
+
+        let imageUrl = '';
+
+        const receiptFile = document.getElementById('receipt');
+
+        if (receiptFile.files.length > 0) {
+
+          imageUrl = await uploadImage(receiptFile.files[0]);
+
+        }
+
+     
+
+        // إرسال الطلب عبر واتساب
+
+        sendWhatsAppOrder(imageUrl);
+
+     
+
+        // إعادة تعيين النموذج والسلة
+
+        resetForm();
+
+        clearCart();
 
       }
-
-     
-
-      // رفع الصورة إذا وجدت
-
-      let imageUrl = '';
-
-      const receiptFile = document.getElementById('receipt');
-
-      if (receiptFile.files.length > 0) {
-
-        imageUrl = await uploadImage(receiptFile.files[0]);
-
-      }
-
-     
-
-      // إرسال الطلب عبر واتساب
-
-      sendWhatsAppOrder(imageUrl);
-
-     
-
-      // إعادة تعيين النموذج والسلة
-
-      resetForm();
-
-      clearCart();
 
     }
 
@@ -3599,52 +3675,6 @@
      
 
       return true;
-
-    }
-
-    // معالجة الدفع عبر Stripe
-
-    async function processStripePayment() {
-
-      const name = document.getElementById('name').value.trim();
-
-      const email = document.getElementById('email').value.trim();
-
-      const phone = document.getElementById('phone').value.trim();
-
-      const country = document.getElementById('country').value.trim();
-
-      const address = document.getElementById('address').value.trim();
-
-     
-
-      const {error, paymentMethod} = await stripe.createPaymentMethod({
-
-        type: 'card',
-
-        card: cardElement,
-
-        billing_details: { name, email, phone, address: { country, line1: address } }
-
-      });
-
-     
-
-      if (error) {
-
-        showAlert(error.message, 'error');
-
-        return { success: false };
-
-      }
-
-     
-
-      showAlert(currentLang === 'ar' ? 'تمت عملية الدفع بنجاح! سيتم توجيهك إلى واتساب الآن.' : 'Payment completed successfully! You will be redirected to WhatsApp now.', 'success');
-
-     
-
-      return { success: true, paymentMethod };
 
     }
 
@@ -3740,7 +3770,7 @@
 
         msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment Receipt'}: ${imageUrl}%0A%0A`;
 
-        msg += `${currentLang === 'ar' ? 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.' : 'You can click the link above to view the receipt image.'}%0A%0A`;
+        msg += `${currentLang === 'ar' ? 'يمكنك الضغر على الرابط أعلاه لمشاهدة صورة الإيصال.' : 'You can click the link above to view the receipt image.'}%0A%0A`;
 
       } else {
 
