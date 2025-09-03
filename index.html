@@ -895,32 +895,7 @@
     return 1;
   }
 
-  document.getElementById('stripe-button').addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    const quantity = getQuantity();
-    const name  = document.getElementById('name')?.value  || "";
-    const email = document.getElementById('email')?.value || "";
-    const phone = document.getElementById('phone')?.value || "";
-
-    try {
-      const res = await fetch(API_BASE + '/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity, name, email, phone })
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url; // الانتقال لStripe Checkout
-      } else {
-        alert(data.error || 'تعذر إنشاء جلسة الدفع. تحقق من إعدادات الخادم.');
-        console.error(data);
-      }
-    } catch (err) {
-      alert('خطأ بالاتصال بخادم الدفع.');
-      console.error(err);
-    }
-  });
+  // تم نقل مستمع الحدث إلى داخل الكود الرئيسي للنموذج
 </script>
 
 <body>
@@ -2173,7 +2148,7 @@
 
     let cartQuantity = 0;
 
-    const backendUrl = 'https://stripe-checkout-backend-dynamic.onrender.com'; // استبدل بـ URL الخاص بـ backend على Render
+    const backendUrl = 'https://stripe-checkout-backend-dynamic.onrender.com'; // رابط الخادم الخلفي على Render
 
     // كائن الترجمة
 
@@ -3229,21 +3204,15 @@
 
       updateCartSummary();
 
-      // إضافة مستمع لزر Stripe (بدلاً من createPaymentMethod، نرسل إلى backend)
-
-      document.getElementById('stripe-button').addEventListener('click', handleStripePayment);
-
     });
 
     // تهيئة Stripe
 
     function initStripe() {
 
-      stripe = Stripe('pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF'); // استبدل بـ Publishable Key الخاص بك
+      stripe = Stripe('pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF'); // Publishable Key الخاص بك
 
       const elements = stripe.elements();
-
-     
 
       cardElement = elements.create('card', {
 
@@ -3263,87 +3232,21 @@
 
       });
 
-     
-
       cardElement.mount('#card-element');
 
       cardElement.on('change', handleCardChange);
 
     }
 
-    // معالجة الدفع عبر Stripe عبر الـ backend
+    // معالجة تغيير البطاقة
 
-    async function handleStripePayment(event) {
+    function handleCardChange(event) {
 
-      event.preventDefault();
+      const displayError = document.getElementById('card-errors-form');
 
-      const name = document.getElementById('name').value.trim();
-
-      const email = document.getElementById('email').value.trim();
-
-      const phone = document.getElementById('phone').value.trim();
-
-      const country = document.getElementById('country').value.trim();
-
-      const address = document.getElementById('address').value.trim();
-
-      const quantity = cartQuantity;
-
-     
-
-      try {
-
-        const response = await fetch(backendUrl, {
-
-          method: 'POST',
-
-          headers: { 'Content-Type': 'application/json' },
-
-          body: JSON.stringify({
-
-            name,
-
-            email,
-
-            phone,
-
-            country,
-
-            address,
-
-            quantity,
-
-            // يمكن إضافة تفاصيل أخرى إذا لزم الأمر
-
-          })
-
-        });
-
-     
-
-        const { sessionId } = await response.json();
-
-     
-
-        const { error } = await stripe.redirectToCheckout({ sessionId });
-
-     
-
-        if (error) {
-
-          showAlert(error.message, 'error');
-
-        }
-
-      } catch (error) {
-
-        showAlert(currentLang === 'ar' ? 'حدث خطأ أثناء معالجة الدفع' : 'An error occurred during payment processing', 'error');
-
-      }
+      displayError.textContent = event.error ? event.error.message : '';
 
     }
-
-    // باقي الدوال كما هي...
 
     // تهيئة الصفحة
 
@@ -3374,16 +3277,6 @@
       document.getElementById('orderForm').addEventListener('submit', handleOrder);
 
       document.getElementById('langSwitcher').addEventListener('click', toggleLanguage);
-
-    }
-
-    // معالجة تغيير البطاقة
-
-    function handleCardChange(event) {
-
-      const displayError = document.getElementById('card-errors-form');
-
-      displayError.textContent = event.error ? event.error.message : '';
 
     }
 
@@ -3502,6 +3395,18 @@
       document.getElementById('stripePayment').style.display = method === 'stripe' ? 'block' : 'none';
 
       document.getElementById('swiftDetails').style.display = method === 'swift' ? 'block' : 'none';
+
+      // إخفاء حقل رفع الإيصال إذا كان stripe
+
+      const receiptGroup = document.querySelector('.form-group [for="receipt"]').parentNode.parentNode;
+
+      receiptGroup.style.display = method === 'swift' ? 'block' : 'none';
+
+      // تغيير نص زر الإرسال بناءً على الطريقة
+
+      const submitBtn = document.querySelector('#orderForm button[type="submit"]');
+
+      submitBtn.textContent = method === 'stripe' ? (currentLang === 'ar' ? 'دفع عبر Stripe' : 'Pay via Stripe') : (currentLang === 'ar' ? 'إرسال الطلب via WhatsApp' : 'Submit Order via WhatsApp');
 
     }
 
@@ -3631,7 +3536,7 @@
 
     }
 
-    // معالج الطلب
+    // معالج الطلب (الفصل بين Stripe و SWIFT)
 
     async function handleOrder(event) {
 
@@ -3645,13 +3550,19 @@
 
      
 
-      // معالجة الدفع إذا كان عبر Stripe (تم نقلها إلى زر منفصل)
+      const paymentMethod = document.getElementById('paymentMethod').value;
 
-      // إذا كان swift، استمر كما هو
+     
 
-      if (document.getElementById('paymentMethod').value === 'swift') {
+      if (paymentMethod === 'stripe') {
 
-        // رفع الصورة إذا وجدت
+        // معالجة دفع Stripe عبر الخادم الخلفي
+
+        await handleStripePayment();
+
+      } else if (paymentMethod === 'swift') {
+
+        // معالجة SWIFT وإرسال عبر WhatsApp
 
         let imageUrl = '';
 
@@ -3676,6 +3587,116 @@
         resetForm();
 
         clearCart();
+
+      }
+
+    }
+
+    // معالجة دفع Stripe عبر الخادم الخلفي مع جميع البيانات
+
+    async function handleStripePayment() {
+
+      const name = document.getElementById('name').value.trim();
+
+      const email = document.getElementById('email').value.trim();
+
+      const phone = document.getElementById('phone').value.trim();
+
+      const country = document.getElementById('country').value.trim();
+
+      const address = document.getElementById('address').value.trim();
+
+      const quantity = cartQuantity;
+
+     
+
+      // التحقق من صحة بيانات البطاقة
+
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+
+        type: 'card',
+
+        card: cardElement,
+
+        billing_details: {
+
+          name,
+
+          email,
+
+          phone,
+
+          address: { country, line1: address }
+
+        }
+
+      });
+
+     
+
+      if (error) {
+
+        showAlert(error.message, 'error');
+
+        return;
+
+      }
+
+     
+
+      try {
+
+        const response = await fetch(`${API_BASE}/create-checkout-session`, {
+
+          method: 'POST',
+
+          headers: { 'Content-Type': 'application/json' },
+
+          body: JSON.stringify({
+
+            payment_method: paymentMethod.id,
+
+            name,
+
+            email,
+
+            phone,
+
+            country,
+
+            address,
+
+            quantity
+
+          })
+
+        });
+
+     
+
+        const data = await response.json();
+
+     
+
+        if (data.url) {
+
+          window.location.href = data.url; // توجيه إلى Stripe Checkout
+
+          showAlert(translations[currentLang]['payment.success'], 'success');
+
+          resetForm();
+
+          clearCart();
+
+        } else {
+
+          showAlert(data.error || translations[currentLang]['payment.error'], 'error');
+
+        }
+
+      } catch (err) {
+
+        showAlert(translations[currentLang]['payment.error'], 'error');
 
       }
 
