@@ -45,19 +45,19 @@ app.post('/create-checkout-session', async (req, res) => {
 
       // ✅ جمع بيانات الشحن ورقم الهاتف
       shipping_address_collection: {
-        allowed_countries: ['US', 'TR', 'SA', 'AE', 'PS'] // عدّلها حسب الدول التي تدعم الشحن إليها
+        allowed_countries: ['US', 'TR', 'SA', 'AE', 'PS'] // عدّل حسب الدول المسموح الشحن إليها
       },
       phone_number_collection: {
         enabled: true
       },
 
-      // الروابط النهائية على GitHub Pages
+      // روابط النجاح والإلغاء
       success_url: 'https://axis-auto.github.io/uv/success.html?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://axis-auto.github.io/uv/cancel.html'
     });
 
-    // ✅ نرجع رابط الدفع مباشرة
-    res.json({ url: session.url });
+    // ✅ إرجاع session.id (حتى يستخدمه الفرونت إند مع stripe.redirectToCheckout)
+    res.json({ id: session.id });
   } catch (err) {
     console.error('Create session error:', err);
     res.status(500).json({ error: err.message });
