@@ -43,12 +43,21 @@ app.post('/create-checkout-session', async (req, res) => {
       ],
       metadata: { quantity: String(quantity) },
 
+      // ✅ جمع بيانات الشحن ورقم الهاتف
+      shipping_address_collection: {
+        allowed_countries: ['US', 'TR', 'SA', 'AE', 'PS'] // عدّلها حسب الدول التي تدعم الشحن إليها
+      },
+      phone_number_collection: {
+        enabled: true
+      },
+
       // الروابط النهائية على GitHub Pages
       success_url: 'https://axis-auto.github.io/uv/success.html?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://axis-auto.github.io/uv/cancel.html'
     });
 
-    res.json({ id: session.id });
+    // ✅ نرجع رابط الدفع مباشرة
+    res.json({ url: session.url });
   } catch (err) {
     console.error('Create session error:', err);
     res.status(500).json({ error: err.message });
@@ -56,4 +65,4 @@ app.post('/create-checkout-session', async (req, res) => {
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.listen(port, () => console.log(`✅ Server running on port ${port}`));
