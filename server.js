@@ -6,11 +6,11 @@ const bodyParser = require('body-parser');
 
 const app = express();
 app.use(cors({
-  origin: true // مؤقتاً يسمح لأي أصل - يفضل تغييره لاحقاً إلى https://USERNAME.github.io
+  origin: true // مؤقتاً يسمح لأي موقع - بعد التجربة يمكنك تغييره إلى: 'https://axis-auto.github.io'
 }));
 app.use(bodyParser.json());
 
-// STRIPE_SECRET_KEY سيأتي من متغير بيئي على Render
+// مفتاح Stripe السري (يجب أن يكون متغيّر بيئي في Render باسم STRIPE_SECRET_KEY)
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.post('/create-checkout-session', async (req, res) => {
@@ -20,16 +20,14 @@ app.post('/create-checkout-session', async (req, res) => {
     // حساب السعر بالديناميكية (بالسنت)
     let amount;
     if (quantity === 1) {
-      amount = 79900 + 4000;       // $799 + $40 شحن => 83900 سنت
+      amount = 79900 + 4000;       // $799 + $40 شحن = $839
     } else if (quantity === 2) {
-      amount = 129900;             // $1299 => 129900 سنت
+      amount = 129900;             // $1299 (شحن مجاني)
     } else {
       amount = 129900 + (quantity - 2) * 70000; // +$700 لكل قطعة إضافية
     }
 
-    // عدّل success_url و cancel_url إلى صفحاتك على GitHub Pages
-    const YOUR_GH_PAGES_BASE = process.env.GH_PAGES_BASE || 'https://USERNAME.github.io/REPO';
-
+    // إنشاء جلسة Checkout
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -44,8 +42,10 @@ app.post('/create-checkout-session', async (req, res) => {
         }
       ],
       metadata: { quantity: String(quantity) },
-      success_url: `${YOUR_GH_PAGES_BASE}/thank-you.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${YOUR_GH_PAGES_BASE}/cancel.html`
+
+      // الروابط النهائية على GitHub Pages
+      success_url: 'https://axis-auto.github.io/uv/success.html?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://axis-auto.github.io/uv/cancel.html'
     });
 
     res.json({ id: session.id });
