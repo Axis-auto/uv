@@ -5,21 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>تم الدفع بنجاح</title>
   <style>
-    body { font-family: system-ui, sans-serif; text-align: center; padding: 50px; }
-    h1 { color: green; }
+    body { 
+      font-family: system-ui, sans-serif; 
+      text-align: center; 
+      padding: 50px; 
+      background-color: #f9fff9;
+    }
+    h1 { 
+      color: green; 
+      margin-bottom: 20px;
+    }
+    p { 
+      font-size: 18px; 
+      margin-bottom: 30px;
+    }
+    a {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: green;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    a:hover {
+      background-color: darkgreen;
+    }
   </style>
 </head>
 <body>
   <h1>تم الدفع بنجاح!</h1>
   <p>شكراً لك على طلبك. سنتصل بك قريباً عبر واتساب لتأكيد الشحن.</p>
-  <a href="/">العودة إلى الصفحة الرئيسية</a>
+  <a href="https://axis-auto.github.io/uv/">العودة إلى الصفحة الرئيسية</a>
+
   <script>
-    // يمكن إضافة كود للتحقق من session_id إذا لزم الأمر من backend
+    // قراءة session_id من الرابط (اختياري)
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
     if (sessionId) {
-      // يمكن إرسال إشعار إلى backend أو عرض تفاصيل
       console.log('Session ID:', sessionId);
+      // يمكنك هنا إرسال sessionId إلى خادمك للتحقق أو حفظه
     }
   </script>
 </body>
