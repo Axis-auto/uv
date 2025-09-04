@@ -713,7 +713,6 @@
           </div>
           <div id="stripe-details" class="payment-details active">
             <p data-translate="payment.stripeDesc">سيتم توجيهك إلى صفحة دفع آمنة لدى Stripe لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.</p>
-            <button id="stripe-checkout-btn" class="btn modern-btn" style="width: 100%; margin-top: 12px;" onclick="handleStripeCheckout()" data-translate="payment.completePayment">أتمم عملية الدفع</button>
           </div>
           <div id="swift-details" class="payment-details">
             <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0; direction: ltr; text-align: left;">
@@ -820,7 +819,7 @@
             <div class="form-group">
               <label class="form-label" data-translate="order.paymentMethod">طريقة الدفع</label>
               <select id="paymentMethod" class="form-select" onchange="togglePaymentDetails()">
-                <option value="stripe" data-translate="order.paymentStripe">الدفع بالبطاقة (Stripe)</option>
+                <option value="stripe" data-translate="order.paymentStripe">الدفع بالبطاقة</option>
                 <option value="swift" data-translate="order.paymentSwift">حوالة بنكية (SWIFT)</option>
               </select>
             </div>
@@ -870,8 +869,8 @@
               <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب وتقديم المساعدة في إرسال صورة الإيصال</div>
             </div>
            
-            <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleOrder()" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
           </form>
+          <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleOrder()" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
         </div>
        
         <div class="card card-hover">
@@ -1126,7 +1125,7 @@
         'features.title': 'لماذا جهاز فحص السيارات هذا؟',
         'features.subtitle': 'مصمم خصيصًا لفحص السيارات بسرعة وبدقّة عالية.',
         'features.feat1.title': 'يكشف آثار الدهان والرش',
-        'features.feat1.desc': 'يُبين اختلافات الطبلات، المعجون والتلميع.',
+        'features.feat1.desc': 'يُبين اختلافات الطبقات، المعجون والتلميع.',
         'features.feat2.title': 'كشف تسريبات AC مع صبغة UV',
         'features.feat2.desc': 'متوافق مع أصباغ UV الشائعة لسهولة كشف التسريب.',
         'features.feat3.title': 'بطارية 8400 mAh',
@@ -1269,7 +1268,7 @@
         'order.country': 'الدولة',
         'order.address': 'العنوان',
         'order.paymentMethod': 'طريقة الدفع',
-        'order.paymentStripe': 'الدفع بالبطاقة (Stripe)',
+        'order.paymentStripe': 'الدفع بالبطاقة',
         'order.paymentSwift': 'حوالة بنكية (SWIFT)',
         'order.stripeNote': 'سيتم توجيهك إلى صفحة الدفع الآمنة لدى Stripe لإتمام عملية الدفع.',
         'order.swiftNote': 'بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.',
@@ -1291,8 +1290,6 @@
        
         // معلومات إضافية
         'info.title': 'معلومات إضافية',
-        'info.contactTitle': 'للطلب والاستفسار',
-        'info.address': 'شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة',
         'info.warrantyTitle': 'الضمان والخدمة',
         'info.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
@@ -1527,9 +1524,8 @@
         'order.country': 'Country',
         'order.address': 'Address',
         'order.paymentMethod': 'Payment Method',
-        'order.paymentStripe': 'Card Payment (Stripe)',
+        'order.paymentStripe': 'Card Payment',
         'order.paymentSwift': 'Bank Transfer (SWIFT)',
-        'order.cardDetails': 'Card Details',
         'order.stripeNote': 'You will be redirected to Stripe\'s secure payment page to complete the payment process.',
         'order.swiftNote': 'After completing the transfer, please upload a copy of the payment receipt below.',
         'order.receipt': 'Please upload payment receipt if payment was made',
@@ -1662,6 +1658,9 @@
       // تطبيق الترجمة على جميع العناصر
       applyTranslations(lang);
      
+      // تطبيق الترجمة على جميع العناصر
+      applyTranslations(lang);
+     
       // إعادة عرض السلة باللغة الجديدة
       updateCartDisplay();
       updateCartSummary();
@@ -1691,15 +1690,13 @@
           }
         }
       });
-     
-      // تحديث النصوص الخاصة (مثل زر التبديل)
-      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
     }
 
     // تبديل تفاصيل طريقة الدفع
     function togglePaymentDetails() {
       const method = document.getElementById('paymentMethod').value;
       document.getElementById('receiptGroup').style.display = method === 'swift' ? 'block' : 'none';
+      document.getElementById('orderForm').style.display = method === 'swift' ? 'grid' : 'none';
       
       // تحديث زر الإرسال بناءً على طريقة الدفع
       const submitBtn = document.getElementById('submitBtn');
