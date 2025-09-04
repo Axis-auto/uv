@@ -868,7 +868,6 @@
               <strong data-translate="order.whatsappTitle">سيتم إرسال طلبك مباشرة عبر واتساب</strong>
               <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب وتقديم المساعدة في إرسال صورة الإيصال</div>
             </div>
-           
           </form>
           <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleOrder()" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
         </div>
@@ -1290,6 +1289,8 @@
        
         // معلومات إضافية
         'info.title': 'معلومات إضافية',
+        'info.contactTitle': 'للطلب والاستفسار',
+        'info.address': 'شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة',
         'info.warrantyTitle': 'الضمان والخدمة',
         'info.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
@@ -1658,9 +1659,6 @@
       // تطبيق الترجمة على جميع العناصر
       applyTranslations(lang);
      
-      // تطبيق الترجمة على جميع العناصر
-      applyTranslations(lang);
-     
       // إعادة عرض السلة باللغة الجديدة
       updateCartDisplay();
       updateCartSummary();
@@ -1690,6 +1688,9 @@
           }
         }
       });
+     
+      // تحديث النصوص الخاصة (مثل زر التبديل)
+      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
     }
 
     // تبديل تفاصيل طريقة الدفع
@@ -1698,13 +1699,12 @@
       document.getElementById('receiptGroup').style.display = method === 'swift' ? 'block' : 'none';
       document.getElementById('orderForm').style.display = method === 'swift' ? 'grid' : 'none';
       
-      // تحديث زر الإرسال بناءً على طريقة الدفع
       const submitBtn = document.getElementById('submitBtn');
       if (method === 'stripe') {
-        submitBtn.textContent = currentLang === 'ar' ? 'أتمم عملية الدفع' : 'Complete Payment';
+        submitBtn.textContent = translations[currentLang]['payment.completePayment'];
         submitBtn.setAttribute('onclick', 'handleStripeCheckout()');
       } else {
-        submitBtn.textContent = currentLang === 'ar' ? 'إرسال الطلب via WhatsApp' : 'Submit Order via WhatsApp';
+        submitBtn.textContent = translations[currentLang]['order.submit'];
         submitBtn.setAttribute('onclick', 'handleSwiftPayment()');
       }
     }
