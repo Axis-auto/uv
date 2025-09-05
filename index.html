@@ -691,7 +691,7 @@
               <li data-translate="pricing.option2.item2">بطاريات ليثيوم <span class="numbers-fix">8400</span> mAh</li>
               <li data-translate="pricing.option2.item3">شواحن سريعة + كابلات USB-C</li>
               <li data-translate="pricing.option2.item4">حقيبتي حماية</li>
-              <li data-translate="pricing.option2.item5">ضمان <span class="numbers-fix">12</span> месяц للجهازين</li>
+              <li data-translate="pricing.option2.item5">ضمان <span class="numbers-fix">12</span> شهر للجهازين</li>
               <li data-translate="pricing.option2.item6">شحن مجاني</li>
             </ul>
             <button class="btn modern-btn" onclick="addToCart(2)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
@@ -869,7 +869,13 @@
               <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب وتقديم المساعدة في إرسال صورة الإيصال</div>
             </div>
           </form>
-          <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleOrder()" data-translate="order.submit">إرسال الطلب via WhatsApp</button>
+          <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleStripeCheckout()">أتمم عملية الدفع</button>
+          <div id="paymentIcons" style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style="height: 20px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/American_Express_logo_%282018%29.svg" alt="American Express" style="height: 20px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="height: 20px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/UnionPay_logo.svg" alt="UnionPay" style="height: 20px;">
+          </div>
         </div>
        
         <div class="card card-hover">
@@ -925,7 +931,7 @@
           <ul>
             <li data-translate="privacy.condition1">أن يكون المنتج في حالته الأصلية وبغلافه الأصلي</li>
             <li data-translate="privacy.condition2">أن تكون جميع الملحقات والوثائق متوفرة</li>
-            <li data-translate="privacy.condition3">أن يتم الإرجاع خلال <span class="numbers-fix">14</span> يوم من تاريخ الاستلام</li>
+            <li data-translate="privacy.condition3">أن يتم الإرجاعخلال <span class="numbers-fix">14</span> يوم من تاريخ الاستلام</li>
             <li data-translate="privacy.condition4">أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام</li>
           </ul>
          
@@ -1698,6 +1704,7 @@
       const method = document.getElementById('paymentMethod').value;
       document.getElementById('receiptGroup').style.display = method === 'swift' ? 'block' : 'none';
       document.getElementById('orderForm').style.display = method === 'swift' ? 'grid' : 'none';
+      document.getElementById('paymentIcons').style.display = method === 'stripe' ? 'flex' : 'none';
       
       const submitBtn = document.getElementById('submitBtn');
       if (method === 'stripe') {
