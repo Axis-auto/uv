@@ -870,11 +870,12 @@
             </div>
           </form>
           <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleStripeCheckout()">أتمم عملية الدفع</button>
-          <div id="paymentIcons" style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style="height: 20px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/American_Express_logo_%282018%29.svg" alt="American Express" style="height: 20px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="height: 20px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/UnionPay_logo.svg" alt="UnionPay" style="height: 20px;">
+          <p data-translate="payment.acceptedCards" style="text-align: center; margin-top: 10px; margin-bottom: 5px; font-weight: bold;"></p>
+          <div id="paymentIcons" style="display: flex; justify-content: center; gap: 15px; margin-top: 10px;">
+            <i class="fab fa-cc-visa" style="font-size: 30px; color: #1A1F71;" title="Visa"></i>
+            <i class="fab fa-cc-amex" style="font-size: 30px; color: #2E77BB;" title="American Express"></i>
+            <i class="fab fa-cc-mastercard" style="font-size: 30px; color: #EB001B;" title="Mastercard"></i>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/UnionPay_logo.svg" alt="UnionPay" style="height: 30px;">
           </div>
         </div>
        
@@ -1228,6 +1229,7 @@
         'payment.stripe': 'بطاقة ائتمان/خصم',
         'payment.swift': 'حوالة بنكية (SWIFT)',
         'payment.stripeDesc': 'سيتم توجيهك إلى صفحة دفع آمنة لدى Stripe لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.',
+        'payment.acceptedCards': 'البطاقات المقبولة:',
         'payment.completePayment': 'أتمم عملية الدفع',
         'payment.swiftNote': 'بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.',
         'payment.guarantee': 'ضمان استرجاع خلال 14 يوم',
@@ -1486,6 +1488,7 @@
         'payment.stripe': 'Credit/Debit Card',
         'payment.swift': 'Bank Transfer (SWIFT)',
         'payment.stripeDesc': 'You will be redirected to Stripe\'s secure payment page to complete the payment process. All your card data is protected and globally accredited.',
+        'payment.acceptedCards': 'Accepted Cards:',
         'payment.completePayment': 'Complete Payment',
         'payment.swiftNote': 'After completing the transfer, please upload a copy of the payment receipt below.',
         'payment.guarantee': '14-Day Money-Back Guarantee',
