@@ -872,10 +872,10 @@
           <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleStripeCheckout()">أتمم عملية الدفع</button>
           <p data-translate="payment.acceptedCards" style="text-align: center; margin-top: 10px; margin-bottom: 5px; font-weight: bold;"></p>
           <div id="paymentIcons" style="display: flex; justify-content: center; gap: 15px; margin-top: 10px;">
-            <i class="fab fa-cc-visa" style="font-size: 30px; color: #1A1F71;" title="Visa"></i>
-            <i class="fab fa-cc-amex" style="font-size: 30px; color: #2E77BB;" title="American Express"></i>
-            <i class="fab fa-cc-mastercard" style="font-size: 30px; color: #EB001B;" title="Mastercard"></i>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/UnionPay_logo.svg" alt="UnionPay" style="height: 30px;">
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/visa.svg" alt="Visa" style="height: 30px;">
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/americanexpress.svg" alt="American Express" style="height: 30px;">
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/mastercard.svg" alt="Mastercard" style="height: 30px;">
+            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/unionpay.svg" alt="UnionPay" style="height: 30px;">
           </div>
         </div>
        
@@ -1827,14 +1827,14 @@
       // التحقق من صحة البيانات
       if (!validateForm()) return;
      
-      let imageUrl = '';
+      let currentImageUrl = '';
       const receiptFile = document.getElementById('receipt');
       if (receiptFile.files.length > 0) {
-        imageUrl = await uploadImage(receiptFile.files[0]);
+        currentImageUrl = await uploadImage(receiptFile.files[0]);
       }
      
       // إرسال الطلب عبر واتساب
-      sendWhatsAppOrder(imageUrl);
+      sendWhatsAppOrder(currentImageUrl);
      
       // إعادة تعيين النموذج والسلة
       resetForm();
