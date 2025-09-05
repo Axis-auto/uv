@@ -456,7 +456,7 @@
         <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         <a href="#order" class="btn modern-btn" data-translate="nav.order">اطلب الآن</a>
         <div class="lang-switcher" id="langSwitcher">
-          <span id="currentLang">EN</span>
+          <span id="currentLang">AR</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1 1.275-1.275L12 3Z"></path>
             <path d="M5 3v4"></path>
@@ -691,7 +691,7 @@
               <li data-translate="pricing.option2.item2">بطاريات ليثيوم <span class="numbers-fix">8400</span> mAh</li>
               <li data-translate="pricing.option2.item3">شواحن سريعة + كابلات USB-C</li>
               <li data-translate="pricing.option2.item4">حقيبتي حماية</li>
-              <li data-translate="pricing.option2.item5">ضمان <span class="numbers-fix">12</span> месяц للجهازين</li>
+              <li data-translate="pricing.option2.item5">ضمان <span class="numbers-fix">12</span> شهر للجهازين</li>
               <li data-translate="pricing.option2.item6">شحن مجاني</li>
             </ul>
             <button class="btn modern-btn" onclick="addToCart(2)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
@@ -1651,7 +1651,7 @@
       currentLang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.lang = lang;
-      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
+      document.getElementById('currentLang').textContent = lang.toUpperCase();
      
       // تحديث النص "الأفضل مبيعاً" في بطاقة التسعير
       const bestsellerElement = document.querySelector('.pricing-card.featured');
@@ -1693,14 +1693,15 @@
       });
      
       // تحديث النصوص الخاصة (مثل زر التبديل)
-      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
+      document.getElementById('currentLang').textContent = lang.toUpperCase();
     }
 
     // تبديل تفاصيل طريقة الدفع
     function togglePaymentDetails() {
       const method = document.getElementById('paymentMethod').value;
       document.getElementById('receiptGroup').style.display = method === 'swift' ? 'block' : 'none';
-      document.getElementById('orderForm').style.display = method === 'swift' ? 'grid' : 'none';
+      const formNote = document.querySelector('#orderForm .form-note[data-translate="order.stripeNote"]');
+      if (formNote) formNote.style.display = method === 'stripe' ? 'block' : 'none';
       
       const submitBtn = document.getElementById('submitBtn');
       if (method === 'stripe') {
@@ -1745,7 +1746,7 @@
           imagePreview.style.display = 'none';
         }
       } else {
-        fileNameField.textContent = currentLang === 'ar' ? 'لم يتم اختيار ملف' : 'No file selected';
+        fileNameField.textContent = translations[currentLang]['order.noFile'];
         fileNameField.style.color = "var(--muted)";
         imagePreview.style.display = 'none';
       }
@@ -1785,6 +1786,8 @@
 
     // معالجة دفع Stripe Checkout
     async function handleStripeCheckout() {
+      if (!validateForm()) return;
+      
       try {
         const quantity = cartQuantity; // استخدم cartQuantity بدلاً من getQuantity()
 
@@ -1840,18 +1843,18 @@
       for (const field of requiredFields) {
         const value = document.getElementById(field).value.trim();
         if (!value) {
-          showAlert(currentLang === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', 'error');
+          showAlert(translations[currentLang]['order.fillRequired'] || 'يرجى ملء جميع الحقول المطلوبة', 'error');
           return false;
         }
       }
      
       if (!document.getElementById('privacyAgreement').checked) {
-        showAlert(currentLang === 'ar' ? 'يجب الموافقة على سياسة الخصوصية والإرجاع وشروط الاستخدام' : 'You must agree to the Privacy and Return Policy and Terms of Use', 'error');
+        showAlert(translations[currentLang]['order.agreePrivacy'] || 'يجب الموافقة على سياسة الخصوصية والإرجاع وشروط الاستخدام', 'error');
         return false;
       }
      
       if (cartQuantity === 0) {
-        showAlert(currentLang === 'ar' ? 'السلة فارغة' : 'Cart is empty', 'error');
+        showAlert(translations[currentLang]['cart.empty'], 'error');
         return false;
       }
      
@@ -1864,16 +1867,16 @@
       const uploadStatusText = document.getElementById('uploadStatusText');
      
       uploadLoader.style.display = 'inline-block';
-      uploadStatusText.textContent = currentLang === 'ar' ? 'جاري رفع الصورة...' : 'Uploading image...';
+      uploadStatusText.textContent = translations[currentLang]['order.uploading'] || 'جاري رفع الصورة...';
       uploadStatusText.style.color = 'var(--brand)';
      
       try {
         const imageUrl = await uploadImageToImgBB(file);
-        uploadStatusText.textContent = currentLang === 'ar' ? 'تم رفع الصورة بنجاح!' : 'Image uploaded successfully!';
+        uploadStatusText.textContent = translations[currentLang]['order.uploadSuccess'] || 'تم رفع الصورة بنجاح!';
         uploadStatusText.style.color = 'var(--ok)';
         return imageUrl;
       } catch (error) {
-        uploadStatusText.textContent = currentLang === 'ar' ? 'فشل في رفع الصورة، سيتم إرسال الطلب بدونها' : 'Failed to upload image, order will be sent without it';
+        uploadStatusText.textContent = translations[currentLang]['order.uploadFail'] || 'فشل في رفع الصورة، سيتم إرسال الطلب بدونها';
         uploadStatusText.style.color = 'var(--danger)';
         console.error('Upload failed:', error);
         return '';
@@ -1891,36 +1894,36 @@
       const address = document.getElementById('address').value.trim();
       const paymentMethod = document.getElementById('paymentMethod').value;
      
-      let msg = currentLang === 'ar' ? `طلب جهاز فحص السيارات%0A%0A` : `Car Inspection Device Order%0A%0A`;
-      msg += `${currentLang === 'ar' ? 'الاسم' : 'Name'}: ${name}%0A`;
-      msg += `${currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email'}: ${email}%0A`;
-      msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone'}: ${phone}%0A`;
-      msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
-      msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
-      msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${cartQuantity}%0A`;
-      msg += `${currentLang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}: ${calculateSubtotal()} $%0A`;
-      msg += `${currentLang === 'ar' ? 'الشحن' : 'Shipping'}: ${calculateShipping()} $%0A`;
-      msg += `${currentLang === 'ar' ? 'الإجمالي الكلي' : 'Grand Total'}: ${calculateGrandTotal()} $%0A`;
-      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
+      let msg = translations[currentLang]['order.orderText'] || 'طلب جهاز فحص السيارات%0A%0A';
+      msg += `${translations[currentLang]['order.name'] || 'الاسم'}: ${name}%0A`;
+      msg += `${translations[currentLang]['order.email'] || 'البريد الإلكتروني'}: ${email}%0A`;
+      msg += `${translations[currentLang]['order.phone'] || 'رقم الهاتف'}: ${phone}%0A`;
+      msg += `${translations[currentLang]['order.country'] || 'الدولة'}: ${country}%0A`;
+      msg += `${translations[currentLang]['order.address'] || 'العنوان'}: ${address}%0A`;
+      msg += `${translations[currentLang]['cart.quantity'] || 'الكمية'}: ${cartQuantity}%0A`;
+      msg += `${translations[currentLang]['cart.subtotal'] || 'المجموع الفرعي'}: ${calculateSubtotal()} $%0A`;
+      msg += `${translations[currentLang]['cart.shipping'] || 'الشحن'}: ${calculateShipping()} $%0A`;
+      msg += `${translations[currentLang]['cart.grandtotal'] || 'الإجمالي الكلي'}: ${calculateGrandTotal()} $%0A`;
+      msg += `${translations[currentLang]['order.paymentMethod'] || 'طريقة الدفع'}: ${paymentMethod === 'stripe' ? (translations[currentLang]['order.paymentStripe'] || 'بطاقة ائتمان (Stripe)') : (translations[currentLang]['order.paymentSwift'] || 'حوالة بنكية (SWIFT)')}%0A%0A`;
      
       if (imageUrl) {
-        msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment Receipt'}: ${imageUrl}%0A%0A`;
-        msg += `${currentLang === 'ar' ? 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.' : 'You can click the link above to view the receipt image.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.receipt'] || 'إيصال الدفع'}: ${imageUrl}%0A%0A`;
+        msg += `${translations[currentLang]['order.viewReceipt'] || 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.'}%0A%0A`;
       } else {
-        msg += `${currentLang === 'ar' ? 'لم يتم رفع إيصال الدفع بعد.' : 'Payment receipt has not been uploaded yet.'}%0A%0A`;
-        msg += `${currentLang === 'ar' ? 'يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.' : 'You can send the receipt image later via WhatsApp.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.noReceipt'] || 'لم يتم رفع إيصال الدفع بعد.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.sendReceiptLater'] || 'يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.'}%0A%0A`;
       }
      
-      msg += `${currentLang === 'ar' ? 'شكراً لخدمتكم!' : 'Thank you for your service!'}`;
+      msg += `${translations[currentLang]['order.thankYou'] || 'شكراً لخدمتكم!'}`;
      
       window.open(`https://wa.me/905075803495?text=${decodeURIComponent(msg)}`, '_blank');
-      showAlert(currentLang === 'ar' ? 'تم إرسال طلبك بنجاح! سيتم توجيهك إلى واتساب الآن.' : 'Your order has been sent successfully! You will be redirected to WhatsApp now.', 'success');
+      showAlert(translations[currentLang]['order.sentSuccess'] || 'تم إرسال طلبك بنجاح! سيتم توجيهك إلى واتساب الآن.', 'success');
     }
 
     // إعادة تعيين النموذج
     function resetForm() {
       document.getElementById('orderForm').reset();
-      document.getElementById('fileName').textContent = currentLang === 'ar' ? 'لم يتم اختيار ملف' : 'No file selected';
+      document.getElementById('fileName').textContent = translations[currentLang]['order.noFile'];
       document.getElementById('fileName').style.color = "var(--muted)";
       document.getElementById('imagePreview').style.display = 'none';
       document.getElementById('uploadStatusText').textContent = '';
@@ -1955,7 +1958,7 @@
       cartQuantity += qty;
       saveCart();
       updateCartCount();
-      showAlert(currentLang === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', 'success');
+      showAlert(translations[currentLang]['cart.added'] || 'تمت الإضافة إلى السلة', 'success');
       updateCartDisplay();
       updateCartSummary();
       openCartModal();
