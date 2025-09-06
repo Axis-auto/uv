@@ -43,7 +43,7 @@ app.post('/create-checkout-session', async (req, res) => {
       ],
       metadata: { quantity: String(quantity) },
 
-      // ✅ السماح بجميع الدول المدعومة من Stripe
+      // ✅ قائمة الدول المدعومة فقط (بدون الأكواد الغير صحيحة)
       shipping_address_collection: {
         allowed_countries: [
           'AE','AF','AL','AM','AO','AR','AT','AU','AZ','BA','BD','BE','BF','BG','BH','BI','BJ','BN','BO','BR','BS','BT',
@@ -54,7 +54,7 @@ app.post('/create-checkout-session', async (req, res) => {
           'MH','MK','ML','MM','MN','MO','MR','MT','MU','MV','MW','MX','MY','MZ','NA','NE','NG','NI','NL','NO','NP','NR',
           'NZ','OM','PA','PE','PG','PH','PK','PL','PT','PW','PY','QA','RO','RS','RU','RW','SA','SB','SC','SE','SG','SI',
           'SK','SL','SM','SN','SO','SR','ST','SV','SZ','TD','TG','TH','TJ','TL','TN','TO','TR','TT','TV','TZ','UA','UG',
-          'US','UY','UZ','VC','VE','VN','VU','WS','YE','ZA','ZM','ZW'
+          'US','UY','UZ','VC','VE','VN','ZA','ZM','ZW'
         ]
       },
       phone_number_collection: {
