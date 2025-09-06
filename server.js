@@ -43,9 +43,19 @@ app.post('/create-checkout-session', async (req, res) => {
       ],
       metadata: { quantity: String(quantity) },
 
-      // ✅ السماح بجميع الدول
+      // ✅ السماح بجميع الدول المدعومة من Stripe
       shipping_address_collection: {
-        allowed_countries: ['*']
+        allowed_countries: [
+          'AE','AF','AL','AM','AO','AR','AT','AU','AZ','BA','BD','BE','BF','BG','BH','BI','BJ','BN','BO','BR','BS','BT',
+          'BW','BY','BZ','CA','CD','CF','CG','CH','CI','CL','CM','CN','CO','CR','CV','CY','CZ','DE','DJ','DK','DM','DO',
+          'DZ','EC','EE','EG','ER','ES','ET','FI','FJ','FM','FO','FR','GA','GB','GD','GE','GH','GI','GL','GM','GN','GQ',
+          'GR','GT','GW','GY','HK','HN','HR','HT','HU','ID','IE','IL','IN','IQ','IS','IT','JM','JO','JP','KE','KG','KH',
+          'KI','KM','KN','KR','KW','KZ','LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY','MA','MC','MD','ME','MG',
+          'MH','MK','ML','MM','MN','MO','MR','MT','MU','MV','MW','MX','MY','MZ','NA','NE','NG','NI','NL','NO','NP','NR',
+          'NZ','OM','PA','PE','PG','PH','PK','PL','PT','PW','PY','QA','RO','RS','RU','RW','SA','SB','SC','SE','SG','SI',
+          'SK','SL','SM','SN','SO','SR','ST','SV','SZ','TD','TG','TH','TJ','TL','TN','TO','TR','TT','TV','TZ','UA','UG',
+          'US','UY','UZ','VC','VE','VN','VU','WS','YE','ZA','ZM','ZW'
+        ]
       },
       phone_number_collection: {
         enabled: true
