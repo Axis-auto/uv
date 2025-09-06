@@ -43,9 +43,9 @@ app.post('/create-checkout-session', async (req, res) => {
       ],
       metadata: { quantity: String(quantity) },
 
-      // ✅ جمع بيانات الشحن ورقم الهاتف
+      // ✅ السماح بجميع الدول
       shipping_address_collection: {
-        allowed_countries: ['US', 'TR', 'SA', 'AE', 'PS'] // عدّل حسب الدول المسموح الشحن إليها
+        allowed_countries: ['*']
       },
       phone_number_collection: {
         enabled: true
