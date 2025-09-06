@@ -19,8 +19,7 @@
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
   
   <style>
-    /* جميع أنماط CSS السابقة محفوظة كما هي */
-    /* تم إزالة الأنماط غير المستخدمة فقط */
+
     :root {
       --brand: #2563eb; --brand-2: #3b82f6; --brand-light: #dbeafe;
       --text: #0f172a; --muted: #475569; --bg: #f8fafc; --card: #ffffff;
@@ -356,7 +355,7 @@
     @media (max-width:768px) {
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
-      .logo span { font-size: 14px; display: none; } /* إخفاء نص "AXIS AUTO" على الشاشات الصغيرة */
+      .logo span { font-size: 14px; display: none; } 
       header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } /* Adjusted padding for better alignment */
       nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* Added padding to nav */
       nav::-webkit-scrollbar { display: none; }
@@ -374,19 +373,19 @@
       .lang-switcher { padding: 4px 8px; font-size: 12px; gap: 4px; }
       .cart-icon .fa-shopping-cart { font-size: 16px; }
       .cart-count { font-size: 10px; min-width: 16px; padding: 1px 4px; top: -6px; right: -6px; }
-      .cart-icon { margin-left: 8px; } /* Added margin to prevent cutting off */
+      .cart-icon { margin-left: 8px; } 
     }
    
     @media (max-width:640px) {
       .container { padding: 8px; }
-      header .inner { padding: 6px 0; gap: 4px; } /* تقليل الفجوة بين العناصر */
+      header .inner { padding: 6px 0; gap: 4px; } 
       .logo { font-size: 14px; gap: 6px; }
       .logo img { height: 30px; }
-      .logo span { font-size: 12px; } /* تصغير حجم النص "AXIS AUTO" */
+      .logo span { font-size: 12px; } 
       nav { gap: 4px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* ضمان عدم الالتفاف وإضافة تمرير أفقي */
       nav::-webkit-scrollbar { display: none; }
-      .btn { padding: 8px 14px; font-size: 14px; white-space: nowrap; } /* منع الالتفاف للأزرار */
-      .btn.ghost { padding: 4px 8px; font-size: 12px; } /* تقليل حجم الأزرار للشاشات الصغيرة */
+      .btn { padding: 8px 14px; font-size: 14px; white-space: nowrap; } 
+      .btn.ghost { padding: 4px 8px; font-size: 12px; } 
       .hero { padding: 12px 0; min-height: 80vh; }
       .hero h1 { font-size: 22px; }
       .hero .lead { font-size: 14px; }
@@ -406,7 +405,7 @@
     @media (max-width:480px) {
       .logo { font-size: 12px; }
       .logo img { height: 25px; }
-      .logo span { font-size: 10px; } /* تصغير حجم النص "AXIS AUTO" */
+      .logo span { font-size: 10px; } 
       .btn { padding: 6px 12px; font-size: 12px; }
       .hero h1 { font-size: 20px; }
       .badge { font-size: 9px; }
@@ -1093,12 +1092,12 @@
   <script>
     const API_BASE = "https://uv-rk1s.onrender.com";
 
-    // تهيئة المتغيرات العامة
+    
     let currentLang = 'ar';
     let stripe = null;
     let cartQuantity = 0;
 
-    // جلب الكمية: استخدم أي عنصر/متغير عندك يعكس عدد الأجهزة
+    
     function getQuantity() {
       const qInput = document.getElementById('quantity');
       if (qInput && Number(qInput.value) >= 1) return parseInt(qInput.value, 10);
@@ -1107,11 +1106,11 @@
         return parseInt(window.cartQuantity, 10);
       }
 
-      // افتراضي: جهاز واحد
+     
       return 1;
     }
 
-    // كائن الترجمة
+    
     const translations = {
       ar: {
         // التنقل
@@ -1633,65 +1632,65 @@
       }
     };
 
-    // تهيئة الصفحة عند التحميل
+    
     document.addEventListener('DOMContentLoaded', function() {
       initPage();
       loadCart();
       updateCartSummary();
     });
 
-    // تهيئة Stripe
+    
     function initStripe() {
       stripe = Stripe('pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF'); // Publishable Key الخاص بك
     }
 
-    // تهيئة الصفحة
+    
     function initPage() {
-      // سنة ديناميكية
+      
       document.getElementById('y').textContent = new Date().getFullYear();
      
-      // تحميل اللغة المفضلة
+      
       const savedLang = localStorage.getItem('preferredLanguage');
       if (savedLang) changeLanguage(savedLang);
      
-      // تهيئة طريقة الدفع الافتراضية
+      
       togglePaymentDetails();
       
-      // إضافة حدث النقر على زر التبديل
+      
       document.getElementById('langSwitcher').addEventListener('click', toggleLanguage);
     }
 
-    // تبديل اللغة
+    
     function toggleLanguage() {
       const newLang = currentLang === 'ar' ? 'en' : 'ar';
       changeLanguage(newLang);
     }
 
-    // تغيير اللغة
+    
     function changeLanguage(lang) {
       currentLang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.lang = lang;
       document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
      
-      // تحديث النص "الأفضل مبيعاً" في بطاقة التسعير
+      
       const bestsellerElement = document.querySelector('.pricing-card.featured');
       if (bestsellerElement) {
         bestsellerElement.setAttribute('data-bestseller', lang === 'ar' ? 'الأفضل مبيعاً' : 'Bestseller');
       }
      
-      // تطبيق الترجمة على جميع العناصر
+      
       applyTranslations(lang);
      
-      // إعادة عرض السلة باللغة الجديدة
+      
       updateCartDisplay();
       updateCartSummary();
      
-      // حفظ اللغة المفضلة
+      
       localStorage.setItem('preferredLanguage', lang);
     }
 
-    // تطبيق الترجمة
+    
     function applyTranslations(lang) {
       const elements = document.querySelectorAll('[data-translate]');
       elements.forEach(element => {
@@ -1713,11 +1712,11 @@
         }
       });
      
-      // تحديث النصوص الخاصة (مثل زر التبديل)
+      
       document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
     }
 
-    // تبديل تفاصيل طريقة الدفع
+    
     function togglePaymentDetails() {
       const method = document.getElementById('paymentMethod').value;
       document.getElementById('receiptGroup').style.display = method === 'swift' ? 'block' : 'none';
@@ -1738,7 +1737,7 @@
       }
     }
 
-    // اختيار طريقة الدفع
+    
     function selectPaymentMethod(method) {
       document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
       document.querySelector(`.payment-method:nth-child(${method === 'stripe' ? 1 : 2})`).classList.add('selected');
@@ -1750,7 +1749,7 @@
       togglePaymentDetails();
     }
 
-    // عرض اسم الملف المختار
+    
     function showFileName(input) {
       const fileNameField = document.getElementById('fileName');
       const imagePreview = document.getElementById('imagePreview');
@@ -1777,7 +1776,7 @@
       }
     }
 
-    // رفع الصورة إلى ImgBB
+    
     async function uploadImageToImgBB(file) {
       const apiKey = '1404ac190ec18b119b80e9f2e3955731';
       const formData = new FormData();
@@ -1797,7 +1796,7 @@
       }
     }
 
-    // إظهار رسالة تنبيه
+    
     function showAlert(message, type) {
       const alertBox = document.getElementById('alertBox');
       alertBox.textContent = message;
@@ -1809,7 +1808,7 @@
       }, 3000);
     }
 
-    // معالجة دفع Stripe Checkout
+    
     async function handleStripeCheckout() {
       try {
         const quantity = cartQuantity; // استخدم cartQuantity بدلاً من getQuantity()
@@ -1841,9 +1840,9 @@
       }
     }
 
-    // معالجة دفع SWIFT
+    
     async function handleSwiftPayment() {
-      // التحقق من صحة البيانات
+      
       if (!validateForm()) return;
      
       let currentImageUrl = '';
@@ -1852,15 +1851,15 @@
         currentImageUrl = await uploadImage(receiptFile.files[0]);
       }
      
-      // إرسال الطلب عبر واتساب
+      
       sendWhatsAppOrder(currentImageUrl);
      
-      // إعادة تعيين النموذج والسلة
+      
       resetForm();
       clearCart();
     }
 
-    // التحقق من صحة النموذج
+    
     function validateForm() {
       const requiredFields = ['name', 'email', 'phone', 'country', 'address'];
       for (const field of requiredFields) {
@@ -1884,7 +1883,7 @@
       return true;
     }
 
-    // رفع الصورة
+    
     async function uploadImage(file) {
       const uploadLoader = document.getElementById('uploadLoader');
       const uploadStatusText = document.getElementById('uploadStatusText');
@@ -1908,7 +1907,7 @@
       }
     }
 
-    // إرسال الطلب عبر واتساب
+    
     function sendWhatsAppOrder(imageUrl) {
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
@@ -1960,23 +1959,23 @@
       modalImg.src = src;
     }
 
-    // إغلاق نافذة الصورة
+    
     function closeModal() {
       document.getElementById('imageModal').style.display = "none";
     }
 
-    // فتح سلة التسوق
+   
     function openCartModal() {
       updateCartDisplay();
       document.getElementById('cartModal').style.display = "block";
     }
 
-    // إغلاق سلة التسوق
+    
     function closeCartModal() {
       document.getElementById('cartModal').style.display = "none";
     }
 
-    // إضافة إلى السلة
+    
     function addToCart(qty) {
       cartQuantity += qty;
       saveCart();
@@ -1987,7 +1986,7 @@
       openCartModal();
     }
 
-    // حساب المجموع الفرعي
+    
     function calculateSubtotal() {
       if (cartQuantity === 0) return 0;
       if (cartQuantity === 1) return 799;
@@ -1995,17 +1994,17 @@
       return 1299 + (cartQuantity - 2) * 700;
     }
 
-    // حساب الشحن
+    
     function calculateShipping() {
       return cartQuantity === 1 ? 40 : 0;
     }
 
-    // حساب الإجمالي الكلي
+    
     function calculateGrandTotal() {
       return calculateSubtotal() + calculateShipping();
     }
 
-    // تحديث عرض السلة في المودال
+    
     function updateCartDisplay() {
       const cartItems = document.getElementById('cartItems');
       const cartSubtotal = document.getElementById('cartSubtotal');
@@ -2032,7 +2031,7 @@
       cartGrandTotal.innerHTML = `${translations[currentLang]['cart.grandtotal']}: ${calculateGrandTotal()} $`;
     }
 
-    // تحديث عرض ملخص السلة فوق النموذج
+    
     function updateCartSummary() {
       const cartSummary = document.getElementById('cartSummary');
       if (cartQuantity === 0) {
@@ -2066,7 +2065,7 @@
       }
     }
 
-    // تغيير الكمية
+    
     function changeQuantity(delta) {
       cartQuantity = Math.max(0, cartQuantity + delta);
       saveCart();
@@ -2075,18 +2074,18 @@
       updateCartSummary();
     }
 
-    // حفظ السلة
+    
     function saveCart() {
       localStorage.setItem('cartQuantity', cartQuantity);
     }
 
-    // تحميل السلة
+    
     function loadCart() {
       cartQuantity = parseInt(localStorage.getItem('cartQuantity') || '0');
       updateCartCount();
     }
 
-    // مسح السلة
+    
     function clearCart() {
       cartQuantity = 0;
       saveCart();
@@ -2094,18 +2093,18 @@
       updateCartSummary();
     }
 
-    // تحديث عدد السلة في الهيدر
+    
     function updateCartCount() {
       document.getElementById('cartCount').textContent = cartQuantity;
     }
 
-    // الانتقال إلى الدفع
+    
     function proceedToCheckout() {
       closeCartModal();
       document.querySelector('#order').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // إغلاق النافذة عند النقر خارجها
+    
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
       const privacyModal = document.getElementById('privacyModal');
@@ -2115,17 +2114,17 @@
       if (event.target === cartModal) closeCartModal();
     }
 
-    // عرض سياسة الخصوصية
+    
     function showPrivacyPolicy() {
       document.getElementById('privacyModal').style.display = 'block';
     }
 
-    // إغلاق سياسة الخصوصية
+    
     function closePrivacyModal() {
       document.getElementById('privacyModal').style.display = 'none';
     }
 
-    // إنشاء رابط واتساب
+    
     function waLink(phone, text) {
       const p = phone.replace(/[^0-9]/g, "");
       const t = encodeURIComponent(text);
