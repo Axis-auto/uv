@@ -43,20 +43,38 @@ app.post('/create-checkout-session', async (req, res) => {
       ],
       metadata: { quantity: String(quantity) },
 
-      // ✅ قائمة الدول المدعومة فقط (بدون الأكواد الغير صحيحة)
+      // ✅ كل الدول المدعومة من Stripe (من الوثائق الرسمية)
       shipping_address_collection: {
         allowed_countries: [
-          'AE','AF','AL','AM','AO','AR','AT','AU','AZ','BA','BD','BE','BF','BG','BH','BI','BJ','BN','BO','BR','BS','BT',
-          'BW','BY','BZ','CA','CD','CF','CG','CH','CI','CL','CM','CN','CO','CR','CV','CY','CZ','DE','DJ','DK','DM','DO',
-          'DZ','EC','EE','EG','ER','ES','ET','FI','FJ','FM','FO','FR','GA','GB','GD','GE','GH','GI','GL','GM','GN','GQ',
-          'GR','GT','GW','GY','HK','HN','HR','HT','HU','ID','IE','IL','IN','IQ','IS','IT','JM','JO','JP','KE','KG','KH',
-          'KI','KM','KN','KR','KW','KZ','LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY','MA','MC','MD','ME','MG',
-          'MH','MK','ML','MM','MN','MO','MR','MT','MU','MV','MW','MX','MY','MZ','NA','NE','NG','NI','NL','NO','NP','NR',
-          'NZ','OM','PA','PE','PG','PH','PK','PL','PT','PW','PY','QA','RO','RS','RU','RW','SA','SB','SC','SE','SG','SI',
-          'SK','SL','SM','SN','SO','SR','ST','SV','SZ','TD','TG','TH','TJ','TL','TN','TO','TR','TT','TV','TZ','UA','UG',
-          'US','UY','UZ','VC','VE','VN','ZA','ZM','ZW'
+          'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
+          'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
+          'CA','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CV','CW','CY','CZ',
+          'DE','DJ','DK','DM','DO','DZ',
+          'EC','EE','EG','EH','ER','ES','ET',
+          'FI','FJ','FK','FO','FR',
+          'GA','GB','GD','GE','GF','GG','GH','GI','GL','GM','GN','GP','GQ','GR','GS','GT','GU','GW','GY',
+          'HK','HN','HR','HT','HU',
+          'ID','IE','IL','IM','IN','IO','IQ','IS','IT',
+          'JE','JM','JO','JP',
+          'KE','KG','KH','KI','KM','KN','KR','KW','KY','KZ',
+          'LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY',
+          'MA','MC','MD','ME','MF','MG','MK','ML','MM','MN','MO','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ',
+          'NA','NC','NE','NG','NI','NL','NO','NP','NR','NU','NZ',
+          'OM',
+          'PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PY',
+          'QA',
+          'RE','RO','RS','RU','RW',
+          'SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SZ',
+          'TA','TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ',
+          'UA','UG','US','UY','UZ',
+          'VA','VC','VE','VG','VN','VU',
+          'WF','WS','XK',
+          'YE','YT',
+          'ZA','ZM','ZW',
+          'ZZ'
         ]
       },
+
       phone_number_collection: {
         enabled: true
       },
