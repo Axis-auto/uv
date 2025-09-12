@@ -34,8 +34,14 @@ app.post('/create-checkout-session', async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
-            product_data: { name: 'جهاز فحص السيارات — AXIS UV' },
+            currency: 'usd', // يمكنك تغييره حسب العملة المطلوبة
+            product_data: {
+              name: 'جهاز فحص السيارات — AXIS UV',
+              description: 'جهاز متطور لفحص طلاء السيارات وكشف التعديلات باستخدام الأشعة فوق البنفسجية.',
+              images: [
+                'https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%D8%A9%20%D8%AC%D8%A7%D9%86%D8%A8%D9%8A%D8%A9%20(1).jpg?raw=true'
+              ]
+            },
             unit_amount: amount
           },
           quantity: 1
@@ -43,14 +49,7 @@ app.post('/create-checkout-session', async (req, res) => {
       ],
       metadata: { quantity: String(quantity) },
 
-      // ✅ تفعيل 3D Secure تلقائيًا
-      payment_method_options: {
-        card: {
-          request_three_d_secure: 'automatic' // أو 'any' لإجبار جميع العملاء
-        },
-      },
-
-      // ✅ كل الدول المدعومة من Stripe (من الوثائق الرسمية)
+      // ✅ كل الدول المدعومة من Stripe (يمكنك تقليلها إن أردت)
       shipping_address_collection: {
         allowed_countries: [
           'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
