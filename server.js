@@ -5,39 +5,49 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-app.use(cors({
-  origin: true // مؤقتاً يسمح لأي موقع - بعد التجربة يمكنك تغييره إلى: 'https://axis-auto.github.io'
-}));
+app.use(cors({ origin: true }));
 app.use(bodyParser.json());
 
-// مفتاح Stripe السري (يجب أن يكون متغيّر بيئي في Render باسم STRIPE_SECRET_KEY)
+// مفتاح Stripe السري (من المتغيرات البيئية في Render أو أي استضافة)
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.post('/create-checkout-session', async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
 
-    // حساب السعر بالديناميكية (بالسنت)
+    // 👇 نستقبل العملة من الفرونت إند (مثلاً "usd" أو "eur" أو "try")
+    const currency = req.body.currency || 'usd';
+
+    // أسعار لكل عملة (Stripe يحتاج أصغر وحدة: cents, kuruş…)
+    const prices = {
+      usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
+      eur: { single: 74900, shipping: 3500, double: 119900, extra: 65000 },
+      try: { single: 2799000, shipping: 150000, double: 4599000, extra: 2400000 }
+    };
+
+    const c = prices[currency] || prices['usd'];
+
+    // حساب السعر النهائي
     let amount;
     if (quantity === 1) {
-      amount = 79900 + 4000;       // $799 + $40 شحن = $839
+      amount = c.single + c.shipping;
     } else if (quantity === 2) {
-      amount = 129900;             // $1299 (شحن مجاني)
+      amount = c.double;
     } else {
-      amount = 129900 + (quantity - 2) * 70000; // +$700 لكل قطعة إضافية
+      amount = c.double + (quantity - 2) * c.extra;
     }
 
-    // إنشاء جلسة Checkout
+    // إنشاء جلسة Stripe Checkout
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
       line_items: [
         {
           price_data: {
-            currency: 'usd', // يمكنك تغييره حسب العملة المطلوبة
+            currency: currency,
             product_data: {
-              name: 'جهاز فحص السيارات — AXIS UV',
-              description: 'جهاز متطور لفحص طلاء السيارات وكشف التعديلات باستخدام الأشعة فوق البنفسجية.',
+              name: 'UV Car Inspection Device',
+              description: 'A powerful, portable device for inspecting car body, paint, AC leaks, and hidden repair traces.',
               images: [
                 'https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%D8%A9%20%D8%AC%D8%A7%D9%86%D8%A8%D9%8A%D8%A9%20(1).jpg?raw=true'
               ]
@@ -47,9 +57,8 @@ app.post('/create-checkout-session', async (req, res) => {
           quantity: 1
         }
       ],
-      metadata: { quantity: String(quantity) },
 
-      // ✅ كل الدول المدعومة من Stripe (يمكنك تقليلها إن أردت)
+      // ✅ كل الدول المدعومة من Stripe
       shipping_address_collection: {
         allowed_countries: [
           'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
@@ -81,16 +90,28 @@ app.post('/create-checkout-session', async (req, res) => {
         ]
       },
 
-      phone_number_collection: {
-        enabled: true
-      },
+      // خيارات الشحن (يظهر Subtotal + Shipping + Total تلقائياً)
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: c.shipping, currency: currency },
+            display_name: 'Standard Shipping',
+            delivery_estimate: {
+              minimum: { unit: 'business_day', value: 5 },
+              maximum: { unit: 'business_day', value: 7 }
+            }
+          }
+        }
+      ],
+
+      phone_number_collection: { enabled: true },
 
       // روابط النجاح والإلغاء
       success_url: 'https://axis-auto.github.io/uv/success.html?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://axis-auto.github.io/uv/cancel.html'
     });
 
-    // ✅ إرجاع session.id (حتى يستخدمه الفرونت إند مع stripe.redirectToCheckout)
     res.json({ id: session.id });
   } catch (err) {
     console.error('Create session error:', err);
@@ -98,5 +119,6 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
+// تشغيل السيرفر
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
