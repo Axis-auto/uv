@@ -8,17 +8,15 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(bodyParser.json());
 
-// مفتاح Stripe السري (من المتغيرات البيئية في Render أو أي استضافة)
+// مفتاح Stripe السري
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.post('/create-checkout-session', async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
+    const currency = req.body.currency || 'usd'; // العملة من الفرونت إند
 
-    // 👇 نستقبل العملة من الفرونت إند (مثلاً "usd" أو "eur" أو "try")
-    const currency = req.body.currency || 'usd';
-
-    // أسعار لكل عملة (Stripe يحتاج أصغر وحدة: cents, kuruş…)
+    // أسعار حسب العملة (Stripe يحتاج أصغر وحدة: cents أو kuruş...)
     const prices = {
       usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       eur: { single: 74900, shipping: 3500, double: 119900, extra: 65000 },
@@ -27,14 +25,48 @@ app.post('/create-checkout-session', async (req, res) => {
 
     const c = prices[currency] || prices['usd'];
 
-    // حساب السعر النهائي
+    // حساب السعر
     let amount;
     if (quantity === 1) {
-      amount = c.single + c.shipping;
+      amount = c.single; // فقط سعر القطعة (الشحن يضاف كـ shipping_option)
     } else if (quantity === 2) {
       amount = c.double;
     } else {
       amount = c.double + (quantity - 2) * c.extra;
+    }
+
+    // خيارات الشحن حسب الكمية
+    let shippingOptions;
+    if (quantity === 1) {
+      // قطعة واحدة → شحن مدفوع
+      shippingOptions = [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: c.shipping, currency: currency },
+            display_name: 'Standard Shipping',
+            delivery_estimate: {
+              minimum: { unit: 'business_day', value: 5 },
+              maximum: { unit: 'business_day', value: 7 }
+            }
+          }
+        }
+      ];
+    } else {
+      // قطعتين أو أكثر → شحن مجاني
+      shippingOptions = [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: 0, currency: currency },
+            display_name: 'Free Shipping',
+            delivery_estimate: {
+              minimum: { unit: 'business_day', value: 5 },
+              maximum: { unit: 'business_day', value: 7 }
+            }
+          }
+        }
+      ];
     }
 
     // إنشاء جلسة Stripe Checkout
@@ -58,7 +90,7 @@ app.post('/create-checkout-session', async (req, res) => {
         }
       ],
 
-      // ✅ كل الدول المدعومة من Stripe
+      // كل الدول المدعومة من Stripe
       shipping_address_collection: {
         allowed_countries: [
           'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
@@ -90,21 +122,7 @@ app.post('/create-checkout-session', async (req, res) => {
         ]
       },
 
-      // خيارات الشحن (يظهر Subtotal + Shipping + Total تلقائياً)
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: c.shipping, currency: currency },
-            display_name: 'Standard Shipping',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 5 },
-              maximum: { unit: 'business_day', value: 7 }
-            }
-          }
-        }
-      ],
-
+      shipping_options: shippingOptions,
       phone_number_collection: { enabled: true },
 
       // روابط النجاح والإلغاء
