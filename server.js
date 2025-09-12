@@ -43,6 +43,13 @@ app.post('/create-checkout-session', async (req, res) => {
       ],
       metadata: { quantity: String(quantity) },
 
+      // ✅ تفعيل 3D Secure تلقائيًا
+      payment_method_options: {
+        card: {
+          request_three_d_secure: 'automatic' // أو 'any' لإجبار جميع العملاء
+        },
+      },
+
       // ✅ كل الدول المدعومة من Stripe (من الوثائق الرسمية)
       shipping_address_collection: {
         allowed_countries: [
