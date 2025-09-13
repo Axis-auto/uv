@@ -438,6 +438,39 @@
     .cart-summary-details { flex: 1; }
     .cart-summary-subtotal, .cart-summary-shipping, .cart-summary-grandtotal { display: flex; justify-content: space-between; padding: 4px 0; }
     .cart-summary-grandtotal { font-weight: bold; border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px; }
+
+    /* WhatsApp Floating Button Styles */
+    .whatsapp-float {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      bottom: 40px;
+      right: 40px;
+      background-color: #25d366;
+      color: #FFF;
+      border-radius: 50px;
+      text-align: center;
+      font-size: 30px;
+      box-shadow: 2px 2px 3px #999;
+      z-index: 100;
+    }
+    .whatsapp-icon {
+      margin-top: 16px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        right: 20px;
+        font-size: 25px;
+      }
+      .whatsapp-icon {
+        margin-top: 13px;
+      }
+    }
+
   </style>
 </head>
 
@@ -1063,6 +1096,11 @@
     <img class="modal-content" id="modalImage">
     <div id="modalCaption" class="modal-caption"></div>
   </div>
+
+  <!-- WhatsApp Floating Button -->
+  <a href="https://wa.me/905075803495" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
+    <i class="fab fa-whatsapp whatsapp-icon"></i>
+  </a>
 
   <!-- SCHEMA MARKUP -->
   <script type="application/ld+json">
