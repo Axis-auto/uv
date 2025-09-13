@@ -446,7 +446,7 @@
       height: 60px;
       bottom: 40px;
       right: 40px;
-      background-color: #25d366;
+      background-color: var(--brand);
       color: #FFF;
       border-radius: 50px;
       text-align: center;
@@ -1326,8 +1326,6 @@
         'order.paymentMethod': 'طريقة الدفع',
         'order.paymentStripe': 'الدفع بالبطاقة',
         'order.paymentSwift': 'حوالة بنكية (SWIFT)',
-        'order.stripeNote': 'سيتم توجيهك إلى صفحة الدفع الآمنة لدى Stripe لإتمام عملية الدفع.',
-        'order.swiftNote': 'بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.',
         'order.receipt': 'يرجى تحميل ايصال الدفع في حال تم الدفع',
         'order.chooseFile': 'اختر صورة لإرفاقها',
         'order.noFile': 'لم يتم اختيار ملف',
@@ -1585,8 +1583,6 @@
         'order.paymentMethod': 'Payment Method',
         'order.paymentStripe': 'Card Payment',
         'order.paymentSwift': 'Bank Transfer (SWIFT)',
-        'order.stripeNote': 'You will be redirected to Stripe\'s secure payment page to complete the payment process.',
-        'order.swiftNote': 'After completing the transfer, please upload a copy of the payment receipt below.',
         'order.receipt': 'Please upload payment receipt if payment was made',
         'order.chooseFile': 'Choose image to attach',
         'order.noFile': 'No file selected',
@@ -1939,7 +1935,7 @@
         uploadStatusText.textContent = currentLang === 'ar' ? 'فشل في رفع الصورة، سيتم إرسال الطلب بدونها' : 'Failed to upload image, order will be sent without it';
         uploadStatusText.style.color = 'var(--danger)';
         console.error('Upload failed:', error);
-        return '';
+        throw error;
       } finally {
         uploadLoader.style.display = 'none';
       }
