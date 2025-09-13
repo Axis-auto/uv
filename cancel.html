@@ -1,26 +1,30 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>تم إلغاء الدفع</title>
+  <title>Order Canceled | تم إلغاء الطلب</title>
   <style>
     body { 
       font-family: system-ui, sans-serif; 
       text-align: center; 
       padding: 50px; 
       background-color: #fff9f9;
+      direction: ltr;
     }
     h1 { 
       color: red; 
       margin-bottom: 20px;
+      font-size: 28px;
     }
     p { 
       font-size: 18px; 
-      margin-bottom: 30px;
+      margin-bottom: 15px;
+      color: #333;
     }
-    a {
+    a.button {
       display: inline-block;
+      margin-top: 30px;
       padding: 12px 24px;
       background-color: red;
       color: white;
@@ -29,14 +33,78 @@
       font-size: 16px;
       transition: background 0.3s ease;
     }
-    a:hover {
+    a.button:hover {
       background-color: darkred;
+    }
+    .lang-switch {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>تم إلغاء الدفع!</h1>
-  <p>لم يتم إكمال عملية الدفع. يمكنك المحاولة مرة أخرى أو اختيار طريقة دفع أخرى.</p>
-  <a href="https://axis-auto.github.io/uv/">العودة إلى الصفحة الرئيسية</a>
+  <button class="lang-switch" onclick="toggleLang()">العربية</button>
+
+  <!-- English Content -->
+  <div id="en-content">
+    <h1>❌ Order Canceled</h1>
+    <p>Your payment was not completed, and your order has been canceled.</p>
+    <p>If this was a mistake, you can try again by returning to the checkout page.</p>
+    <p>For assistance, please contact us at 
+      <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a> 
+      or via WhatsApp: 
+      <a href="https://wa.me/971501525742" target="_blank">+971 50 152 5742</a>.
+    </p>
+    <a href="https://axis-auto.github.io/uv/" class="button">Back to Home</a>
+  </div>
+
+  <!-- Arabic Content -->
+  <div id="ar-content" style="display:none; direction: rtl;">
+    <h1>❌ تم إلغاء الطلب</h1>
+    <p>لم يتم إكمال عملية الدفع، وبالتالي تم إلغاء طلبك.</p>
+    <p>إذا كان هذا عن طريق الخطأ، يمكنك المحاولة مرة أخرى بالعودة إلى صفحة الدفع.</p>
+    <p>للمساعدة، يمكنك التواصل معنا عبر البريد 
+      <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a> 
+      أو عبر واتساب: 
+      <a href="https://wa.me/971501525742" target="_blank">+971 50 152 5742</a>.
+    </p>
+    <a href="https://axis-auto.github.io/uv/" class="button">العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+  <script>
+    function toggleLang() {
+      const enContent = document.getElementById("en-content");
+      const arContent = document.getElementById("ar-content");
+      const langBtn = document.querySelector(".lang-switch");
+
+      if (enContent.style.display === "none") {
+        enContent.style.display = "block";
+        arContent.style.display = "none";
+        document.body.setAttribute("dir", "ltr");
+        document.documentElement.setAttribute("lang", "en");
+        langBtn.textContent = "العربية";
+      } else {
+        enContent.style.display = "none";
+        arContent.style.display = "block";
+        document.body.setAttribute("dir", "rtl");
+        document.documentElement.setAttribute("lang", "ar");
+        langBtn.textContent = "English";
+      }
+    }
+
+    // Detect browser language
+    window.onload = function() {
+      const userLang = navigator.language || navigator.userLanguage;
+      if (userLang.startsWith("ar")) {
+        toggleLang();
+      }
+    };
+  </script>
 </body>
 </html>
