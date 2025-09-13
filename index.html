@@ -356,7 +356,7 @@
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
       .logo span { font-size: 14px; display: none; } 
-      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } /* Adjusted padding for better alignment */
+      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } 
       nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* Added padding to nav */
       nav::-webkit-scrollbar { display: none; }
       .btn.ghost { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
@@ -382,7 +382,7 @@
       .logo { font-size: 14px; gap: 6px; }
       .logo img { height: 30px; }
       .logo span { font-size: 12px; } 
-      nav { gap: 4px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* ضمان عدم الالتفاف وإضافة تمرير أفقي */
+      nav { gap: 4px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } 
       nav::-webkit-scrollbar { display: none; }
       .btn { padding: 8px 14px; font-size: 14px; white-space: nowrap; } 
       .btn.ghost { padding: 4px 8px; font-size: 12px; } 
@@ -1090,19 +1090,19 @@
 
   <a class="btn modern-btn floating-cta" href="#order" data-translate="footer.orderNow">اطلب الآن</a>
 
-  <!-- IMAGE MODAL -->
+ 
   <div id="imageModal" class="modal">
     <span class="close-modal" onclick="closeModal()">&times;</span>
     <img class="modal-content" id="modalImage">
     <div id="modalCaption" class="modal-caption"></div>
   </div>
 
-  <!-- WhatsApp Floating Button -->
+ 
   <a href="https://wa.me/905075803495" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
     <i class="fab fa-whatsapp whatsapp-icon"></i>
   </a>
 
-  <!-- SCHEMA MARKUP -->
+  
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -1675,7 +1675,7 @@
 
     
     function initStripe() {
-      stripe = Stripe('pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF'); // Publishable Key الخاص بك
+      stripe = Stripe('pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF'); 
     }
 
     
@@ -1845,7 +1845,7 @@
     
     async function handleStripeCheckout() {
       try {
-        const quantity = cartQuantity; // استخدم cartQuantity بدلاً من getQuantity()
+        const quantity = cartQuantity; 
 
         const res = await fetch(API_BASE + "/create-checkout-session", {
           method: 'POST',
@@ -1976,7 +1976,7 @@
       showAlert(currentLang === 'ar' ? 'تم إرسال طلبك بنجاح! سيتم توجيهك إلى واتساب الآن.' : 'Your order has been sent successfully! You will be redirected to WhatsApp now.', 'success');
     }
 
-    // إعادة تعيين النموذج
+    
     function resetForm() {
       document.getElementById('orderForm').reset();
       document.getElementById('fileName').textContent = currentLang === 'ar' ? 'لم يتم اختيار ملف' : 'No file selected';
@@ -1985,7 +1985,7 @@
       document.getElementById('uploadStatusText').textContent = '';
     }
 
-    // فتح نافذة الصورة
+    
     function openModal(src) {
       const modal = document.getElementById('imageModal');
       const modalImg = document.getElementById('modalImage');
