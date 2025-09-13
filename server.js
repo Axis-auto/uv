@@ -15,7 +15,7 @@ app.post('/create-checkout-session', async (req, res) => {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
     const currency = (req.body.currency || 'usd').toLowerCase();
 
-    // الأسعار (أصغر وحدة)
+    // الأسعار
     const prices = {
       usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
@@ -23,20 +23,20 @@ app.post('/create-checkout-session', async (req, res) => {
     };
     const c = prices[currency] || prices['usd'];
 
-    // نحسب الإجمالي حسب القاعدة:
+    // حساب المجموع
     let totalAmount;
     if (quantity === 1) {
-      totalAmount = c.single; // 799$
+      totalAmount = c.single;
     } else if (quantity === 2) {
-      totalAmount = c.double; // 1299$
+      totalAmount = c.double;
     } else {
       totalAmount = c.double + (quantity - 2) * c.extra;
     }
 
-    // Stripe يحتاج unit_amount × quantity = totalAmount
+    // unit amount
     const unitAmount = Math.floor(totalAmount / quantity);
 
-    // الشحن: إذا قطعة واحدة = مدفوع، غير ذلك مجاني
+    // خيارات الشحن
     const shipping_options = (quantity === 1)
       ? [
           {
@@ -65,7 +65,7 @@ app.post('/create-checkout-session', async (req, res) => {
           }
         ];
 
-    // قائمة الدول (كما في الكود الأصلي)
+    // الدول
     const allowedCountries = [
       'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
       'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
@@ -95,7 +95,7 @@ app.post('/create-checkout-session', async (req, res) => {
       'ZZ'
     ];
 
-    // إنشاء جلسة Checkout
+    // إنشاء جلسة
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -104,7 +104,9 @@ app.post('/create-checkout-session', async (req, res) => {
           price_data: {
             currency,
             product_data: {
-              name: 'UV Car Inspection Device',
+              name: quantity === 1 
+                ? 'UV Car Inspection Device (1 pc)' // 👈 يظهر العدد عند قطعة واحدة
+                : 'UV Car Inspection Device',
               description: 'A powerful, portable device for inspecting car body, paint, AC leaks, and hidden repair traces.',
               images: [
                 'https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%D8%A9%20%D8%AC%D8%A7%D9%86%D8%A8%D9%8A%D8%A9%20(1).jpg?raw=true'
