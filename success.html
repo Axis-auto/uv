@@ -1,26 +1,30 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>تم الدفع بنجاح</title>
+  <title>Payment Successful | تم الدفع بنجاح</title>
   <style>
     body { 
       font-family: system-ui, sans-serif; 
       text-align: center; 
       padding: 50px; 
       background-color: #f9fff9;
+      direction: ltr;
     }
     h1 { 
       color: green; 
       margin-bottom: 20px;
+      font-size: 28px;
     }
     p { 
       font-size: 18px; 
-      margin-bottom: 30px;
+      margin-bottom: 15px;
+      color: #333;
     }
-    a {
+    a.button {
       display: inline-block;
+      margin-top: 30px;
       padding: 12px 24px;
       background-color: green;
       color: white;
@@ -29,24 +33,80 @@
       font-size: 16px;
       transition: background 0.3s ease;
     }
-    a:hover {
+    a.button:hover {
       background-color: darkgreen;
+    }
+    .lang-switch {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>تم الدفع بنجاح!</h1>
-  <p>شكراً لك على طلبك. سنتصل بك قريباً عبر واتساب لتأكيد الشحن.</p>
-  <a href="https://axis-auto.github.io/uv/">العودة إلى الصفحة الرئيسية</a>
+  <button class="lang-switch" onclick="toggleLang()">العربية</button>
+
+  <!-- English Content -->
+  <div id="en-content">
+    <h1>🎉 Thank you for your purchase!</h1>
+    <p>Your order has been received and is now being processed.</p>
+    <p>You will receive a confirmation email shortly with your order details.</p>
+    <p>Shipping usually takes 7–10 business days.</p>
+    <p>If you have any questions, please contact us at 
+      <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a> 
+      or via WhatsApp: 
+      <a href="https://wa.me/971501525742" target="_blank">+971 50 152 5742</a>.
+    </p>
+    <a href="https://axis-auto.github.io/uv/" class="button">Back to Home</a>
+  </div>
+
+  <!-- Arabic Content -->
+  <div id="ar-content" style="display:none; direction: rtl;">
+    <h1>🎉 شكراً لشرائك!</h1>
+    <p>تم استلام طلبك وهو قيد المعالجة الآن.</p>
+    <p>ستتلقى قريباً رسالة تأكيد عبر البريد الإلكتروني تتضمن تفاصيل طلبك.</p>
+    <p>عادةً ما تستغرق عملية الشحن من 7–10 أيام عمل.</p>
+    <p>إذا كان لديك أي استفسار، يمكنك التواصل معنا عبر البريد 
+      <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a> 
+      أو عبر واتساب: 
+      <a href="https://wa.me/971501525742" target="_blank">+971 50 152 5742</a>.
+    </p>
+    <a href="https://axis-auto.github.io/uv/" class="button">العودة إلى الصفحة الرئيسية</a>
+  </div>
 
   <script>
-    // قراءة session_id من الرابط (اختياري)
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('session_id');
-    if (sessionId) {
-      console.log('Session ID:', sessionId);
-      // يمكنك هنا إرسال sessionId إلى خادمك للتحقق أو حفظه
+    function toggleLang() {
+      const enContent = document.getElementById("en-content");
+      const arContent = document.getElementById("ar-content");
+      const langBtn = document.querySelector(".lang-switch");
+
+      if (enContent.style.display === "none") {
+        enContent.style.display = "block";
+        arContent.style.display = "none";
+        document.body.setAttribute("dir", "ltr");
+        document.documentElement.setAttribute("lang", "en");
+        langBtn.textContent = "العربية";
+      } else {
+        enContent.style.display = "none";
+        arContent.style.display = "block";
+        document.body.setAttribute("dir", "rtl");
+        document.documentElement.setAttribute("lang", "ar");
+        langBtn.textContent = "English";
+      }
     }
+
+    // Optional: detect browser language
+    window.onload = function() {
+      const userLang = navigator.language || navigator.userLanguage;
+      if (userLang.startsWith("ar")) {
+        toggleLang();
+      }
+    };
   </script>
 </body>
 </html>
