@@ -25,14 +25,14 @@ app.post('/create-checkout-session', async (req, res) => {
 
     const c = prices[currency] || prices['usd'];
 
-    // حساب السعر
-    let amount;
+    // حساب سعر القطعة الواحدة (unit price)
+    let unitPrice;
     if (quantity === 1) {
-      amount = c.single; // فقط سعر القطعة (الشحن يضاف كـ shipping_option)
+      unitPrice = c.single; // القطعة الواحدة (السعر بدون شحن)
     } else if (quantity === 2) {
-      amount = c.double;
+      unitPrice = Math.floor(c.double / 2); // سعر القطعة الواحدة من باكج قطعتين
     } else {
-      amount = c.double + (quantity - 2) * c.extra;
+      unitPrice = c.extra; // سعر كل قطعة إضافية بعد أول قطعتين
     }
 
     // خيارات الشحن حسب الكمية
@@ -84,9 +84,9 @@ app.post('/create-checkout-session', async (req, res) => {
                 'https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%D8%A9%20%D8%AC%D8%A7%D9%86%D8%A8%D9%8A%D8%A9%20(1).jpg?raw=true'
               ]
             },
-            unit_amount: amount
+            unit_amount: unitPrice
           },
-          quantity: 1
+          quantity: quantity // 👈 الآن Stripe يعرض العدد المطلوب
         }
       ],
 
