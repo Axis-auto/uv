@@ -1,15 +1,18 @@
-// server.js
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const app = express();
 app.use(cors({ origin: true }));
-app.use(bodyParser.json());
 
+// ✅ Stripe secret key
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
+// --------- CREATE CHECKOUT SESSION ---------
+app.use(bodyParser.json());
 app.post('/create-checkout-session', async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -105,7 +108,7 @@ app.post('/create-checkout-session', async (req, res) => {
             currency,
             product_data: {
               name: quantity === 1 
-                ? 'UV Car Inspection Device (1 pc)' // 👈 يظهر العدد عند قطعة واحدة
+                ? 'UV Car Inspection Device (1 pc)'
                 : 'UV Car Inspection Device',
               description: 'A powerful, portable device for inspecting car body, paint, AC leaks, and hidden repair traces.',
               images: [
@@ -131,5 +134,31 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
+// --------- STRIPE WEBHOOK ---------
+app.post('/webhook', bodyParser.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error('⚠️ Webhook signature verification failed.', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+
+    console.log('💰 Payment completed for session:', session.id);
+    console.log('📧 Customer Email:', session.customer_email);
+
+    // هنا لاحقاً نضيف: إنشاء شحنة Aramex + إرسال إيميل
+  }
+
+  res.json({ received: true });
+});
+
+// --------- SERVER START ---------
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
