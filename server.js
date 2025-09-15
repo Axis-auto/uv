@@ -110,8 +110,8 @@ app.post('/create-checkout-session', async (req, res) => {
       shipping_address_collection: { allowed_countries: allowedCountries },
       shipping_options,
       phone_number_collection: { enabled: true },
-      success_url: 'https://axis-auto.github.io/uv/success.html?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'https://axis-auto.github.io/uv/cancel.html'
+      success_url: 'https://axis-uv.com/success.html?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://axis-uv.com/cancel.html'
     });
 
     res.json({ id: session.id });
