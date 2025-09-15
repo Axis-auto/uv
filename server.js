@@ -28,7 +28,6 @@ app.post('/create-checkout-session', async (req, res) => {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
     const currency = (req.body.currency || 'usd').toLowerCase();
 
-    // الأسعار
     const prices = {
       usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
@@ -36,44 +35,17 @@ app.post('/create-checkout-session', async (req, res) => {
     };
     const c = prices[currency] || prices['usd'];
 
-    // حساب المجموع
     let totalAmount;
-    if (quantity === 1) {
-      totalAmount = c.single;
-    } else if (quantity === 2) {
-      totalAmount = c.double;
-    } else {
-      totalAmount = c.double + (quantity - 2) * c.extra;
-    }
+    if (quantity === 1) totalAmount = c.single;
+    else if (quantity === 2) totalAmount = c.double;
+    else totalAmount = c.double + (quantity - 2) * c.extra;
 
     const unitAmount = Math.floor(totalAmount / quantity);
 
-    // خيارات الشحن
     const shipping_options = (quantity === 1)
-      ? [{
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: c.shipping, currency },
-            display_name: 'Standard Shipping',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 5 },
-              maximum: { unit: 'business_day', value: 7 }
-            }
-          }
-        }]
-      : [{
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: 0, currency },
-            display_name: 'Free Shipping',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 5 },
-              maximum: { unit: 'business_day', value: 7 }
-            }
-          }
-        }];
+      ? [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: c.shipping, currency }, display_name: 'Standard Shipping', delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } } } }]
+      : [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: 0, currency }, display_name: 'Free Shipping', delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } } } }];
 
-    // الدول المسموحة (كاملة مثل الكود الأصلي)
     const allowedCountries = [
       'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
       'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
@@ -89,21 +61,17 @@ app.post('/create-checkout-session', async (req, res) => {
       'LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY',
       'MA','MC','MD','ME','MF','MG','MK','ML','MM','MN','MO','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ',
       'NA','NC','NE','NG','NI','NL','NO','NP','NR','NU','NZ',
-      'OM',
-      'PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PY',
-      'QA',
-      'RE','RO','RS','RU','RW',
+      'OM','PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PY',
+      'QA','RE','RO','RS','RU','RW',
       'SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SZ',
       'TA','TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ',
       'UA','UG','US','UY','UZ',
       'VA','VC','VE','VG','VN','VU',
       'WF','WS','XK',
       'YE','YT',
-      'ZA','ZM','ZW',
-      'ZZ'
+      'ZA','ZM','ZW','ZZ'
     ];
 
-    // جلسة Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -111,9 +79,7 @@ app.post('/create-checkout-session', async (req, res) => {
         price_data: {
           currency,
           product_data: {
-            name: quantity === 1 
-              ? 'UV Car Inspection Device (1 pc)' 
-              : 'UV Car Inspection Device',
+            name: quantity === 1 ? 'UV Car Inspection Device (1 pc)' : 'UV Car Inspection Device',
             description: 'A powerful portable device for car inspection.',
             images: ['https://yourdomain.com/images/device.jpg']
           },
@@ -124,8 +90,8 @@ app.post('/create-checkout-session', async (req, res) => {
       shipping_address_collection: { allowed_countries: allowedCountries },
       shipping_options,
       phone_number_collection: { enabled: true },
-      success_url: 'https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}', // 👈 عدل دومينك هنا
-      cancel_url: 'https://axis-uv.com/cancel' // 👈 عدل دومينك هنا
+      success_url: 'https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://axis-uv.com/cancel'
     });
 
     res.json({ id: session.id });
@@ -149,7 +115,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    // بيانات العميل
     const customerEmail = session.customer_details.email;
     const customerName = session.customer_details.name;
     const address = session.customer_details.address;
@@ -171,7 +136,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           Shipper: {
             Name: "Axis Auto",
             CellPhone: "0000000000",
-            EmailAddress: "info@yourdomain.com",
+            EmailAddress: process.env.MAIL_FROM, // البريد المتحقق منه
             PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
           },
           Consignee: {
@@ -197,10 +162,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         if (err) return console.error('Aramex error:', err);
         const trackingNumber = result.Shipments?.ProcessedShipment?.ID || "N/A";
 
-        // 2) إرسال إيميل للعميل عبر SendGrid
+        // 2) إرسال إيميل للعميل عبر SendGrid باستخدام المرسل المتحقق منه
         const msg = {
           to: customerEmail,
-          from: 'info@yourdomain.com',
+          from: process.env.MAIL_FROM,  // ✅ البريد من متغير البيئة
           subject: 'Your Order Confirmation',
           text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}`,
           html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b>`
