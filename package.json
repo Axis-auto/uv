@@ -9,11 +9,11 @@
     "node": "20.x"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "stripe": "^12.0.0",
-    "cors": "^2.8.5",
-    "body-parser": "^1.20.2",
-    "@sendgrid/mail": "^7.11.0",
-    "soap": "^0.41.0"
+    "express": "4.18.2",
+    "stripe": "12.0.0",
+    "cors": "2.8.5",
+    "body-parser": "1.20.2",
+    "@sendgrid/mail": "7.10.0",
+    "soap": "0.41.0"
   }
 }
