@@ -10,7 +10,6 @@
     "stripe": "^12.0.0",
     "cors": "^2.8.5",
     "body-parser": "^1.20.2",
-    "nodemailer": "^6.9.8",
-    "axios": "^1.6.8"
+    "@sendgrid/mail": "^7.7.0"
   }
 }
