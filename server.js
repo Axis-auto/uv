@@ -121,7 +121,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     // 1) إنشاء شحنة مع Aramex
     soap.createClient(ARAMEX_WSDL_URL, (err, client) => {
       if (err) return console.error('Aramex client error:', err);
-console.log('✅ نتيجة Aramex:', JSON.stringify(result, null, 2));
       const shipmentData = {
         ClientInfo: {
           UserName: ARAMEX_USERNAME,
