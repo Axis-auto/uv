@@ -121,6 +121,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     // 1) إنشاء شحنة مع Aramex
     soap.createClient(ARAMEX_WSDL_URL, (err, client) => {
       if (err) return console.error('Aramex client error:', err);
+console.log('✅ نتيجة Aramex:', JSON.stringify(result, null, 2));
       const shipmentData = {
         ClientInfo: {
           UserName: ARAMEX_USERNAME,
@@ -161,25 +162,26 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
         console.log('Aramex result:', JSON.stringify(result, null, 2));
 
-        const trackingNumber = result.Shipments?.ProcessedShipment?.ID || "N/A";
-        const trackingUrl = result.Shipments?.ProcessedShipment?.LabelURL || "https://tracking.example.com";
+        const trackingNumber = result?.Shipments?.ProcessedShipment?.ID || "N/A";
+        const trackingUrl = result?.Shipments?.ProcessedShipment?.LabelURL || "https://tracking.example.com";
 
         const msg = {
-          to: customerEmail,
-          from: process.env.MAIL_FROM,
-          subject: 'Your Order Confirmation',
-          text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-          html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
-        };
+  to: customerEmail,
+  from: process.env.MAIL_FROM,
+  subject: 'Your Order Confirmation',
+  text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
+  html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
+};
 
-        sgMail.send(msg)
-          .then(() => console.log('📧 Email sent to', customerEmail))
-          .catch(err => {
-            console.error('SendGrid error:', err);
-            if (err.response && err.response.body) {
-              console.error('SendGrid detailed error:', err.response.body);
-            }
-          });
+sgMail.send(msg)
+  .then(() => console.log('📧 Email sent to', customerEmail))
+  .catch(err => {
+    console.error('SendGrid error:', err);
+    if (err.response && err.response.body) {
+      console.error('SendGrid detailed error:', err.response.body);
+    }
+  });
+
       });
     });
   }
