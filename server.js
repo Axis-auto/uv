@@ -14,23 +14,6 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-// === اختبار إرسال البريد مباشرة ===
-const testEmail = {
-  to: "بريدك_للاختبار@example.com", // ضع بريدك الشخصي هنا
-  from: process.env.MAIL_FROM,
-  subject: "اختبار إرسال البريد من السيرفر",
-  text: "هذه رسالة اختبار من السيرفر للتأكد من SendGrid."
-};
-
-sgMail.send(testEmail)
-  .then(() => console.log("✅ بريد الاختبار أُرسل بنجاح"))
-  .catch(err => {
-    console.error("❌ فشل إرسال البريد:", err);
-    if (err.response && err.response.body) {
-      console.error("تفاصيل الخطأ:", err.response.body);
-    }
-  });
-
 // Aramex SOAP
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL;
 const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
