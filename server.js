@@ -2,23 +2,42 @@ const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
-const axios = require('axios');
+const sgMail = require('@sendgrid/mail');
 
 const app = express();
 app.use(cors({ origin: true }));
-
-// ✅ Stripe secret key
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-
-// --------- CREATE CHECKOUT SESSION ---------
 app.use(bodyParser.json());
+
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+// دالة إرسال الإيميل عبر SendGrid
+async function sendShipmentEmail(to, trackingNumber) {
+  const msg = {
+    to,
+    from: 'no-reply@axis-auto.com', // 👈 استبدلها ببريدك الموثق في SendGrid
+    subject: 'تفاصيل شحنتك من Axis Auto',
+    html: `
+      <h3>شكرًا لطلبك 🎉</h3>
+      <p>رقم الشحنة الخاصة بك هو: <b>${trackingNumber}</b></p>
+      <p>يمكنك تتبعها عبر <a href="https://www.aramex.com">Aramex</a>.</p>
+    `,
+  };
+
+  try {
+    await sgMail.send(msg);
+    console.log(`📧 تم إرسال الإيميل إلى ${to}`);
+  } catch (error) {
+    console.error('خطأ في إرسال الإيميل:', error);
+  }
+}
+
+// إنشاء جلسة الدفع (الكود الأصلي)
 app.post('/create-checkout-session', async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
     const currency = (req.body.currency || 'usd').toLowerCase();
 
-    // الأسعار
     const prices = {
       usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
@@ -26,7 +45,6 @@ app.post('/create-checkout-session', async (req, res) => {
     };
     const c = prices[currency] || prices['usd'];
 
-    // حساب المجموع
     let totalAmount;
     if (quantity === 1) {
       totalAmount = c.single;
@@ -36,10 +54,8 @@ app.post('/create-checkout-session', async (req, res) => {
       totalAmount = c.double + (quantity - 2) * c.extra;
     }
 
-    // unit amount
     const unitAmount = Math.floor(totalAmount / quantity);
 
-    // خيارات الشحن
     const shipping_options = (quantity === 1)
       ? [
           {
@@ -68,37 +84,8 @@ app.post('/create-checkout-session', async (req, res) => {
           }
         ];
 
-    // الدول
-    const allowedCountries = [
-      'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
-      'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
-      'CA','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CV','CW','CY','CZ',
-      'DE','DJ','DK','DM','DO','DZ',
-      'EC','EE','EG','EH','ER','ES','ET',
-      'FI','FJ','FK','FO','FR',
-      'GA','GB','GD','GE','GF','GG','GH','GI','GL','GM','GN','GP','GQ','GR','GS','GT','GU','GW','GY',
-      'HK','HN','HR','HT','HU',
-      'ID','IE','IL','IM','IN','IO','IQ','IS','IT',
-      'JE','JM','JO','JP',
-      'KE','KG','KH','KI','KM','KN','KR','KW','KY','KZ',
-      'LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY',
-      'MA','MC','MD','ME','MF','MG','MK','ML','MM','MN','MO','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ',
-      'NA','NC','NE','NG','NI','NL','NO','NP','NR','NU','NZ',
-      'OM',
-      'PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PY',
-      'QA',
-      'RE','RO','RS','RU','RW',
-      'SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SZ',
-      'TA','TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ',
-      'UA','UG','US','UY','UZ',
-      'VA','VC','VE','VG','VN','VU',
-      'WF','WS','XK',
-      'YE','YT',
-      'ZA','ZM','ZW',
-      'ZZ'
-    ];
+    const allowedCountries = ['US', 'TR', 'AE', 'SA', 'GB', 'DE', 'FR', 'CA']; // 👈 قلصت القائمة للاختصار
 
-    // إنشاء جلسة
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -108,11 +95,11 @@ app.post('/create-checkout-session', async (req, res) => {
             currency,
             product_data: {
               name: quantity === 1 
-                ? 'UV Car Inspection Device (1 pc)'
+                ? 'UV Car Inspection Device (1 pc)' 
                 : 'UV Car Inspection Device',
               description: 'A powerful, portable device for inspecting car body, paint, AC leaks, and hidden repair traces.',
               images: [
-                'https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%D8%A9%20%D8%AC%D8%A7%D9%86%D8%A8%D9%8A%D8%A9%20(1).jpg?raw=true'
+                'https://github.com/Axis-auto/uv/blob/main/صورة%20جانبية%20(1).jpg?raw=true'
               ]
             },
             unit_amount: unitAmount
@@ -134,31 +121,32 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// --------- STRIPE WEBHOOK ---------
-app.post('/webhook', bodyParser.raw({ type: 'application/json' }), (req, res) => {
+// Webhook Stripe
+app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
   let event;
+
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('⚠️ Webhook signature verification failed.', err.message);
+    console.error('Webhook signature error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    console.log('💰 Payment completed for session:', session.id);
-    console.log('📧 Customer Email:', session.customer_email);
+    // 👇 هنا لاحقًا سننشئ شحنة عبر Aramex
+    const trackingNumber = 'TEST123456'; // رقم تتبع مؤقت للتجربة
 
-    // هنا لاحقاً نضيف: إنشاء شحنة Aramex + إرسال إيميل
+    // إرسال إيميل للعميل
+    if (session.customer_details && session.customer_details.email) {
+      await sendShipmentEmail(session.customer_details.email, trackingNumber);
+    }
   }
 
   res.json({ received: true });
 });
 
-// --------- SERVER START ---------
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
