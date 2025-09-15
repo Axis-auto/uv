@@ -136,7 +136,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           Shipper: {
             Name: "Axis Auto",
             CellPhone: "0000000000",
-            EmailAddress: process.env.MAIL_FROM, // البريد المتحقق منه
+            EmailAddress: process.env.MAIL_FROM,
             PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
           },
           Consignee: {
@@ -160,20 +160,28 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
       client.CreateShipments(shipmentData, (err, result) => {
         if (err) return console.error('Aramex error:', err);
-        const trackingNumber = result.Shipments?.ProcessedShipment?.ID || "N/A";
 
-        // 2) إرسال إيميل للعميل عبر SendGrid باستخدام المرسل المتحقق منه
+        console.log('Aramex result:', JSON.stringify(result, null, 2));
+
+        const trackingNumber = result.Shipments?.ProcessedShipment?.ID || "N/A";
+        const trackingUrl = result.Shipments?.ProcessedShipment?.LabelURL || "https://tracking.example.com";
+
         const msg = {
           to: customerEmail,
-          from: process.env.MAIL_FROM,  // ✅ البريد من متغير البيئة
+          from: process.env.MAIL_FROM,
           subject: 'Your Order Confirmation',
-          text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}`,
-          html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b>`
+          text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
+          html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
         };
 
         sgMail.send(msg)
           .then(() => console.log('📧 Email sent to', customerEmail))
-          .catch(err => console.error('SendGrid error:', err));
+          .catch(err => {
+            console.error('SendGrid error:', err);
+            if (err.response && err.response.body) {
+              console.error('SendGrid detailed error:', err.response.body);
+            }
+          });
       });
     });
   }
