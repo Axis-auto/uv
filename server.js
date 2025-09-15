@@ -20,6 +20,10 @@ const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
+// الحقول الناقصة التي تتطلبها Aramex
+const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY; // مثل "IST"
+const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE; // مثل "TR"
+const ARAMEX_SOURCE = process.env.ARAMEX_SOURCE || 24;
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -133,7 +137,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           Password: ARAMEX_PASSWORD,
           AccountNumber: ARAMEX_ACCOUNT_NUMBER,
           AccountPin: ARAMEX_ACCOUNT_PIN,
-          Version: "v1"
+          AccountEntity: ARAMEX_ACCOUNT_ENTITY,
+          AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
+          Version: "v1",
+          Source: ARAMEX_SOURCE
         },
         LabelInfo: { ReportID: 9729, ReportType: "URL" },
         Shipments: [{
@@ -141,7 +148,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             Name: "Axis Auto",
             CellPhone: "0000000000",
             EmailAddress: process.env.MAIL_FROM,
-            PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
+            PartyAddress: { Line1: "Istanbul", City: "Istanbul", CountryCode: "TR" }
           },
           Consignee: {
             Name: customerName,
@@ -157,7 +164,11 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             NumberOfPieces: "1",
             DescriptionOfGoods: "UV Car Inspection Device",
             GoodsOriginCountry: "TR",
-            Services: "CODS"
+            Services: "CODS",
+            PaymentType: "P",
+            ProductGroup: "EXP",
+            ProductType: "PPX",
+            ActualWeight: { Unit: "KG", Value: 1 }
           }
         }]
       };
