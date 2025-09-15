@@ -7,7 +7,6 @@ const soap = require('soap');
 
 const app = express();
 app.use(cors({ origin: true }));
-app.use(bodyParser.json());
 
 // Stripe
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -23,7 +22,7 @@ const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
 
 // ====== إنشاء جلسة الدفع ======
-app.post('/create-checkout-session', async (req, res) => {
+app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
     const currency = (req.body.currency || 'usd').toLowerCase();
@@ -103,93 +102,86 @@ app.post('/create-checkout-session', async (req, res) => {
 
 // ====== Webhook من Stripe ======
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-  console.log('✅ Stripe webhook received');
+  console.log('✅ Incoming Stripe webhook headers:', req.headers);
+  console.log('✅ Incoming Stripe webhook body length:', req.body.length);
 
   let event;
   try {
     const sig = req.headers['stripe-signature'];
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    console.log('✅ Stripe event type:', event.type);
   } catch (err) {
-    console.error('Webhook signature error:', err);
+    console.error('Webhook signature error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  console.log('✅ Stripe webhook verified:', event.type);
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+
     const customerEmail = session.customer_details.email;
     const customerName = session.customer_details.name;
     const address = session.customer_details.address;
 
     // 1) إنشاء شحنة مع Aramex
     soap.createClient(ARAMEX_WSDL_URL, (err, client) => {
-      if (err) {
-        console.error('Aramex client error:', err);
-      } else {
-        const shipmentData = {
-          ClientInfo: {
-            UserName: ARAMEX_USERNAME,
-            Password: ARAMEX_PASSWORD,
-            AccountNumber: ARAMEX_ACCOUNT_NUMBER,
-            AccountPin: ARAMEX_ACCOUNT_PIN,
-            Version: "v1"
+      if (err) return console.error('Aramex client error:', err);
+
+      const shipmentData = {
+        ClientInfo: {
+          UserName: ARAMEX_USERNAME,
+          Password: ARAMEX_PASSWORD,
+          AccountNumber: ARAMEX_ACCOUNT_NUMBER,
+          AccountPin: ARAMEX_ACCOUNT_PIN,
+          Version: "v1"
+        },
+        LabelInfo: { ReportID: 9729, ReportType: "URL" },
+        Shipments: [{
+          Shipper: {
+            Name: "Axis Auto",
+            CellPhone: "0000000000",
+            EmailAddress: process.env.MAIL_FROM,
+            PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
           },
-          LabelInfo: { ReportID: 9729, ReportType: "URL" },
-          Shipments: [{
-            Shipper: {
-              Name: "Axis Auto",
-              CellPhone: "0000000000",
-              EmailAddress: process.env.MAIL_FROM,
-              PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
-            },
-            Consignee: {
-              Name: customerName,
-              CellPhone: session.customer_details.phone,
-              EmailAddress: customerEmail,
-              PartyAddress: {
-                Line1: address.line1,
-                City: address.city,
-                CountryCode: address.country
-              }
-            },
-            Details: {
-              NumberOfPieces: "1",
-              DescriptionOfGoods: "UV Car Inspection Device",
-              GoodsOriginCountry: "TR",
-              Services: "CODS"
+          Consignee: {
+            Name: customerName,
+            CellPhone: session.customer_details.phone,
+            EmailAddress: customerEmail,
+            PartyAddress: {
+              Line1: address.line1,
+              City: address.city,
+              CountryCode: address.country
             }
-          }]
+          },
+          Details: {
+            NumberOfPieces: "1",
+            DescriptionOfGoods: "UV Car Inspection Device",
+            GoodsOriginCountry: "TR",
+            Services: "CODS"
+          }
+        }]
+      };
+
+      client.CreateShipments(shipmentData, (err, result) => {
+        if (err) return console.error('Aramex error:', err);
+
+        console.log('✅ Aramex result:', JSON.stringify(result, null, 2));
+        const trackingNumber = result.Shipments?.ProcessedShipment?.ID || "N/A";
+        const trackingUrl = result.Shipments?.ProcessedShipment?.LabelURL || "https://tracking.example.com";
+
+        // 2) إرسال بريد للعميل
+        const msg = {
+          to: customerEmail,
+          from: process.env.MAIL_FROM,
+          subject: 'Your Order Confirmation',
+          text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
+          html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
         };
 
-        client.CreateShipments(shipmentData, (err, result) => {
-          if (err) {
-            console.error('Aramex error:', err);
-          }
-          // ======= طباعة النتيجة الكاملة =======
-          console.log('✅ نتيجة Aramex:', JSON.stringify(result, null, 2));
-
-          // ======= إرسال البريد دائمًا =======
-          const trackingNumber = result?.Shipments?.ProcessedShipment?.ID || "N/A";
-          const trackingUrl = result?.Shipments?.ProcessedShipment?.LabelURL || "https://tracking.example.com";
-
-          const msg = {
-            to: customerEmail,
-            from: process.env.MAIL_FROM,
-            subject: 'Your Order Confirmation',
-            text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-            html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
-          };
-
-          sgMail.send(msg)
-            .then(() => console.log('📧 Email sent to', customerEmail))
-            .catch(err => {
-              console.error('SendGrid error:', err);
-              if (err.response && err.response.body) {
-                console.error('SendGrid detailed error:', err.response.body);
-              }
-            });
-        });
-      }
+        sgMail.send(msg)
+          .then(() => console.log('📧 Email sent to', customerEmail))
+          .catch(err => console.error('SendGrid error:', err));
+      });
     });
   }
 
