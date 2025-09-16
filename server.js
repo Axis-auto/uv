@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -8,22 +9,44 @@ const axios = require('axios');
 const app = express();
 app.use(cors({ origin: true }));
 
-// ================== Stripe ==================
+// Stripe
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-// ================== SendGrid ==================
+// SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// ================== Aramex ==================
-const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL;
-const ARAMEX_USER = process.env.ARAMEX_USER;
-const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
-const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
-const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
-const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
-const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY;
+// Aramex API URL (support both names if set)
+const ARAMEX_API_URL = process.env.ARAMEX_API_URL || process.env.ARAMEX_WSDL_URL || '';
 
-// ================== Stripe Checkout ==================
+// Aramex credentials (support both env names: ARAMEX_USER or ARAMEX_USERNAME)
+const ARAMEX_USER = process.env.ARAMEX_USER || process.env.ARAMEX_USERNAME || '';
+const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD || process.env.ARAMEX_PASS || '';
+const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER || '';
+const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN || '';
+const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY || '';
+const ARAMEX_ACCOUNT_COUNTRY = process.env.ARAMEX_ACCOUNT_COUNTRY || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || '';
+
+// Shipper (من متغيرات بيئة Render كما وضعت)
+const shipper = {
+  Reference1: process.env.SHIPPER_REFERENCE || "",
+  PartyAddress: {
+    Line1: process.env.SHIPPER_LINE1 || "",
+    Line2: process.env.SHIPPER_LINE2 || "",
+    Line3: process.env.SHIPPER_LINE3 || "",
+    City: process.env.SHIPPER_CITY || "",
+    PostCode: process.env.SHIPPER_POSTCODE || "",
+    CountryCode: process.env.SHIPPER_COUNTRY_CODE || "",
+  },
+  Contact: {
+    PersonName: process.env.SHIPPER_NAME || "",
+    CompanyName: process.env.SHIPPER_COMPANY_NAME || process.env.SHIPPER_NAME || "",
+    PhoneNumber1: process.env.SHIPPER_PHONE || "",
+    CellPhone: process.env.SHIPPER_PHONE || "",
+    EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM || "",
+  },
+};
+
+// ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -123,7 +146,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   }
 });
 
-// ================== Stripe Webhook ==================
+// ====== Webhook من Stripe ======
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
   console.log('✅ Incoming Stripe webhook body length:', req.body.length);
@@ -144,19 +167,31 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
     const customerEmail = session.customer_details.email;
     const customerName = session.customer_details.name;
-    const address = session.customer_details.address;
+    const address = session.customer_details.address || {};
 
-    // عنوان الشاحن
-    const shipperAddress = {
-      Line1: "Al Raq’a Al Hamra - Sheikh Mohammed Bin Zayed Road",
-      Line2: "(Registration Village)",
-      Line3: "Ground Floor - Shop No. 5&6",
-      City: "Istanbul",
-      PostCode: "00000",
-      CountryCode: "TR"
+    // بناء بيانات المرسل (Shipper) — نستخدم المتغيرات من Render
+    const shipperData = shipper;
+
+    // بناء بيانات المستلم (Consignee) بطريقة مطابقة لطلب Aramex
+    const consigneeData = {
+      PartyAddress: {
+        Line1: address.line1 || "",
+        Line2: address.line2 || "",
+        Line3: address.line3 || "",
+        City: address.city || "",
+        PostCode: address.postal_code || "00000",
+        CountryCode: address.country || "",
+      },
+      Contact: {
+        PersonName: customerName || "",
+        CompanyName: session.metadata?.company || customerName || "",
+        PhoneNumber1: session.customer_details?.phone || session.customer_details?.phone || "",
+        CellPhone: session.customer_details?.phone || "",
+        EmailAddress: customerEmail || "",
+      }
     };
 
-    // 1) إنشاء شحنة في Aramex
+    // بيانات الشحنة
     const shipmentData = {
       ClientInfo: {
         UserName: ARAMEX_USER,
@@ -164,34 +199,17 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         AccountNumber: ARAMEX_ACCOUNT_NUMBER,
         AccountPin: ARAMEX_ACCOUNT_PIN,
         AccountEntity: ARAMEX_ACCOUNT_ENTITY,
-        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
+        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY,
         Version: "v1"
       },
       LabelInfo: { ReportID: 9729, ReportType: "URL" },
       Shipments: [{
-        Shipper: {
-          Name: "Axis Auto",
-          CellPhone: "0000000000",
-          EmailAddress: process.env.MAIL_FROM,
-          PartyAddress: shipperAddress
-        },
-        Consignee: {
-          Name: customerName,
-          CellPhone: session.customer_details.phone,
-          EmailAddress: customerEmail,
-          PartyAddress: {
-            Line1: address.line1 || "",
-            Line2: address.line2 || "",
-            Line3: address.line3 || "",
-            City: address.city || "",
-            PostCode: address.postal_code || "00000",
-            CountryCode: address.country
-          }
-        },
+        Shipper: shipperData,
+        Consignee: consigneeData,
         Details: {
           NumberOfPieces: "1",
           DescriptionOfGoods: "UV Car Inspection Device",
-          GoodsOriginCountry: "TR",
+          GoodsOriginCountry: process.env.GOODS_ORIGIN_COUNTRY || "TR",
           Services: "CODS"
         }
       }]
@@ -210,7 +228,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       const trackingNumber = processed?.ID || "N/A";
       const trackingUrl = processed?.LabelURL || "https://tracking.example.com";
 
-      // 2) إرسال بريد للعميل
+      // إرسال بريد للعميل
       const msg = {
         to: customerEmail,
         from: process.env.MAIL_FROM,
@@ -231,6 +249,5 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
   res.json({ received: true });
 });
 
-// ================== Start Server ==================
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
