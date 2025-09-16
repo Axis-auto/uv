@@ -1,4 +1,3 @@
-[media pointer="file-service://file-28CDAhrhqEkydoKZ7YTroH"]
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -16,13 +15,13 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Aramex JSON Endpoint
-const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; // يجب أن يكون: https://ws.sbx.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments
+const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; 
 const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
 const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
-const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE;
+const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY;
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -147,15 +146,25 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const customerName = session.customer_details.name;
     const address = session.customer_details.address;
 
+    // تقسيم عنوان الشاحن (Shipper) كما يطلب Aramex
+    const shipperAddress = {
+      Line1: "Al Raq’a Al Hamra - Sheikh Mohammed Bin Zayed Road",
+      Line2: "(Registration Village)",
+      Line3: "Ground Floor - Shop No. 5&6",
+      City: "Istanbul",
+      PostCode: "00000",
+      CountryCode: "TR"
+    };
+
     // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
     const shipmentData = {
       ClientInfo: {
-        UserName: ARAMEX_USERNAME,
-        Password: ARAMEX_PASSWORD,
-        AccountNumber: ARAMEX_ACCOUNT_NUMBER,
-        AccountPin: ARAMEX_ACCOUNT_PIN,
-        AccountEntity: ARAMEX_ACCOUNT_ENTITY,
-        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
+        UserName: process.env.ARAMEX_USERNAME,
+        Password: process.env.ARAMEX_PASSWORD,
+        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+        AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+        AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
         Version: "v1"
       },
       LabelInfo: { ReportID: 9729, ReportType: "URL" },
@@ -164,15 +173,18 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           Name: "Axis Auto",
           CellPhone: "0000000000",
           EmailAddress: process.env.MAIL_FROM,
-          PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
+          PartyAddress: shipperAddress
         },
         Consignee: {
           Name: customerName,
           CellPhone: session.customer_details.phone,
           EmailAddress: customerEmail,
           PartyAddress: {
-            Line1: address.line1,
-            City: address.city,
+            Line1: address.line1 || "",
+            Line2: address.line2 || "",
+            Line3: address.line3 || "",
+            City: address.city || "",
+            PostCode: address.postal_code || "00000",
             CountryCode: address.country
           }
         },
