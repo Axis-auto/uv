@@ -16,12 +16,13 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Aramex JSON Endpoint
 const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; 
-const ARAMEX_USERNAME = process.env.ARAMEX_USER; // ✅ تم التعديل هنا
+const ARAMEX_USERNAME = process.env.ARAMEX_USER;
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
 const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
 const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY;
+const ARAMEX_VERSION = process.env.ARAMEX_VERSION;
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -146,53 +147,93 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const customerName = session.customer_details.name;
     const address = session.customer_details.address;
 
-    // تقسيم عنوان الشاحن (Shipper) كما يطلب Aramex
+    // تقسيم عنوان الشاحن (Shipper) كما يطلب Aramex باستخدام المتغيرات البيئية
     const shipperAddress = {
-      Line1: "Al Raq’a Al Hamra - Sheikh Mohammed Bin Zayed Road",
-      Line2: "(Registration Village)",
-      Line3: "Ground Floor - Shop No. 5&6",
-      City: "Istanbul",
-      PostCode: "00000",
-      CountryCode: "TR"
+      Line1: process.env.SHIPPER_LINE1,
+      Line2: "(Registration Village)",  // هذا ثابت، يمكن جعله متغير إذا أردت
+      Line3: "Ground Floor - Shop No. 5&6",  // هذا ثابت، يمكن جعله متغير
+      City: process.env.SHIPPER_CITY,
+      StateOrProvinceCode: "IST",  // افتراضي لإسطنبول، يمكن جعله متغير إذا لزم
+      PostalCode: process.env.SHIPPER_POSTCODE,
+      CountryCode: process.env.SHIPPER_COUNTRY_CODE,
+      ResidenceType: "Business"  // افتراضي، يمكن تعديله
     };
 
     // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
     const shipmentData = {
       ClientInfo: {
-        UserName: process.env.ARAMEX_USER, // ✅ تم التعديل هنا
+        UserName: process.env.ARAMEX_USER,
         Password: process.env.ARAMEX_PASSWORD,
         AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-        Version: "v1"
+        Version: process.env.ARAMEX_VERSION  // استخدام المتغير البيئي
       },
-      LabelInfo: { ReportID: 9729, ReportType: "URL" },
+      Transaction: {  // مضاف: غلاف مطلوب
+        Reference1: session.id,  // استخدم معرف جلسة Stripe كمرجع
+        Reference2: process.env.SHIPPER_REFERENCE || "",  // استخدام المتغير إذا متوفر
+        Reference3: "",
+        Reference4: ""
+      },
+      LabelInfo: { ReportID: 9729, ReportType: "URL" },  // احتفظ به، لكن تحقق من ReportID
       Shipments: [{
         Shipper: {
-          Name: "Axis Auto",
-          CellPhone: "0000000000",
-          EmailAddress: process.env.MAIL_FROM,
-          PartyAddress: shipperAddress
+          Name: process.env.SHIPPER_NAME,  // من المتغير
+          Company: process.env.SHIPPER_NAME,  // اختياري، استخدم الاسم نفسه
+          CellPhone: process.env.SHIPPER_PHONE,  // من المتغير
+          Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,  // من المتغير أو fallback
+          PartyAddress: shipperAddress,
+          Contact: {  // مضاف: نوع Contact مطلوب
+            PersonName: process.env.SHIPPER_NAME + " Contact",  // مبني على الاسم
+            Company: process.env.SHIPPER_NAME,
+            PhoneNumber1: process.env.SHIPPER_PHONE,
+            CellPhone: process.env.SHIPPER_PHONE,
+            Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM
+          }
         },
         Consignee: {
-          Name: customerName,
-          CellPhone: session.customer_details.phone,
-          EmailAddress: customerEmail,
+          Name: customerName,  // Party.Name
+          Company: "",  // اختياري
+          CellPhone: session.customer_details.phone || "",  // Party.CellPhone
+          Email: customerEmail,  // مصحح: EmailAddress → Email
           PartyAddress: {
             Line1: address.line1 || "",
             Line2: address.line2 || "",
             Line3: address.line3 || "",
             City: address.city || "",
-            PostCode: address.postal_code || "00000",
-            CountryCode: address.country
+            StateOrProvinceCode: address.state || "N/A",  // مضاف؛ استخدم من Stripe إذا متوفر
+            PostalCode: address.postal_code || "00000",  // مصحح: post_code → PostalCode
+            CountryCode: address.country || "US",  // احتياطي إذا غاب
+            ResidenceType: "Residential"  // مضاف؛ اضبط حسب العميل
+          },
+          Contact: {  // مضاف: نوع Contact مطلوب
+            PersonName: customerName,
+            PhoneNumber1: session.customer_details.phone || "",
+            CellPhone: session.customer_details.phone || "",
+            Email: customerEmail
           }
         },
-        Details: {
-          NumberOfPieces: "1",
+        Details: {  // تفاصيل الشحنة
+          ActualWeight: {  // مضاف: نوع Weight
+            Value: 1.0,
+            Unit: "KG"
+          },
+          ChargeableWeight: {  // مضاف: نوع Weight
+            Value: 1.0,
+            Unit: "KG"
+          },
+          NumberOfPieces: 1,  // مصحح: سلسلة → رقم
           DescriptionOfGoods: "UV Car Inspection Device",
-          GoodsOriginCountry: "TR",
-          Services: "CODS"
+          GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,  // من المتغير (TR افتراضيًا)
+          ProductType: "PDX",  // مضاف: من ملحق A (حزمة دولية)
+          PaymentType: "PPR",  // مضاف: دفع مسبق (ملحق B)
+          Services: ["COD"],  // مصحح: سلسلة → مصفوفة؛ "CODS" → "COD" (ملحق C)
+          // اختياري لـ COD:
+          CollectAmount: {  // نوع Money
+            Amount: 0.0,  // أو المبلغ الفعلي لـ COD بعملة محلية
+            CurrencyCode: "TRY"  // ملحق E
+          }
         }
       }]
     };
@@ -201,7 +242,12 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       const response = await axios.post(
         ARAMEX_API_URL,
         shipmentData,
-        { headers: { 'Content-Type': 'application/json' } }
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'  // مضاف لرد JSON
+          } 
+        }
       );
 
       console.log('✅ Aramex result:', JSON.stringify(response.data, null, 2));
@@ -233,4 +279,3 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
-
