@@ -8,22 +8,22 @@ const axios = require('axios');
 const app = express();
 app.use(cors({ origin: true }));
 
-// Stripe
+// ================== Stripe ==================
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-// SendGrid
+// ================== SendGrid ==================
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex JSON Endpoint
-const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; 
-const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
+// ================== Aramex ==================
+const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL;
+const ARAMEX_USER = process.env.ARAMEX_USER;
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
 const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
 const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY;
 
-// ====== إنشاء جلسة الدفع ======
+// ================== Stripe Checkout ==================
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -123,7 +123,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   }
 });
 
-// ====== Webhook من Stripe ======
+// ================== Stripe Webhook ==================
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
   console.log('✅ Incoming Stripe webhook body length:', req.body.length);
@@ -146,7 +146,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const customerName = session.customer_details.name;
     const address = session.customer_details.address;
 
-    // تقسيم عنوان الشاحن (Shipper) كما يطلب Aramex
+    // عنوان الشاحن
     const shipperAddress = {
       Line1: "Al Raq’a Al Hamra - Sheikh Mohammed Bin Zayed Road",
       Line2: "(Registration Village)",
@@ -156,15 +156,15 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       CountryCode: "TR"
     };
 
-    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
+    // 1) إنشاء شحنة في Aramex
     const shipmentData = {
       ClientInfo: {
-        UserName: process.env.ARAMEX_USERNAME,
-        Password: process.env.ARAMEX_PASSWORD,
-        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-        AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
-        AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+        UserName: ARAMEX_USER,
+        Password: ARAMEX_PASSWORD,
+        AccountNumber: ARAMEX_ACCOUNT_NUMBER,
+        AccountPin: ARAMEX_ACCOUNT_PIN,
+        AccountEntity: ARAMEX_ACCOUNT_ENTITY,
+        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
         Version: "v1"
       },
       LabelInfo: { ReportID: 9729, ReportType: "URL" },
@@ -231,5 +231,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
   res.json({ received: true });
 });
 
+// ================== Start Server ==================
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
