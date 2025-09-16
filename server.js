@@ -14,15 +14,14 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 // SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex JSON Endpoint + Credentials
-const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL || "https://ws.sbx.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
+// Aramex JSON Endpoint
+const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; 
 const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
 const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
 const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE;
-const ARAMEX_VERSION = process.env.ARAMEX_VERSION || "v1";
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -68,7 +67,6 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
           }
         }];
 
-    // القائمة الكاملة للدول
     const allowedCountries = [
       'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
       'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
@@ -128,6 +126,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
 // ====== Webhook من Stripe ======
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
+  console.log('✅ Incoming Stripe webhook body length:', req.body.length);
 
   let event;
   try {
@@ -147,16 +146,26 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const customerName = session.customer_details.name;
     const address = session.customer_details.address;
 
-    // 1) إنشاء شحنة مع Aramex
+    // تقسيم عنوان الشاحن (Shipper) كما يطلب Aramex
+    const shipperAddress = {
+      Line1: "Al Raq’a Al Hamra - Sheikh Mohammed Bin Zayed Road",
+      Line2: "(Registration Village)",
+      Line3: "Ground Floor - Shop No. 5&6",
+      City: "Istanbul",
+      PostCode: "00000",
+      CountryCode: "TR"
+    };
+
+    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
     const shipmentData = {
       ClientInfo: {
-        UserName: ARAMEX_USERNAME || "",
-        Password: ARAMEX_PASSWORD || "",
-        Version: ARAMEX_VERSION,
-        AccountNumber: ARAMEX_ACCOUNT_NUMBER || "",
-        AccountPin: ARAMEX_ACCOUNT_PIN || "",
-        AccountEntity: ARAMEX_ACCOUNT_ENTITY || "",
-        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE || ""
+        UserName: ARAMEX_USERNAME,
+        Password: ARAMEX_PASSWORD,
+        AccountNumber: ARAMEX_ACCOUNT_NUMBER,
+        AccountPin: ARAMEX_ACCOUNT_PIN,
+        AccountEntity: ARAMEX_ACCOUNT_ENTITY,
+        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
+        Version: "v1"
       },
       LabelInfo: { ReportID: 9729, ReportType: "URL" },
       Shipments: [{
@@ -164,24 +173,26 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           Name: "Axis Auto",
           CellPhone: "0000000000",
           EmailAddress: process.env.MAIL_FROM,
-          PartyAddress: { Line1: "Istanbul", City: "Istanbul", CountryCode: "TR" }
+          PartyAddress: shipperAddress
         },
         Consignee: {
-          Name: customerName || "Customer",
-          CellPhone: session.customer_details.phone || "0000000",
-          EmailAddress: customerEmail || "test@example.com",
+          Name: customerName,
+          CellPhone: session.customer_details.phone,
+          EmailAddress: customerEmail,
           PartyAddress: {
-            Line1: address.line1 || "Address Line",
-            City: address.city || "City",
+            Line1: address.line1 || "",
+            Line2: address.line2 || "",
+            Line3: address.line3 || "",
+            City: address.city || "",
             PostCode: address.postal_code || "00000",
-            CountryCode: address.country || "US"
+            CountryCode: address.country
           }
         },
         Details: {
           NumberOfPieces: "1",
           DescriptionOfGoods: "UV Car Inspection Device",
           GoodsOriginCountry: "TR",
-          Services: ""
+          Services: "CODS"
         }
       }]
     };
@@ -197,7 +208,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
       const processed = response.data?.Shipments?.ProcessedShipment;
       const trackingNumber = processed?.ID || "N/A";
-      const trackingUrl = processed?.LabelURL || "https://tracking.aramex.com";
+      const trackingUrl = processed?.LabelURL || "https://tracking.example.com";
 
       // 2) إرسال بريد للعميل
       const msg = {
@@ -221,13 +232,4 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`✅ Server running on port ${port}`);
-  console.log('🔎 Loaded Aramex config:', {
-    ARAMEX_API_URL,
-    ARAMEX_USERNAME,
-    ARAMEX_ACCOUNT_NUMBER,
-    ARAMEX_ACCOUNT_ENTITY,
-    ARAMEX_ACCOUNT_COUNTRY_CODE
-  });
-});
+app.listen(port, () => console.log(`✅ Server running on port ${port}`));
