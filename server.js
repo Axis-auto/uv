@@ -20,10 +20,8 @@ const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
-// الحقول الناقصة التي تتطلبها Aramex
-const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY; // مثل "IST"
-const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE; // مثل "TR"
-const ARAMEX_SOURCE = process.env.ARAMEX_SOURCE || 24;
+const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
+const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE;
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -46,8 +44,28 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
     const unitAmount = Math.floor(totalAmount / quantity);
 
     const shipping_options = (quantity === 1)
-      ? [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: c.shipping, currency }, display_name: 'Standard Shipping', delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } } } }]
-      : [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: 0, currency }, display_name: 'Free Shipping', delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } } } }];
+      ? [{
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: c.shipping, currency },
+            display_name: 'Standard Shipping',
+            delivery_estimate: {
+              minimum: { unit: 'business_day', value: 5 },
+              maximum: { unit: 'business_day', value: 7 }
+            }
+          }
+        }]
+      : [{
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: 0, currency },
+            display_name: 'Free Shipping',
+            delivery_estimate: {
+              minimum: { unit: 'business_day', value: 5 },
+              maximum: { unit: 'business_day', value: 7 }
+            }
+          }
+        }];
 
     const allowedCountries = [
       'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
@@ -97,7 +115,9 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
       cancel_url: 'https://axis-uv.com/cancel'
     });
 
+    // مهم: إرسال sessionId للواجهة الأمامية
     res.json({ id: session.id });
+
   } catch (err) {
     console.error('Create session error:', err);
     res.status(500).json({ error: err.message });
@@ -139,8 +159,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           AccountPin: ARAMEX_ACCOUNT_PIN,
           AccountEntity: ARAMEX_ACCOUNT_ENTITY,
           AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
-          Version: "v1",
-          Source: ARAMEX_SOURCE
+          Version: "v1"
         },
         LabelInfo: { ReportID: 9729, ReportType: "URL" },
         Shipments: [{
@@ -148,7 +167,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             Name: "Axis Auto",
             CellPhone: "0000000000",
             EmailAddress: process.env.MAIL_FROM,
-            PartyAddress: { Line1: "Istanbul", City: "Istanbul", CountryCode: "TR" }
+            PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
           },
           Consignee: {
             Name: customerName,
@@ -164,11 +183,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             NumberOfPieces: "1",
             DescriptionOfGoods: "UV Car Inspection Device",
             GoodsOriginCountry: "TR",
-            Services: "CODS",
-            PaymentType: "P",
-            ProductGroup: "EXP",
-            ProductType: "PPX",
-            ActualWeight: { Unit: "KG", Value: 1 }
+            Services: "CODS"
           }
         }]
       };
