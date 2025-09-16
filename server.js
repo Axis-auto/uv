@@ -170,11 +170,12 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
         Version: process.env.ARAMEX_VERSION  // استخدام المتغير البيئي
       },
-      Transaction: {  // مضاف: غلاف مطلوب
+      Transaction: {  // مضاف: غلاف مطلوب، مع إضافة Reference5 لحل الخطأ
         Reference1: session.id,  // استخدم معرف جلسة Stripe كمرجع
         Reference2: process.env.SHIPPER_REFERENCE || "",  // استخدام المتغير إذا متوفر
         Reference3: "",
-        Reference4: ""
+        Reference4: "",
+        Reference5: ""  // مضاف: لحل خطأ الـ required field
       },
       LabelInfo: { ReportID: 9729, ReportType: "URL" },  // احتفظ به، لكن تحقق من ReportID
       Shipments: [{
