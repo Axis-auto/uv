@@ -154,12 +154,12 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Line3: "Ground Floor - Shop No. 5&6",  // هذا ثابت، يمكن جعله متغير
       City: process.env.SHIPPER_CITY,
       StateOrProvinceCode: "IST",  // افتراضي لإسطنبول، يمكن جعله متغير إذا لزم
-      PostalCode: process.env.SHIPPER_POSTCODE,
+      PostCode: process.env.SHIPPER_POSTCODE,  // مصحح: PostalCode → PostCode
       CountryCode: process.env.SHIPPER_COUNTRY_CODE,
       ResidenceType: "Business"  // افتراضي، يمكن تعديله
     };
 
-    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint (بدون Transaction للتجربة، لأنه optional)
+    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint (بدون Transaction لتجنب أخطاء سابقة)
     const shipmentData = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER,
@@ -170,7 +170,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
         Version: process.env.ARAMEX_VERSION  // استخدام المتغير البيئي
       },
-      // Transaction تم إزالته لتجنب الخطأ؛ إذا لزم، أضفه مرة أخرى مع Reference5: null
       LabelInfo: { ReportID: 9729, ReportType: "URL" },  // احتفظ به، لكن تحقق من ReportID
       Shipments: [{
         Shipper: {
@@ -198,7 +197,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             Line3: address.line3 || "",
             City: address.city || "",
             StateOrProvinceCode: address.state || "N/A",
-            PostalCode: address.postal_code || "00000",
+            PostCode: address.postal_code || "00000",  // مصحح: PostalCode → PostCode
             CountryCode: address.country || "US",
             ResidenceType: "Residential"
           },
