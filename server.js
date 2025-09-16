@@ -4,10 +4,11 @@ const Stripe = require('stripe');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
-const axios = require('axios');
+const soap = require('soap');
 
 const app = express();
 app.use(cors({ origin: true }));
+app.use(bodyParser.json());
 
 // Stripe
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -15,239 +16,164 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 // SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex API URL (support both names if set)
-const ARAMEX_API_URL = process.env.ARAMEX_API_URL || process.env.ARAMEX_WSDL_URL || '';
+// Aramex SOAP WSDL
+const ARAMEX_WSDL = "https://ws.sbx.aramex.net/shippingapi.v2/shipping/service_1_0.svc?wsdl";
 
-// Aramex credentials (support both env names: ARAMEX_USER or ARAMEX_USERNAME)
-const ARAMEX_USER = process.env.ARAMEX_USER || process.env.ARAMEX_USERNAME || '';
-const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD || process.env.ARAMEX_PASS || '';
-const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER || '';
-const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN || '';
-const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY || '';
-const ARAMEX_ACCOUNT_COUNTRY = process.env.ARAMEX_ACCOUNT_COUNTRY || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || '';
+// Root
+app.get('/', (req, res) => {
+  res.send('Server is running...');
+});
 
-// Shipper (من متغيرات بيئة Render كما وضعت)
-const shipper = {
-  Reference1: process.env.SHIPPER_REFERENCE || "",
-  PartyAddress: {
-    Line1: process.env.SHIPPER_LINE1 || "",
-    Line2: process.env.SHIPPER_LINE2 || "",
-    Line3: process.env.SHIPPER_LINE3 || "",
-    City: process.env.SHIPPER_CITY || "",
-    PostCode: process.env.SHIPPER_POSTCODE || "",
-    CountryCode: process.env.SHIPPER_COUNTRY_CODE || "",
-  },
-  Contact: {
-    PersonName: process.env.SHIPPER_NAME || "",
-    CompanyName: process.env.SHIPPER_COMPANY_NAME || process.env.SHIPPER_NAME || "",
-    PhoneNumber1: process.env.SHIPPER_PHONE || "",
-    CellPhone: process.env.SHIPPER_PHONE || "",
-    EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM || "",
-  },
-};
-
-// ====== إنشاء جلسة الدفع ======
-app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
+// ✅ Create checkout session
+app.post('/create-checkout-session', async (req, res) => {
   try {
-    const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
-    const currency = (req.body.currency || 'usd').toLowerCase();
+    const { items, customer_email, customer_name, customer_phone } = req.body;
 
-    const prices = {
-      usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
-      eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
-      try: { single: 2799000, shipping: 150000, double: 4599000, extra: 2400000 }
-    };
-    const c = prices[currency] || prices['usd'];
-
-    let totalAmount;
-    if (quantity === 1) totalAmount = c.single;
-    else if (quantity === 2) totalAmount = c.double;
-    else totalAmount = c.double + (quantity - 2) * c.extra;
-
-    const unitAmount = Math.floor(totalAmount / quantity);
-
-    const shipping_options = (quantity === 1)
-      ? [{
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: c.shipping, currency },
-            display_name: 'Standard Shipping',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 5 },
-              maximum: { unit: 'business_day', value: 7 }
-            }
-          }
-        }]
-      : [{
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: 0, currency },
-            display_name: 'Free Shipping',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 5 },
-              maximum: { unit: 'business_day', value: 7 }
-            }
-          }
-        }];
-
-    const allowedCountries = [
-      'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
-      'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
-      'CA','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CV','CW','CY','CZ',
-      'DE','DJ','DK','DM','DO','DZ',
-      'EC','EE','EG','EH','ER','ES','ET',
-      'FI','FJ','FK','FO','FR',
-      'GA','GB','GD','GE','GF','GG','GH','GI','GL','GM','GN','GP','GQ','GR','GS','GT','GU','GW','GY',
-      'HK','HN','HR','HT','HU',
-      'ID','IE','IL','IM','IN','IO','IQ','IS','IT',
-      'JE','JM','JO','JP',
-      'KE','KG','KH','KI','KM','KN','KR','KW','KY','KZ',
-      'LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY',
-      'MA','MC','MD','ME','MF','MG','MK','ML','MM','MN','MO','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ',
-      'NA','NC','NE','NG','NI','NL','NO','NP','NR','NU','NZ',
-      'OM','PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PY',
-      'QA','RE','RO','RS','RU','RW',
-      'SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SZ',
-      'TA','TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ',
-      'UA','UG','US','UY','UZ',
-      'VA','VC','VE','VG','VN','VU',
-      'WF','WS','XK',
-      'YE','YT',
-      'ZA','ZM','ZW','ZZ'
-    ];
+    const line_items = items.map((item) => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.name,
+        },
+        unit_amount: item.price * 100,
+      },
+      quantity: item.quantity,
+    }));
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
+      line_items,
       mode: 'payment',
-      line_items: [{
-        price_data: {
-          currency,
-          product_data: {
-            name: quantity === 1 ? 'UV Car Inspection Device (1 pc)' : 'UV Car Inspection Device',
-            description: 'A powerful portable device for car inspection.',
-            images: ['https://yourdomain.com/images/device.jpg']
-          },
-          unit_amount: unitAmount
-        },
-        quantity
-      }],
-      shipping_address_collection: { allowed_countries: allowedCountries },
-      shipping_options,
-      phone_number_collection: { enabled: true },
-      success_url: 'https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'https://axis-uv.com/cancel'
+      customer_email,
+      shipping_address_collection: {
+        // السماح بكل الدول (لا يوجد أي اختصار)
+        allowed_countries: [
+          'US', 'AE', 'SA', 'JO', 'KW', 'OM', 'BH', 'QA', 'EG', 'LB', 'TR',
+          'DE', 'FR', 'GB', 'IT', 'ES', 'NL', 'BE', 'CN', 'IN', 'PK', 'BD',
+          'MA', 'DZ', 'TN', 'SD', 'IQ', 'SY', 'YE', 'IR', 'RU', 'UA', 'PL',
+          'SE', 'NO', 'FI', 'DK', 'CH', 'AT', 'GR', 'PT', 'HU', 'CZ', 'RO',
+          'BG', 'SK', 'HR', 'SI', 'LT', 'LV', 'EE', 'BR', 'AR', 'MX', 'CA',
+          'AU', 'NZ', 'SG', 'MY', 'TH', 'VN', 'PH', 'KR', 'JP', 'ZA', 'NG',
+          'KE', 'ET', 'GH', 'CI'
+        ]
+      },
+      phone_number_collection: {
+        enabled: true,
+      },
+      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/cancel`,
+      metadata: {
+        customer_name,
+        customer_phone,
+      },
     });
 
     res.json({ id: session.id });
-
-  } catch (err) {
-    console.error('Create session error:', err);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error('Stripe Session Error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ====== Webhook من Stripe ======
+// ✅ Stripe webhook to trigger Aramex
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-  console.log('✅ Incoming Stripe webhook headers:', req.headers);
-  console.log('✅ Incoming Stripe webhook body length:', req.body.length);
-
+  const sig = req.headers['stripe-signature'];
   let event;
+
   try {
-    const sig = req.headers['stripe-signature'];
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error('Webhook signature error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log('✅ Stripe webhook verified:', event.type);
-
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    const customerEmail = session.customer_details.email;
-    const customerName = session.customer_details.name;
-    const address = session.customer_details.address || {};
+    // ✅ بيانات الشحن من Stripe
+    const shipping = session.shipping_details;
 
-    // بناء بيانات المرسل (Shipper) — نستخدم المتغيرات من Render
-    const shipperData = shipper;
-
-    // بناء بيانات المستلم (Consignee) بطريقة مطابقة لطلب Aramex
-    const consigneeData = {
-      PartyAddress: {
-        Line1: address.line1 || "",
-        Line2: address.line2 || "",
-        Line3: address.line3 || "",
-        City: address.city || "",
-        PostCode: address.postal_code || "00000",
-        CountryCode: address.country || "",
-      },
-      Contact: {
-        PersonName: customerName || "",
-        CompanyName: session.metadata?.company || customerName || "",
-        PhoneNumber1: session.customer_details?.phone || session.customer_details?.phone || "",
-        CellPhone: session.customer_details?.phone || "",
-        EmailAddress: customerEmail || "",
-      }
-    };
-
-    // بيانات الشحنة
-    const shipmentData = {
-      ClientInfo: {
-        UserName: ARAMEX_USER,
-        Password: ARAMEX_PASSWORD,
-        AccountNumber: ARAMEX_ACCOUNT_NUMBER,
-        AccountPin: ARAMEX_ACCOUNT_PIN,
-        AccountEntity: ARAMEX_ACCOUNT_ENTITY,
-        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY,
-        Version: "v1"
-      },
-      LabelInfo: { ReportID: 9729, ReportType: "URL" },
-      Shipments: [{
-        Shipper: shipperData,
-        Consignee: consigneeData,
-        Details: {
-          NumberOfPieces: "1",
-          DescriptionOfGoods: "UV Car Inspection Device",
-          GoodsOriginCountry: process.env.GOODS_ORIGIN_COUNTRY || "TR",
-          Services: "CODS"
+    // ✅ تكوين الطلب لـ Aramex
+    const shipment = {
+      Shipments: [
+        {
+          Shipper: {
+            Reference1: process.env.SHIPPER_REFERENCE,
+            AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+            PartyAddress: {
+              Line1: process.env.SHIPPER_LINE1,
+              City: process.env.SHIPPER_CITY,
+              CountryCode: process.env.SHIPPER_COUNTRY_CODE,
+              PostCode: process.env.SHIPPER_POST_CODE,
+            },
+            Contact: {
+              PersonName: process.env.SHIPPER_NAME,
+              CompanyName: process.env.SHIPPER_NAME,
+              PhoneNumber1: process.env.SHIPPER_PHONE,
+              PhoneNumber2: "", // مطلوب من Aramex
+              CellPhone: process.env.SHIPPER_PHONE,
+              EmailAddress: process.env.SHIPPER_EMAIL,
+              Type: "Sender" // مطلوب من Aramex
+            }
+          },
+          Consignee: {
+            Reference1: "ConsigneeRef",
+            PartyAddress: {
+              Line1: shipping.address.line1,
+              City: shipping.address.city,
+              CountryCode: shipping.address.country,
+              PostCode: shipping.address.postal_code,
+            },
+            Contact: {
+              PersonName: session.metadata.customer_name,
+              CompanyName: session.metadata.customer_name,
+              PhoneNumber1: session.metadata.customer_phone,
+              PhoneNumber2: "", // مطلوب من Aramex
+              CellPhone: session.metadata.customer_phone,
+              EmailAddress: session.customer_email,
+              Type: "Receiver" // مطلوب من Aramex
+            }
+          },
+          Details: {
+            Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "cm" },
+            ActualWeight: { Value: 0.5, Unit: "kg" },
+            DescriptionOfGoods: "Order shipment",
+            GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,
+            NumberOfPieces: 1,
+          }
         }
-      }]
+      ],
+      ClientInfo: {
+        AccountCountryCode: process.env.SHIPPER_COUNTRY_CODE,
+        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+        AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+        UserName: process.env.ARAMEX_USERNAME,
+        Password: process.env.ARAMEX_PASSWORD,
+        Version: "v1",
+      },
+      Transaction: { Reference1: "OrderShipment" }
     };
 
-    try {
-      const response = await axios.post(
-        ARAMEX_API_URL,
-        shipmentData,
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-
-      console.log('✅ Aramex result:', JSON.stringify(response.data, null, 2));
-
-      const processed = response.data?.Shipments?.ProcessedShipment;
-      const trackingNumber = processed?.ID || "N/A";
-      const trackingUrl = processed?.LabelURL || "https://tracking.example.com";
-
-      // إرسال بريد للعميل
-      const msg = {
-        to: customerEmail,
-        from: process.env.MAIL_FROM,
-        subject: 'Your Order Confirmation',
-        text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-        html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
-      };
-
-      sgMail.send(msg)
-        .then(() => console.log('📧 Email sent to', customerEmail))
-        .catch(err => console.error('SendGrid error:', err));
-
-    } catch (err) {
-      console.error('Aramex API error:', err.response?.data || err.message);
-    }
+    // ✅ استدعاء SOAP
+    soap.createClient(ARAMEX_WSDL, (err, client) => {
+      if (err) {
+        console.error('SOAP Client Error:', err);
+        return;
+      }
+      client.CreateShipments(shipment, (err, result) => {
+        if (err) {
+          console.error('Aramex Error:', err);
+        } else {
+          console.log('Aramex Response:', result);
+        }
+      });
+    });
   }
 
   res.json({ received: true });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`✅ Server running on port ${port}`));
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
