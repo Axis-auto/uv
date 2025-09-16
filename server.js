@@ -3,7 +3,7 @@ const Stripe = require('stripe');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
-const soap = require('soap');
+const axios = require('axios');
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -14,8 +14,8 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 // SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex SOAP
-const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL;
+// Aramex JSON Endpoint
+const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; // يجب أن يكون: https://ws.sbx.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments
 const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
@@ -115,7 +115,6 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
       cancel_url: 'https://axis-uv.com/cancel'
     });
 
-    // مهم: إرسال sessionId للواجهة الأمامية
     res.json({ id: session.id });
 
   } catch (err) {
@@ -147,68 +146,73 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const customerName = session.customer_details.name;
     const address = session.customer_details.address;
 
-    // 1) إنشاء شحنة مع Aramex
-    soap.createClient(ARAMEX_WSDL_URL, (err, client) => {
-      if (err) return console.error('Aramex client error:', err);
-
-      const shipmentData = {
-        ClientInfo: {
-          UserName: ARAMEX_USERNAME,
-          Password: ARAMEX_PASSWORD,
-          AccountNumber: ARAMEX_ACCOUNT_NUMBER,
-          AccountPin: ARAMEX_ACCOUNT_PIN,
-          AccountEntity: ARAMEX_ACCOUNT_ENTITY,
-          AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
-          Version: "v1"
+    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
+    const shipmentData = {
+      ClientInfo: {
+        UserName: ARAMEX_USERNAME,
+        Password: ARAMEX_PASSWORD,
+        AccountNumber: ARAMEX_ACCOUNT_NUMBER,
+        AccountPin: ARAMEX_ACCOUNT_PIN,
+        AccountEntity: ARAMEX_ACCOUNT_ENTITY,
+        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
+        Version: "v1"
+      },
+      LabelInfo: { ReportID: 9729, ReportType: "URL" },
+      Shipments: [{
+        Shipper: {
+          Name: "Axis Auto",
+          CellPhone: "0000000000",
+          EmailAddress: process.env.MAIL_FROM,
+          PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
         },
-        LabelInfo: { ReportID: 9729, ReportType: "URL" },
-        Shipments: [{
-          Shipper: {
-            Name: "Axis Auto",
-            CellPhone: "0000000000",
-            EmailAddress: process.env.MAIL_FROM,
-            PartyAddress: { Line1: "Istanbul", CountryCode: "TR" }
-          },
-          Consignee: {
-            Name: customerName,
-            CellPhone: session.customer_details.phone,
-            EmailAddress: customerEmail,
-            PartyAddress: {
-              Line1: address.line1,
-              City: address.city,
-              CountryCode: address.country
-            }
-          },
-          Details: {
-            NumberOfPieces: "1",
-            DescriptionOfGoods: "UV Car Inspection Device",
-            GoodsOriginCountry: "TR",
-            Services: "CODS"
+        Consignee: {
+          Name: customerName,
+          CellPhone: session.customer_details.phone,
+          EmailAddress: customerEmail,
+          PartyAddress: {
+            Line1: address.line1,
+            City: address.city,
+            CountryCode: address.country
           }
-        }]
+        },
+        Details: {
+          NumberOfPieces: "1",
+          DescriptionOfGoods: "UV Car Inspection Device",
+          GoodsOriginCountry: "TR",
+          Services: "CODS"
+        }
+      }]
+    };
+
+    try {
+      const response = await axios.post(
+        ARAMEX_API_URL,
+        shipmentData,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      console.log('✅ Aramex result:', JSON.stringify(response.data, null, 2));
+
+      const processed = response.data?.Shipments?.ProcessedShipment;
+      const trackingNumber = processed?.ID || "N/A";
+      const trackingUrl = processed?.LabelURL || "https://tracking.example.com";
+
+      // 2) إرسال بريد للعميل
+      const msg = {
+        to: customerEmail,
+        from: process.env.MAIL_FROM,
+        subject: 'Your Order Confirmation',
+        text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
+        html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
       };
 
-      client.CreateShipments(shipmentData, (err, result) => {
-        if (err) return console.error('Aramex error:', err);
+      sgMail.send(msg)
+        .then(() => console.log('📧 Email sent to', customerEmail))
+        .catch(err => console.error('SendGrid error:', err));
 
-        console.log('✅ Aramex result:', JSON.stringify(result, null, 2));
-        const trackingNumber = result.Shipments?.ProcessedShipment?.ID || "N/A";
-        const trackingUrl = result.Shipments?.ProcessedShipment?.LabelURL || "https://tracking.example.com";
-
-        // 2) إرسال بريد للعميل
-        const msg = {
-          to: customerEmail,
-          from: process.env.MAIL_FROM,
-          subject: 'Your Order Confirmation',
-          text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-          html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
-        };
-
-        sgMail.send(msg)
-          .then(() => console.log('📧 Email sent to', customerEmail))
-          .catch(err => console.error('SendGrid error:', err));
-      });
-    });
+    } catch (err) {
+      console.error('Aramex API error:', err.response?.data || err.message);
+    }
   }
 
   res.json({ received: true });
