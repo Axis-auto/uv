@@ -21,7 +21,7 @@ const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
 const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
-const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE;
+const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY;
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -159,12 +159,12 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
     const shipmentData = {
       ClientInfo: {
-        UserName: ARAMEX_USERNAME,
-        Password: ARAMEX_PASSWORD,
-        AccountNumber: ARAMEX_ACCOUNT_NUMBER,
-        AccountPin: ARAMEX_ACCOUNT_PIN,
-        AccountEntity: ARAMEX_ACCOUNT_ENTITY,
-        AccountCountryCode: ARAMEX_ACCOUNT_COUNTRY_CODE,
+        UserName: process.env.ARAMEX_USERNAME,
+        Password: process.env.ARAMEX_PASSWORD,
+        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+        AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+        AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
         Version: "v1"
       },
       LabelInfo: { ReportID: 9729, ReportType: "URL" },
