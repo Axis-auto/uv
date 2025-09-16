@@ -159,7 +159,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       ResidenceType: "Business"  // افتراضي، يمكن تعديله
     };
 
-    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
+    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint (بدون Transaction للتجربة، لأنه optional)
     const shipmentData = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER,
@@ -170,13 +170,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
         Version: process.env.ARAMEX_VERSION  // استخدام المتغير البيئي
       },
-      Transaction: {  // مضاف: غلاف مطلوب، مع إضافة Reference5 لحل الخطأ
-        Reference1: session.id,  // استخدم معرف جلسة Stripe كمرجع
-        Reference2: process.env.SHIPPER_REFERENCE || "",  // استخدام المتغير إذا متوفر
-        Reference3: "",
-        Reference4: "",
-        Reference5: ""  // مضاف: لحل خطأ الـ required field
-      },
+      // Transaction تم إزالته لتجنب الخطأ؛ إذا لزم، أضفه مرة أخرى مع Reference5: null
       LabelInfo: { ReportID: 9729, ReportType: "URL" },  // احتفظ به، لكن تحقق من ReportID
       Shipments: [{
         Shipper: {
@@ -185,7 +179,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           CellPhone: process.env.SHIPPER_PHONE,  // من المتغير
           Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,  // من المتغير أو fallback
           PartyAddress: shipperAddress,
-          Contact: {  // مضاف: نوع Contact مطلوب
+          Contact: {  // نوع Contact مطلوب
             PersonName: process.env.SHIPPER_NAME + " Contact",  // مبني على الاسم
             Company: process.env.SHIPPER_NAME,
             PhoneNumber1: process.env.SHIPPER_PHONE,
@@ -197,18 +191,18 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           Name: customerName,  // Party.Name
           Company: "",  // اختياري
           CellPhone: session.customer_details.phone || "",  // Party.CellPhone
-          Email: customerEmail,  // مصحح: EmailAddress → Email
+          Email: customerEmail,  // Email
           PartyAddress: {
             Line1: address.line1 || "",
             Line2: address.line2 || "",
             Line3: address.line3 || "",
             City: address.city || "",
-            StateOrProvinceCode: address.state || "N/A",  // مضاف؛ استخدم من Stripe إذا متوفر
-            PostalCode: address.postal_code || "00000",  // مصحح: post_code → PostalCode
-            CountryCode: address.country || "US",  // احتياطي إذا غاب
-            ResidenceType: "Residential"  // مضاف؛ اضبط حسب العميل
+            StateOrProvinceCode: address.state || "N/A",
+            PostalCode: address.postal_code || "00000",
+            CountryCode: address.country || "US",
+            ResidenceType: "Residential"
           },
-          Contact: {  // مضاف: نوع Contact مطلوب
+          Contact: {  // نوع Contact مطلوب
             PersonName: customerName,
             PhoneNumber1: session.customer_details.phone || "",
             CellPhone: session.customer_details.phone || "",
@@ -216,24 +210,23 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           }
         },
         Details: {  // تفاصيل الشحنة
-          ActualWeight: {  // مضاف: نوع Weight
+          ActualWeight: {
             Value: 1.0,
             Unit: "KG"
           },
-          ChargeableWeight: {  // مضاف: نوع Weight
+          ChargeableWeight: {
             Value: 1.0,
             Unit: "KG"
           },
-          NumberOfPieces: 1,  // مصحح: سلسلة → رقم
+          NumberOfPieces: 1,
           DescriptionOfGoods: "UV Car Inspection Device",
-          GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,  // من المتغير (TR افتراضيًا)
-          ProductType: "PDX",  // مضاف: من ملحق A (حزمة دولية)
-          PaymentType: "PPR",  // مضاف: دفع مسبق (ملحق B)
-          Services: ["COD"],  // مصحح: سلسلة → مصفوفة؛ "CODS" → "COD" (ملحق C)
-          // اختياري لـ COD:
-          CollectAmount: {  // نوع Money
-            Amount: 0.0,  // أو المبلغ الفعلي لـ COD بعملة محلية
-            CurrencyCode: "TRY"  // ملحق E
+          GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,
+          ProductType: "PDX",
+          PaymentType: "PPR",
+          Services: ["COD"],
+          CollectAmount: {
+            Amount: 0.0,
+            CurrencyCode: "TRY"
           }
         }
       }]
@@ -246,7 +239,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         { 
           headers: { 
             'Content-Type': 'application/json',
-            'Accept': 'application/json'  // مضاف لرد JSON
+            'Accept': 'application/json'
           } 
         }
       );
