@@ -154,7 +154,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Line3: "Ground Floor - Shop No. 5&6",  // هذا ثابت، يمكن جعله متغير
       City: process.env.SHIPPER_CITY,
       StateOrProvinceCode: "IST",  // افتراضي لإسطنبول، يمكن جعله متغير إذا لزم
-      PostCode: process.env.SHIPPER_POSTCODE,  // مصحح: PostalCode → PostCode
+      PostCode: process.env.SHIPPER_POSTCODE,
       CountryCode: process.env.SHIPPER_COUNTRY_CODE,
       ResidenceType: "Business"  // افتراضي، يمكن تعديله
     };
@@ -178,12 +178,14 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           CellPhone: process.env.SHIPPER_PHONE,  // من المتغير
           Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,  // من المتغير أو fallback
           PartyAddress: shipperAddress,
-          Contact: {  // نوع Contact مطلوب
+          Contact: {  // نوع Contact مطلوب، مع إضافة الحقول المفقودة
             PersonName: process.env.SHIPPER_NAME + " Contact",  // مبني على الاسم
             Company: process.env.SHIPPER_NAME,
             PhoneNumber1: process.env.SHIPPER_PHONE,
+            PhoneNumber2: "",  // مضاف: مطلوب في V2
             CellPhone: process.env.SHIPPER_PHONE,
-            Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM
+            Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
+            Type: ""  // مضاف: مطلوب في V2 (جرب "Business" إذا أخطأ الفارغ)
           }
         },
         Consignee: {
@@ -197,15 +199,17 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             Line3: address.line3 || "",
             City: address.city || "",
             StateOrProvinceCode: address.state || "N/A",
-            PostCode: address.postal_code || "00000",  // مصحح: PostalCode → PostCode
+            PostCode: address.postal_code || "00000",
             CountryCode: address.country || "US",
             ResidenceType: "Residential"
           },
-          Contact: {  // نوع Contact مطلوب
+          Contact: {  // نوع Contact مطلوب، مع إضافة الحقول المفقودة
             PersonName: customerName,
             PhoneNumber1: session.customer_details.phone || "",
+            PhoneNumber2: "",  // مضاف: مطلوب في V2
             CellPhone: session.customer_details.phone || "",
-            Email: customerEmail
+            Email: customerEmail,
+            Type: ""  // مضاف: مطلوب في V2 (جرب "Residential" إذا أخطأ الفارغ)
           }
         },
         Details: {  // تفاصيل الشحنة
