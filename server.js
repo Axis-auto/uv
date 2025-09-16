@@ -159,7 +159,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       ResidenceType: "Business"  // افتراضي، يمكن تعديله
     };
 
-    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint (بدون Transaction لتجنب أخطاء سابقة)
+    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
     const shipmentData = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER,
@@ -168,31 +168,38 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-        Version: process.env.ARAMEX_VERSION  // استخدام المتغير البيئي
+        Version: "v1.0"  // محدث لـ V1 كما أكدت
       },
-      LabelInfo: { ReportID: 9729, ReportType: "URL" },  // احتفظ به، لكن تحقق من ReportID
+      Transaction: {  // مضاف مرة أخرى للكمال (optional لكن مفيد)
+        Reference1: session.id,
+        Reference2: process.env.SHIPPER_REFERENCE || "",
+        Reference3: "",
+        Reference4: "",
+        Reference5: ""
+      },
+      LabelInfo: { ReportID: 9729, ReportType: "URL" },
       Shipments: [{
         Shipper: {
-          Name: process.env.SHIPPER_NAME,  // من المتغير
-          Company: process.env.SHIPPER_NAME,  // اختياري، استخدم الاسم نفسه
-          CellPhone: process.env.SHIPPER_PHONE,  // من المتغير
-          Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,  // من المتغير أو fallback
+          Name: process.env.SHIPPER_NAME,
+          Company: process.env.SHIPPER_NAME,
+          CellPhone: process.env.SHIPPER_PHONE,
+          Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
           PartyAddress: shipperAddress,
-          Contact: {  // نوع Contact مطلوب، مع إضافة الحقول المفقودة
-            PersonName: process.env.SHIPPER_NAME + " Contact",  // مبني على الاسم
+          Contact: {
+            PersonName: process.env.SHIPPER_NAME + " Contact",
             Company: process.env.SHIPPER_NAME,
             PhoneNumber1: process.env.SHIPPER_PHONE,
-            PhoneNumber2: "",  // مضاف: مطلوب في V2
+            PhoneNumber2: "",
             CellPhone: process.env.SHIPPER_PHONE,
             Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
-            Type: ""  // مضاف: مطلوب في V2 (جرب "Business" إذا أخطأ الفارغ)
+            Type: ""
           }
         },
         Consignee: {
-          Name: customerName,  // Party.Name
-          Company: "",  // اختياري
-          CellPhone: session.customer_details.phone || "",  // Party.CellPhone
-          Email: customerEmail,  // Email
+          Name: customerName,
+          Company: "",
+          CellPhone: session.customer_details.phone || "",
+          Email: customerEmail,
           PartyAddress: {
             Line1: address.line1 || "",
             Line2: address.line2 || "",
@@ -203,16 +210,16 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             CountryCode: address.country || "US",
             ResidenceType: "Residential"
           },
-          Contact: {  // نوع Contact مطلوب، مع إضافة الحقول المفقودة
+          Contact: {
             PersonName: customerName,
             PhoneNumber1: session.customer_details.phone || "",
-            PhoneNumber2: "",  // مضاف: مطلوب في V2
+            PhoneNumber2: "",
             CellPhone: session.customer_details.phone || "",
             Email: customerEmail,
-            Type: ""  // مضاف: مطلوب في V2 (جرب "Residential" إذا أخطأ الفارغ)
+            Type: ""
           }
         },
-        Details: {  // تفاصيل الشحنة
+        Details: {
           ActualWeight: {
             Value: 1.0,
             Unit: "KG"
@@ -226,7 +233,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,
           ProductType: "PDX",
           PaymentType: "PPR",
-          Services: ["COD"],
+          Services: "COD",  // مصحح: مصفوفة → سلسلة نصية (comma-separated إذا متعدد)
           CollectAmount: {
             Amount: 0.0,
             CurrencyCode: "TRY"
