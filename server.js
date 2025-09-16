@@ -16,7 +16,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Aramex JSON Endpoint
 const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; 
-const ARAMEX_USERNAME = process.env.ARAMEX_USERNAME;
+const ARAMEX_USERNAME = process.env.ARAMEX_USER; // ✅ تم التعديل هنا
 const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
 const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
 const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
@@ -159,7 +159,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     // 1) إنشاء شحنة مع Aramex عبر JSON endpoint
     const shipmentData = {
       ClientInfo: {
-        UserName: process.env.ARAMEX_USERNAME,
+        UserName: process.env.ARAMEX_USER, // ✅ تم التعديل هنا
         Password: process.env.ARAMEX_PASSWORD,
         AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
