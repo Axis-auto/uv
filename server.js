@@ -70,7 +70,7 @@ function escapeXml(s) {
 }
 
 function maskForLog(obj){
-  try { return JSON.parse(JSON.stringify(obj, (k,v)=>{ if(!k) return v; const lk=k.toLowerCase(); if(lk.includes('password')||lk.includes('pin')) return '***'; return v;})); }
+  try { return JSON.parse(JSON.stringify(obj, (k,v)=>{ if(!k) return v; const lk=k.toLowerCase(); if(lk.includes('password')||lk.includes('pin')||lk.includes('secret')||lk.includes('apikey')) return '***'; return v;})); }
   catch(e){ return obj; }
 }
 
@@ -87,7 +87,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const width = 20; // cm
   const height = 15; // cm
 
-  // NOTE: CurrencyCode MUST come BEFORE Value (Aramex schema expects that)
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -115,8 +114,14 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
           <tns:Reference1>${escapeXml(shipment.Reference1 || '')}</tns:Reference1>
           <tns:Reference2></tns:Reference2>
           <tns:Reference3></tns:Reference3>
+
+          <!-- Shipper: include account info here as well (Aramex expects it inside Shipper) -->
           <tns:Shipper>
             <tns:Reference1>${escapeXml(shipment.Shipper.Reference1 || '')}</tns:Reference1>
+            <tns:AccountNumber>${escapeXml(clientInfo.AccountNumber || '')}</tns:AccountNumber>
+            <tns:AccountPin>${escapeXml(clientInfo.AccountPin || '')}</tns:AccountPin>
+            <tns:AccountEntity>${escapeXml(clientInfo.AccountEntity || '')}</tns:AccountEntity>
+            <tns:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || '')}</tns:AccountCountryCode>
             <tns:PartyAddress>
               <tns:Line1>${escapeXml(sa.Line1 || '')}</tns:Line1>
               <tns:Line2>${escapeXml(sa.Line2 || '')}</tns:Line2>
@@ -136,6 +141,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Type>${escapeXml(sc.Type || '')}</tns:Type>
             </tns:Contact>
           </tns:Shipper>
+
           <tns:Consignee>
             <tns:Reference1>${escapeXml(shipment.Consignee.Reference1 || '')}</tns:Reference1>
             <tns:PartyAddress>
@@ -157,6 +163,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Type>${escapeXml(cc.Type || '')}</tns:Type>
             </tns:Contact>
           </tns:Consignee>
+
           <tns:ThirdParty>
             <tns:Reference1></tns:Reference1>
             <tns:PartyAddress>
@@ -178,6 +185,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Type></tns:Type>
             </tns:Contact>
           </tns:ThirdParty>
+
           <tns:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</tns:ShippingDateTime>
           <tns:Comments>${escapeXml(d.DescriptionOfGoods || '')}</tns:Comments>
           <tns:PickupLocation></tns:PickupLocation>
@@ -202,7 +210,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
             </tns:ChargeableWeight>
 
-            <!-- Ordered for Aramex: Description -> Origin -> Pieces -> Product info -> PaymentOptions -> monetary amounts -->
             <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
             <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</tns:GoodsOriginCountry>
             <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
@@ -211,10 +218,9 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             <tns:ProductType>${escapeXml(d.ProductType || '')}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || '')}</tns:PaymentType>
 
-            <!-- NEW: PaymentOptions element expected by Aramex -->
             <tns:PaymentOptions></tns:PaymentOptions>
 
-            <!-- IMPORTANT: CurrencyCode before Value -->
+            <!-- CurrencyCode BEFORE Value (required by Aramex) -->
             <tns:CashOnDeliveryAmount>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
               <tns:Value>0</tns:Value>
@@ -265,8 +271,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
 }
 
 // ----------------- Checkout creation -----------------
-// NOTE: we keep shipping_address_collection and phone_number_collection enabled.
-// allow passing customer_email (optional) from frontend via req.body.email
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -326,7 +330,6 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
       metadata: { quantity: String(quantity) }
     };
 
-    // if frontend passes an email, set it to pre-fill the checkout
     if (req.body.customer_email) sessionParams.customer_email = req.body.customer_email;
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -340,7 +343,6 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
 });
 
 // ----------------- Webhook: receive completed session and create Aramex shipment -----------------
-// Important: body must be raw for signature verification
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
   console.log('✅ Incoming Stripe webhook body length:', req.body.length);
@@ -370,19 +372,16 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
     const customerEmail = (fullSession.customer_details && fullSession.customer_details.email) ? fullSession.customer_details.email : (fullSession.customer && fullSession.customer.email ? fullSession.customer.email : '');
     const customerName = (fullSession.shipping && fullSession.shipping.name) ? fullSession.shipping.name : (fullSession.customer_details && fullSession.customer_details.name ? fullSession.customer_details.name : (fullSession.customer && fullSession.customer.name ? fullSession.customer.name : ''));
-    // phone: prefer customer object -> customer_details -> shipping.address.phone -> session.customer (various places)
     const phone = (fullSession.customer && fullSession.customer.phone) ||
                   (fullSession.customer_details && fullSession.customer_details.phone) ||
                   (fullSession.shipping && fullSession.shipping.phone) ||
                   session.customer || '';
 
-    // safe quantity extraction (from expanded line_items if possible)
     const quantity = (fullSession && fullSession.line_items && fullSession.line_items.data && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) ? fullSession.line_items.data[0].quantity : (session.quantity || parseInt((fullSession.metadata && fullSession.metadata.quantity) || '1', 10));
 
     const totalWeight = parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2));
     const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE; // 200 AED per piece
 
-    // Determine consignee address using the best available source:
     const shipping = (fullSession && fullSession.shipping) ? fullSession.shipping : (fullSession && fullSession.customer_details && fullSession.customer_details.address ? { address: fullSession.customer_details.address, name: fullSession.customer_details.name } : null);
 
     const consigneeAddress = {
@@ -456,12 +455,24 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // Create Aramex shipment
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
 
     try {
+      // Guard: ensure essential Aramex account fields present
+      if (!clientInfo.AccountNumber || !clientInfo.AccountEntity || !clientInfo.AccountPin) {
+        const missing = [
+          !clientInfo.AccountNumber && 'ARAMEX_ACCOUNT_NUMBER',
+          !clientInfo.AccountEntity && 'ARAMEX_ACCOUNT_ENTITY',
+          !clientInfo.AccountPin && 'ARAMEX_ACCOUNT_PIN'
+        ].filter(Boolean);
+        const msg = `Missing Aramex account config: ${missing.join(', ')}`;
+        console.error('❌', msg);
+        aramexError = msg;
+        throw new Error(msg);
+      }
+
       console.log('→ Creating Aramex shipment for order:', session.id);
       console.log('→ Shipment details:', JSON.stringify(maskForLog({
         quantity,
@@ -480,9 +491,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         shipment: shipmentObj
       });
 
+      // sanitized XML preview for logs (hide password/pin)
+      const safeXml = xml.replace(/(<tns:Password>).*?(<\/tns:Password>)/g, '$1***$2').replace(/(<tns:AccountPin>).*?(<\/tns:AccountPin>)/g, '$1***$2');
       console.log('→ XML length:', xml.length, 'characters');
-      // optionally log XML snippet for debugging (sanitize sensitive fields if needed)
-      // console.log(xml.substring(0, 1000));
+      console.log('→ XML preview (sanitized):', safeXml.substring(0, 1600));
 
       const headers = {
         'Content-Type': 'text/xml; charset=utf-8',
@@ -502,7 +514,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         console.warn('Could not parse Aramex response XML:', e && e.message ? e.message : e); 
       }
 
-      // Check for errors first
+      // Collect errors/notifications from multiple possible locations
       let hasErrors = false;
       let notifications = [];
 
@@ -510,20 +522,39 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         const body = parsed && (parsed['s:Envelope'] && parsed['s:Envelope']['s:Body'] ? parsed['s:Envelope']['s:Body'] : parsed);
         const respRoot = body && (body.ShipmentCreationResponse || body);
 
-        if (respRoot && respRoot.HasErrors) {
-          hasErrors = respRoot.HasErrors === 'true' || respRoot.HasErrors === true;
+        if (respRoot && (respRoot.HasErrors === 'true' || respRoot.HasErrors === true)) hasErrors = true;
+
+        const collectNotificationsFromNode = (node) => {
+          if (!node) return [];
+          if (Array.isArray(node.Notification)) return node.Notification;
+          if (node.Notification) return [node.Notification];
+          return [];
+        };
+
+        if (respRoot && respRoot.Notifications) {
+          notifications = notifications.concat(collectNotificationsFromNode(respRoot.Notifications));
         }
 
-        if (respRoot && respRoot.Notifications && respRoot.Notifications.Notification) {
-          notifications = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
+        const shipmentsNode = respRoot && respRoot.Shipments && respRoot.Shipments.ProcessedShipment;
+        if (shipmentsNode) {
+          const processed = Array.isArray(shipmentsNode) ? shipmentsNode : [shipmentsNode];
+          for (const p of processed) {
+            if (p.HasErrors === 'true' || p.HasErrors === true) hasErrors = true;
+            if (p.Notifications) notifications = notifications.concat(collectNotificationsFromNode(p.Notifications));
+          }
         }
-      } catch(e) { 
-        console.warn('Could not parse error info:', e && e.message ? e.message : e); 
+
+      } catch (e) {
+        console.warn('Could not parse error info:', e && e.message ? e.message : e);
       }
 
       if (hasErrors || notifications.length > 0) {
         console.error('❌ Aramex returned errors:', notifications);
-        aramexError = notifications.map(n => `${n.Code}: ${n.Message}`).join('; ');
+        aramexError = notifications.map(n => {
+          const code = n.Code || n.code || '';
+          const msg  = n.Message || n.message || (typeof n === 'string' ? n : JSON.stringify(n));
+          return code ? `${code}: ${msg}` : msg;
+        }).join('; ');
       } else {
         try {
           const body = parsed && (parsed['s:Envelope'] && parsed['s:Envelope']['s:Body'] ? parsed['s:Envelope']['s:Body'] : parsed);
@@ -541,8 +572,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
               console.log('→ Label URL:', labelUrl);
             }
           }
-        } catch(e) { 
-          console.warn('Could not extract shipment info:', e && e.message ? e.message : e); 
+        } catch(e) {
+          console.warn('Could not extract shipment info:', e && e.message ? e.message : e);
         }
       }
 
@@ -551,26 +582,44 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       if (err.response && err.response.data) {
         console.error('❌ Aramex response data:', err.response.data);
       }
-      aramexError = err && err.message ? err.message : 'Unknown Aramex API error';
+      // aramexError may have been set earlier
+      aramexError = aramexError || (err && err.message ? err.message : 'Unknown Aramex API error');
     }
 
     // Send email notification (if configured)
     if (process.env.SENDGRID_API_KEY && customerEmail) {
       try {
-        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n- Declared Value: ${totalDeclaredValue} AED\n- Dimensions: 30x20x15 CM\n`;
+        let emailContent = `Thank you for your order!
+
+Order Details:
+- Quantity: ${quantity}
+- Total Weight: ${totalWeight} KG
+- Declared Value: ${totalDeclaredValue} AED
+- Dimensions: 30x20x15 CM
+`;
 
         if (trackingId) {
-          emailContent += `\nShipping Information:\n- Tracking ID: ${trackingId}\n`;
+          emailContent += `
+Shipping Information:
+- Tracking ID: ${trackingId}
+`;
           if (labelUrl) {
-            emailContent += `- Shipping Label: ${labelUrl}\n`;
+            emailContent += `- Shipping Label: ${labelUrl}
+`;
           }
         } else if (aramexError) {
-          emailContent += `\nShipping Status: Processing (${aramexError})\n`;
+          emailContent += `
+Shipping Status: Processing (${aramexError})
+`;
         } else {
-          emailContent += `\nShipping Status: Processing\n`;
+          emailContent += `
+Shipping Status: Processing
+`;
         }
 
-        emailContent += `\nBest regards,\nAxis UV Team`;
+        emailContent += `
+Best regards,
+Axis UV Team`;
 
         const msg = {
           to: customerEmail,
