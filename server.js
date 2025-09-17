@@ -1,4 +1,3 @@
-// server.js (نسخة مُحدثة — تحتوي على قائمة الدول الكاملة)
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -6,30 +5,16 @@ const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
 const axios = require('axios');
 const { parseStringPromise } = require('xml2js');
-const fs = require('fs');
 
 const app = express();
 app.use(cors({ origin: true }));
 
-// ---------- REQUIRED ENVs ----------
+// ---------- ENV check ----------
 const REQUIRED_ENVS = [
-  'STRIPE_SECRET_KEY',
-  'STRIPE_WEBHOOK_SECRET',
-  'MAIL_FROM',
-  'SENDGRID_API_KEY', // optional but listed
-  'ARAMEX_WSDL_URL',
-  'ARAMEX_USER',
-  'ARAMEX_PASSWORD',
-  'ARAMEX_ACCOUNT_NUMBER',
-  'ARAMEX_ACCOUNT_PIN',
-  'ARAMEX_ACCOUNT_ENTITY',
-  'ARAMEX_ACCOUNT_COUNTRY',
-  'SHIPPER_LINE1',
-  'SHIPPER_CITY',
-  'SHIPPER_POSTCODE',
-  'SHIPPER_COUNTRY_CODE',
-  'SHIPPER_NAME',
-  'SHIPPER_PHONE'
+  'STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET','MAIL_FROM',
+  'ARAMEX_WSDL_URL','ARAMEX_USER','ARAMEX_PASSWORD','ARAMEX_ACCOUNT_NUMBER',
+  'ARAMEX_ACCOUNT_PIN','ARAMEX_ACCOUNT_ENTITY','ARAMEX_ACCOUNT_COUNTRY',
+  'SHIPPER_LINE1','SHIPPER_CITY','SHIPPER_POSTCODE','SHIPPER_COUNTRY_CODE','SHIPPER_NAME','SHIPPER_PHONE'
 ];
 const missingEnvs = REQUIRED_ENVS.filter(k => !process.env[k]);
 if (missingEnvs.length) console.warn('⚠️ Missing envs:', missingEnvs);
@@ -37,64 +22,59 @@ if (missingEnvs.length) console.warn('⚠️ Missing envs:', missingEnvs);
 // Stripe init
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '');
 
-// SendGrid init (optional)
+// SendGrid (optional)
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex endpoint (strip ?wsdl if present)
-const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || '';
-const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL ? (ARAMEX_WSDL_URL.split('?')[0]) : 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc';
+// Aramex endpoint (use base URL without ?wsdl)
+const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl';
+const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf('?') !== -1 ? ARAMEX_WSDL_URL.split('?')[0] : ARAMEX_WSDL_URL;
 
 // constants
-const WEIGHT_PER_PIECE = 1.63; // kg
-const DECLARED_VALUE_PER_PIECE = 200; // AED
+const WEIGHT_PER_PIECE = 1.63; // kg per piece
+const DECLARED_VALUE_PER_PIECE = 200; // AED per piece
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || '24', 10);
 const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || '9729', 10);
 
-// Full allowed countries for Stripe shipping collection (complete list)
+// Full allowed countries for Stripe shipping collection
 const allowedCountries = [
-  'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AS','AT','AU','AW','AX','AZ',
+  'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
   'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
-  'CA','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CU','CV','CW','CX','CY','CZ',
+  'CA','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CV','CW','CY','CZ',
   'DE','DJ','DK','DM','DO','DZ',
   'EC','EE','EG','EH','ER','ES','ET',
-  'FI','FJ','FK','FM','FO','FR',
+  'FI','FJ','FK','FO','FR',
   'GA','GB','GD','GE','GF','GG','GH','GI','GL','GM','GN','GP','GQ','GR','GS','GT','GU','GW','GY',
-  'HK','HM','HN','HR','HT','HU',
-  'ID','IE','IL','IM','IN','IO','IQ','IR','IS','IT',
+  'HK','HN','HR','HT','HU',
+  'ID','IE','IL','IM','IN','IO','IQ','IS','IT',
   'JE','JM','JO','JP',
-  'KE','KG','KH','KI','KM','KN','KP','KR','KW','KY','KZ',
+  'KE','KG','KH','KI','KM','KN','KR','KW','KY','KZ',
   'LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY',
-  'MA','MC','MD','ME','MF','MG','MH','MK','ML','MM','MN','MO','MP','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ',
-  'NA','NC','NE','NF','NG','NI','NL','NO','NP','NR','NU','NZ',
-  'OM','PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PW','PY',
+  'MA','MC','MD','ME','MF','MG','MK','ML','MM','MN','MO','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ',
+  'NA','NC','NE','NG','NI','NL','NO','NP','NR','NU','NZ',
+  'OM','PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PY',
   'QA','RE','RO','RS','RU','RW',
-  'SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SY','SZ',
-  'TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ',
-  'UA','UG','UM','US','UY','UZ',
-  'VA','VC','VE','VG','VI','VN','VU',
-  'WF','WS','XK','YE','YT','ZA','ZM','ZW','ZZ'
+  'SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SZ',
+  'TA','TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ',
+  'UA','UG','US','UY','UZ',
+  'VA','VC','VE','VG','VN','VU',
+  'WF','WS','XK',
+  'YE','YT',
+  'ZA','ZM','ZW','ZZ'
 ];
-
-// helper to format allowed countries for stripe
 function allowedCountriesForStripe(list) { return list.map(c => (typeof c === 'string' ? c.toUpperCase() : c)); }
 
 // helpers
 function escapeXml(s) {
   if (s === null || s === undefined) return '';
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&apos;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 }
 
 function maskForLog(obj){
-  try { return JSON.parse(JSON.stringify(obj, (k,v)=>{ if(!k) return v; const lk=k.toLowerCase(); if(lk.includes('password')||lk.includes('pin')||lk.includes('secret')) return '***'; return v;})); }
+  try { return JSON.parse(JSON.stringify(obj, (k,v)=>{ if(!k) return v; const lk=k.toLowerCase(); if(lk.includes('password')||lk.includes('pin')) return '***'; return v;})); }
   catch(e){ return obj; }
 }
 
-// Build Aramex ShipmentCreation XML — final canonical order
+// Build Aramex ShipmentCreation XML - WITH DIMENSIONS ELEMENT
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
   const sc = shipment.Shipper.Contact || {};
@@ -102,13 +82,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const cc = shipment.Consignee.Contact || {};
   const d = shipment.Details || {};
 
-  // fixed box dims
-  const length = 30;
-  const width = 20;
-  const height = 15;
+  // Standard box dimensions for UV device
+  const length = 30; // cm
+  const width = 20; // cm
+  const height = 15; // cm
 
-  // Important: Money elements must have CurrencyCode BEFORE Value per Aramex expectation.
-  // Order inside <tns:Details> follows the pattern we inferred from errors.
+  // Re-ordered Details to match Aramex expectations (including PaymentOptions)
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -124,7 +103,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
         <tns:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || '')}</tns:AccountCountryCode>
         <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : '')}</tns:Source>
       </tns:ClientInfo>
-
       <tns:Transaction>
         <tns:Reference1>${escapeXml(transactionRef || '')}</tns:Reference1>
         <tns:Reference2></tns:Reference2>
@@ -132,11 +110,11 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
         <tns:Reference4></tns:Reference4>
         <tns:Reference5></tns:Reference5>
       </tns:Transaction>
-
       <tns:Shipments>
         <tns:Shipment>
           <tns:Reference1>${escapeXml(shipment.Reference1 || '')}</tns:Reference1>
-
+          <tns:Reference2></tns:Reference2>
+          <tns:Reference3></tns:Reference3>
           <tns:Shipper>
             <tns:Reference1>${escapeXml(shipment.Shipper.Reference1 || '')}</tns:Reference1>
             <tns:PartyAddress>
@@ -158,7 +136,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Type>${escapeXml(sc.Type || '')}</tns:Type>
             </tns:Contact>
           </tns:Shipper>
-
           <tns:Consignee>
             <tns:Reference1>${escapeXml(shipment.Consignee.Reference1 || '')}</tns:Reference1>
             <tns:PartyAddress>
@@ -180,7 +157,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Type>${escapeXml(cc.Type || '')}</tns:Type>
             </tns:Contact>
           </tns:Consignee>
-
           <tns:ThirdParty>
             <tns:Reference1></tns:Reference1>
             <tns:PartyAddress>
@@ -202,7 +178,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Type></tns:Type>
             </tns:Contact>
           </tns:ThirdParty>
-
           <tns:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</tns:ShippingDateTime>
           <tns:Comments>${escapeXml(d.DescriptionOfGoods || '')}</tns:Comments>
           <tns:PickupLocation></tns:PickupLocation>
@@ -210,7 +185,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
           <tns:AccountingInstrcutions></tns:AccountingInstrcutions>
 
           <tns:Details>
-            <!-- DIMENSIONS first -->
             <tns:Dimensions>
               <tns:Length>${length}</tns:Length>
               <tns:Width>${width}</tns:Width>
@@ -218,59 +192,54 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Unit>CM</tns:Unit>
             </tns:Dimensions>
 
-            <!-- ActualWeight: Unit then Value -->
             <tns:ActualWeight>
               <tns:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</tns:Unit>
               <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
             </tns:ActualWeight>
 
-            <!-- ChargeableWeight: Unit then Value -->
             <tns:ChargeableWeight>
               <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</tns:Unit>
               <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
             </tns:ChargeableWeight>
 
-            <!-- Description / Origin / Pieces -->
+            <!-- Ordered for Aramex: Description -> Origin -> Pieces -> Product info -> PaymentOptions -> monetary amounts -->
             <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
             <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</tns:GoodsOriginCountry>
-            <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces != null ? d.NumberOfPieces : 1)}</tns:NumberOfPieces>
+            <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
 
-            <!-- Product info -->
             <tns:ProductGroup>${escapeXml(d.ProductGroup || '')}</tns:ProductGroup>
             <tns:ProductType>${escapeXml(d.ProductType || '')}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || '')}</tns:PaymentType>
 
-            <!-- PaymentOptions (present even if empty) -->
+            <!-- NEW: PaymentOptions element expected by Aramex -->
             <tns:PaymentOptions></tns:PaymentOptions>
 
-            <!-- MONEY fields: CurrencyCode THEN Value (IMPORTANT) -->
             <tns:CashOnDeliveryAmount>
-              <tns:CurrencyCode>${escapeXml((d.CashOnDeliveryAmount && d.CashOnDeliveryAmount.CurrencyCode) || 'AED')}</tns:CurrencyCode>
-              <tns:Value>${escapeXml((d.CashOnDeliveryAmount && d.CashOnDeliveryAmount.Value != null) ? d.CashOnDeliveryAmount.Value : 0)}</tns:Value>
+              <tns:Value>0</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:CashOnDeliveryAmount>
 
             <tns:InsuranceAmount>
-              <tns:CurrencyCode>${escapeXml((d.InsuranceAmount && d.InsuranceAmount.CurrencyCode) || 'AED')}</tns:CurrencyCode>
-              <tns:Value>${escapeXml((d.InsuranceAmount && d.InsuranceAmount.Value != null) ? d.InsuranceAmount.Value : 0)}</tns:Value>
+              <tns:Value>0</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:InsuranceAmount>
 
             <tns:CollectAmount>
-              <tns:CurrencyCode>${escapeXml((d.CollectAmount && d.CollectAmount.CurrencyCode) || 'AED')}</tns:CurrencyCode>
-              <tns:Value>${escapeXml((d.CollectAmount && d.CollectAmount.Value != null) ? d.CollectAmount.Value : 0)}</tns:Value>
+              <tns:Value>0</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:CollectAmount>
 
             <tns:CustomsValueAmount>
-              <tns:CurrencyCode>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode) || 'AED')}</tns:CurrencyCode>
-              <tns:Value>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.Value != null) ? d.CustomsValueAmount.Value : '')}</tns:Value>
+              <tns:Value>${escapeXml(d.CustomsValueAmount && d.CustomsValueAmount.Value != null ? d.CustomsValueAmount.Value : '')}</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:CustomsValueAmount>
 
             <tns:Services></tns:Services>
 
-            <!-- Items -->
             <tns:Items>
               <tns:ShipmentItem>
                 <tns:PackageType>Box</tns:PackageType>
-                <tns:Quantity>${escapeXml(d.NumberOfPieces != null ? d.NumberOfPieces : 1)}</tns:Quantity>
+                <tns:Quantity>${escapeXml(d.NumberOfPieces || 1)}</tns:Quantity>
                 <tns:Weight>
                   <tns:Unit>KG</tns:Unit>
                   <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
@@ -283,12 +252,10 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
           </tns:Details>
         </tns:Shipment>
       </tns:Shipments>
-
       <tns:LabelInfo>
         <tns:ReportID>${escapeXml(labelReportId)}</tns:ReportID>
         <tns:ReportType>URL</tns:ReportType>
       </tns:LabelInfo>
-
     </tns:ShipmentCreationRequest>
   </soap:Body>
 </soap:Envelope>`;
@@ -315,6 +282,24 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
 
     const unitAmount = Math.floor(totalAmount / quantity);
 
+    const shipping_options = (quantity === 1)
+      ? [{
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: c.shipping, currency },
+            display_name: 'Standard Shipping',
+            delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } }
+          }
+        }]
+      : [{
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: 0, currency },
+            display_name: 'Free Shipping',
+            delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } }
+          }
+        }];
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -323,26 +308,15 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
           currency,
           product_data: {
             name: quantity === 1 ? 'UV Car Inspection Device (1 pc)' : 'UV Car Inspection Device',
-            description: 'UV Car Inspection Device',
+            description: 'A powerful portable device for car inspection.',
+            images: ['https://yourdomain.com/images/device.jpg']
           },
           unit_amount: unitAmount
         },
         quantity
       }],
       shipping_address_collection: { allowed_countries: allowedCountriesForStripe(allowedCountries) },
-      shipping_options: (quantity === 1) ? [{
-        shipping_rate_data: {
-          type: 'fixed_amount',
-          fixed_amount: { amount: c.shipping, currency },
-          display_name: 'Standard Shipping'
-        }
-      }] : [{
-        shipping_rate_data: {
-          type: 'fixed_amount',
-          fixed_amount: { amount: 0, currency },
-          display_name: 'Free Shipping'
-        }
-      }],
+      shipping_options,
       phone_number_collection: { enabled: true },
       success_url: 'https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://axis-uv.com/cancel'
@@ -352,7 +326,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
 
   } catch (err) {
     console.error('Create session error:', err && err.message ? err.message : err);
-    res.status(500).json({ error: err.message || 'Create session failed' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -435,7 +409,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     };
 
     const shipmentObj = {
-      Reference1: session.id || '', // Add Reference1 for shipment
+      Reference1: session.id || '',
       Shipper: { Reference1: process.env.SHIPPER_REFERENCE || '', PartyAddress: shipperAddress, Contact: shipperContact },
       Consignee: { Reference1: '', PartyAddress: consigneeAddress, Contact: consigneeContact },
       Details: {
@@ -445,10 +419,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         NumberOfPieces: quantity,
         DescriptionOfGoods: "UV Car Inspection Device",
         GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
-        CustomsValueAmount: { Value: totalDeclaredValue, CurrencyCode: "AED" }, // Declared value as mentioned by user
-        ProductGroup: "EXP", // Express
-        ProductType: "PPX", // Priority Parcel Express (Parcel type as mentioned by user)
-        PaymentType: "P" // prepaid
+        CustomsValueAmount: { Value: totalDeclaredValue, CurrencyCode: "AED" },
+        ProductGroup: "EXP",
+        ProductType: "PPX",
+        PaymentType: "P"
       }
     };
 
@@ -464,7 +438,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // Create Aramex shipment - WITH DIMENSIONS ELEMENT
+    // Create Aramex shipment
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
@@ -491,7 +465,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       console.log('→ XML length:', xml.length, 'characters');
       console.log('→ Sending XML...');
 
-      // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
       const headers = {
         'Content-Type': 'text/xml; charset=utf-8',
         'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments'
@@ -533,7 +506,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         console.error('❌ Aramex returned errors:', notifications);
         aramexError = notifications.map(n => `${n.Code}: ${n.Message}`).join('; ');
       } else {
-        // Try to extract processed shipment
         try {
           const body = parsed && (parsed['s:Envelope'] && parsed['s:Envelope']['s:Body'] ? parsed['s:Envelope']['s:Body'] : parsed);
           const respRoot = body && (body.ShipmentCreationResponse || body);
