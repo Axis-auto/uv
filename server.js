@@ -75,6 +75,29 @@ const allowedCountries = [
   'ZA','ZM','ZW','ZZ'
 ];
 
+// ---------- Helper: convert allowedCountries to Stripe's allowed list (Stripe expects 2-letter codes uppercase)
+function allowedCountriesForStripe(list) {
+  return list.map(c => (typeof c === 'string' ? c.toUpperCase() : c));
+}
+
+// ---------------------- Normalize Shipments ----------------------
+/**
+ * Aramex SOAP can be picky about whether Shipments.Shipment is an object
+ * or an array. If we only have 1 shipment, send it as an object (not [obj]).
+ * This function will also safely convert an array of length 1 into a single object.
+ */
+function normalizeShipments(args) {
+  if (!args || !args.Shipments) return args;
+  const s = args.Shipments.Shipment;
+
+  // If it's an array with exactly 1 element, convert to single object
+  if (Array.isArray(s) && s.length === 1) {
+    args.Shipments.Shipment = s[0];
+  }
+
+  return args;
+}
+
 // ---------- Create Checkout Session ----------
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
@@ -150,11 +173,6 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   }
 });
 
-// Helper to convert allowedCountries to Stripe's allowed list (Stripe expects 2-letter codes uppercase)
-function allowedCountriesForStripe(list) {
-  return list.map(c => (typeof c === 'string' ? c.toUpperCase() : c));
-}
-
 // ---------- Stripe Webhook (raw body required) ----------
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
@@ -201,7 +219,61 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       ResidenceType: process.env.SHIPPER_RESIDENCE_TYPE || 'Business'
     };
 
-    // Compose SOAP args according to Aramex docs
+    // Compose single shipment object (not array) — safer for Aramex when only 1 shipment
+    const shipmentObj = {
+      Shipper: {
+        Reference1: process.env.SHIPPER_REFERENCE || '',
+        PartyAddress: shipperAddress,
+        Contact: {
+          PersonName: process.env.SHIPPER_NAME || '',
+          CompanyName: process.env.SHIPPER_NAME || '',
+          PhoneNumber1: process.env.SHIPPER_PHONE || '',
+          PhoneNumber2: '',
+          CellPhone: process.env.SHIPPER_PHONE || '',
+          EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM || '',
+          Type: '' // <-- IMPORTANT: include Type element (empty string to satisfy schema ordering)
+        }
+      },
+      Consignee: {
+        Reference1: '',
+        PartyAddress: {
+          Line1: address.line1 || (session.customer_details && session.customer_details.name ? session.customer_details.name : ''),
+          Line2: address.line2 || '',
+          Line3: '',
+          City: address.city || '',
+          StateOrProvinceCode: address.state || '',
+          PostCode: address.postal_code || '',
+          CountryCode: address.country || ''
+        },
+        Contact: {
+          PersonName: customerName || '',
+          CompanyName: customerName || '',
+          PhoneNumber1: phone || '',
+          PhoneNumber2: '',
+          CellPhone: phone || '',
+          EmailAddress: customerEmail || '',
+          Type: '' // <-- ensure presence
+        }
+      },
+      Details: {
+        ActualWeight: {
+          Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)), // e.g., 1.63, 3.26, ...
+          Unit: "KG"
+        },
+        ChargeableWeight: {
+          Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)),
+          Unit: "KG"
+        },
+        NumberOfPieces: quantity,
+        DescriptionOfGoods: "UV Car Inspection Device",
+        GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
+        ProductGroup: "EXP",
+        ProductType: "PDX",
+        PaymentType: "P" // prepaid
+      }
+    };
+
+    // Compose SOAP args according to Aramex docs — use Shipment as a single object (not array)
     const args = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER || '',
@@ -224,65 +296,19 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         ReportType: "URL"
       },
       Shipments: {
-        Shipment: [{
-          Shipper: {
-            Reference1: process.env.SHIPPER_REFERENCE || '',
-            PartyAddress: shipperAddress,
-            Contact: {
-              PersonName: process.env.SHIPPER_NAME || '',
-              CompanyName: process.env.SHIPPER_NAME || '',
-              PhoneNumber1: process.env.SHIPPER_PHONE || '',
-              PhoneNumber2: '',
-              CellPhone: process.env.SHIPPER_PHONE || '',
-              EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM || '',
-              Type: '' // <-- IMPORTANT: include Type element (empty string to satisfy schema ordering)
-            }
-          },
-          Consignee: {
-            Reference1: '',
-            PartyAddress: {
-              Line1: address.line1 || (session.customer_details && session.customer_details.name ? session.customer_details.name : ''),
-              Line2: address.line2 || '',
-              Line3: '',
-              City: address.city || '',
-              StateOrProvinceCode: address.state || '',
-              PostCode: address.postal_code || '',
-              CountryCode: address.country || ''
-            },
-            Contact: {
-              PersonName: customerName || '',
-              CompanyName: customerName || '',
-              PhoneNumber1: phone || '',
-              PhoneNumber2: '',
-              CellPhone: phone || '',
-              EmailAddress: customerEmail || '',
-              Type: '' // <-- ensure presence
-            }
-          },
-          Details: {
-            ActualWeight: {
-              Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)), // e.g., 1.63, 3.26, ...
-              Unit: "KG"
-            },
-            ChargeableWeight: {
-              Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)),
-              Unit: "KG"
-            },
-            NumberOfPieces: quantity,
-            DescriptionOfGoods: "UV Car Inspection Device",
-            GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
-            ProductGroup: "EXP",
-            ProductType: "PDX",
-            PaymentType: "P" // prepaid
-          }
-        }]
+        // Important: set Shipment as a single object. If you need to send multiple
+        // shipments in one request, you can convert to an array — but many accounts
+        // only allow one shipment per request. We normalize below as well.
+        Shipment: shipmentObj
       }
     };
 
     // Call Aramex SOAP CreateShipments
+    let client = null; // declare outer so we can inspect in catch
     try {
       // create client (use the WSDL URL). Increase timeout
-      const client = await soap.createClientAsync(ARAMEX_WSDL_URL, { timeout: 30000 });
+      client = await soap.createClientAsync(ARAMEX_WSDL_URL, { timeout: 30000 });
+
       // sometimes service endpoint is WSDL url without ?wsdl; ensure correct endpoint
       try {
         const endpoint = (process.env.ARAMEX_WSDL_URL && process.env.ARAMEX_WSDL_URL.indexOf('?') !== -1)
@@ -292,6 +318,9 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       } catch (e) {
         // ignore if cannot set endpoint
       }
+
+      // normalize shipments (safety: convert [obj] -> obj if needed)
+      normalizeShipments(args);
 
       const response = await client.CreateShipmentsAsync(args);
 
@@ -344,6 +373,14 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     } catch (err) {
       // Detailed logging for SOAP errors
       console.error('Aramex API error:', (err && err.message) ? err.message : err);
+      // Print lastRequest XML to help Aramex support diagnose if available
+      try {
+        if (client && client.lastRequest) {
+          console.error('Aramex lastRequest XML:\n', client.lastRequest);
+        }
+      } catch (e) {
+        console.error('Unable to print client.lastRequest:', e);
+      }
       if (err && err.root) {
         console.error('Aramex error root:', JSON.stringify(err.root, null, 2));
       }
