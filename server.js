@@ -31,6 +31,7 @@ const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf('?') !== -1 ? ARAMEX_WSDL_URL.sp
 
 // constants
 const WEIGHT_PER_PIECE = 1.63; // kg per piece
+const DECLARED_VALUE_PER_PIECE = 200; // AED per piece (as mentioned by user)
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || '24', 10);
 const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || '9729', 10);
 
@@ -73,7 +74,7 @@ function maskForLog(obj){
   catch(e){ return obj; }
 }
 
-// Build Aramex ShipmentCreation XML - SIMPLIFIED VERSION to fix HTTP 500
+// Build Aramex ShipmentCreation XML - COMPLETE FIX with all required elements
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
   const sc = shipment.Shipper.Contact || {};
@@ -81,7 +82,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const cc = shipment.Consignee.Contact || {};
   const d = shipment.Details || {};
 
-  // Simplified XML structure - removing complex elements that might cause HTTP 500
+  // Complete XML structure with ALL required elements (including Reference2-5)
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -99,13 +100,24 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
       </tns:ClientInfo>
       <tns:Transaction>
         <tns:Reference1>${escapeXml(transactionRef || '')}</tns:Reference1>
+        <tns:Reference2></tns:Reference2>
+        <tns:Reference3></tns:Reference3>
+        <tns:Reference4></tns:Reference4>
+        <tns:Reference5></tns:Reference5>
       </tns:Transaction>
       <tns:Shipments>
         <tns:Shipment>
+          <tns:Reference1>${escapeXml(shipment.Reference1 || '')}</tns:Reference1>
+          <tns:Reference2></tns:Reference2>
+          <tns:Reference3></tns:Reference3>
           <tns:Shipper>
+            <tns:Reference1>${escapeXml(shipment.Shipper.Reference1 || '')}</tns:Reference1>
             <tns:PartyAddress>
               <tns:Line1>${escapeXml(sa.Line1 || '')}</tns:Line1>
+              <tns:Line2>${escapeXml(sa.Line2 || '')}</tns:Line2>
+              <tns:Line3>${escapeXml(sa.Line3 || '')}</tns:Line3>
               <tns:City>${escapeXml(sa.City || '')}</tns:City>
+              <tns:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
               <tns:PostCode>${escapeXml(sa.PostCode || '')}</tns:PostCode>
               <tns:CountryCode>${escapeXml(sa.CountryCode || '')}</tns:CountryCode>
             </tns:PartyAddress>
@@ -113,13 +125,20 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:PersonName>${escapeXml(sc.PersonName || '')}</tns:PersonName>
               <tns:CompanyName>${escapeXml(sc.CompanyName || '')}</tns:CompanyName>
               <tns:PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</tns:PhoneNumber1>
+              <tns:PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</tns:PhoneNumber2>
+              <tns:CellPhone>${escapeXml(sc.CellPhone || '')}</tns:CellPhone>
               <tns:EmailAddress>${escapeXml(sc.EmailAddress || '')}</tns:EmailAddress>
+              <tns:Type>${escapeXml(sc.Type || '')}</tns:Type>
             </tns:Contact>
           </tns:Shipper>
           <tns:Consignee>
+            <tns:Reference1>${escapeXml(shipment.Consignee.Reference1 || '')}</tns:Reference1>
             <tns:PartyAddress>
               <tns:Line1>${escapeXml(ca.Line1 || '')}</tns:Line1>
+              <tns:Line2>${escapeXml(ca.Line2 || '')}</tns:Line2>
+              <tns:Line3>${escapeXml(ca.Line3 || '')}</tns:Line3>
               <tns:City>${escapeXml(ca.City || '')}</tns:City>
+              <tns:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
               <tns:PostCode>${escapeXml(ca.PostCode || '')}</tns:PostCode>
               <tns:CountryCode>${escapeXml(ca.CountryCode || '')}</tns:CountryCode>
             </tns:PartyAddress>
@@ -127,20 +146,78 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:PersonName>${escapeXml(cc.PersonName || '')}</tns:PersonName>
               <tns:CompanyName>${escapeXml(cc.CompanyName || '')}</tns:CompanyName>
               <tns:PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</tns:PhoneNumber1>
+              <tns:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</tns:PhoneNumber2>
+              <tns:CellPhone>${escapeXml(cc.CellPhone || '')}</tns:CellPhone>
               <tns:EmailAddress>${escapeXml(cc.EmailAddress || '')}</tns:EmailAddress>
+              <tns:Type>${escapeXml(cc.Type || '')}</tns:Type>
             </tns:Contact>
           </tns:Consignee>
+          <tns:ThirdParty>
+            <tns:Reference1></tns:Reference1>
+            <tns:PartyAddress>
+              <tns:Line1></tns:Line1>
+              <tns:Line2></tns:Line2>
+              <tns:Line3></tns:Line3>
+              <tns:City></tns:City>
+              <tns:StateOrProvinceCode></tns:StateOrProvinceCode>
+              <tns:PostCode></tns:PostCode>
+              <tns:CountryCode></tns:CountryCode>
+            </tns:PartyAddress>
+            <tns:Contact>
+              <tns:PersonName></tns:PersonName>
+              <tns:CompanyName></tns:CompanyName>
+              <tns:PhoneNumber1></tns:PhoneNumber1>
+              <tns:PhoneNumber2></tns:PhoneNumber2>
+              <tns:CellPhone></tns:CellPhone>
+              <tns:EmailAddress></tns:EmailAddress>
+              <tns:Type></tns:Type>
+            </tns:Contact>
+          </tns:ThirdParty>
           <tns:Details>
+            <tns:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</tns:ShippingDateTime>
             <tns:ActualWeight>
               <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
-              <tns:Unit>KG</tns:Unit>
+              <tns:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</tns:Unit>
             </tns:ActualWeight>
+            <tns:ChargeableWeight>
+              <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
+              <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</tns:Unit>
+            </tns:ChargeableWeight>
             <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
             <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
             <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</tns:GoodsOriginCountry>
-            <tns:ProductGroup>EXP</tns:ProductGroup>
-            <tns:ProductType>PDX</tns:ProductType>
-            <tns:PaymentType>P</tns:PaymentType>
+            <tns:CashOnDeliveryAmount>
+              <tns:Value>0</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
+            </tns:CashOnDeliveryAmount>
+            <tns:InsuranceAmount>
+              <tns:Value>0</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
+            </tns:InsuranceAmount>
+            <tns:CollectAmount>
+              <tns:Value>0</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
+            </tns:CollectAmount>
+            <tns:CustomsValueAmount>
+              <tns:Value>${escapeXml(d.CustomsValueAmount && d.CustomsValueAmount.Value != null ? d.CustomsValueAmount.Value : '')}</tns:Value>
+              <tns:CurrencyCode>AED</tns:CurrencyCode>
+            </tns:CustomsValueAmount>
+            <tns:ProductGroup>${escapeXml(d.ProductGroup || '')}</tns:ProductGroup>
+            <tns:ProductType>${escapeXml(d.ProductType || '')}</tns:ProductType>
+            <tns:PaymentType>${escapeXml(d.PaymentType || '')}</tns:PaymentType>
+            <tns:Services></tns:Services>
+            <tns:Items>
+              <tns:ShipmentItem>
+                <tns:PackageType>Box</tns:PackageType>
+                <tns:Quantity>${escapeXml(d.NumberOfPieces || 1)}</tns:Quantity>
+                <tns:Weight>
+                  <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
+                  <tns:Unit>KG</tns:Unit>
+                </tns:Weight>
+                <tns:Comments>${escapeXml(d.DescriptionOfGoods || '')}</tns:Comments>
+                <tns:Reference></tns:Reference>
+              </tns:ShipmentItem>
+            </tns:Items>
           </tns:Details>
         </tns:Shipment>
       </tns:Shipments>
@@ -257,6 +334,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const quantity = (fullSession && fullSession.line_items && fullSession.line_items.data && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) ? fullSession.line_items.data[0].quantity : (session.quantity || 1);
 
     const totalWeight = parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2));
+    const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE; // 200 AED per piece
 
     const shipperAddress = {
       Line1: process.env.SHIPPER_LINE1 || '',
@@ -300,6 +378,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     };
 
     const shipmentObj = {
+      Reference1: session.id || '', // Add Reference1 for shipment
       Shipper: { Reference1: process.env.SHIPPER_REFERENCE || '', PartyAddress: shipperAddress, Contact: shipperContact },
       Consignee: { Reference1: '', PartyAddress: consigneeAddress, Contact: consigneeContact },
       Details: {
@@ -309,8 +388,9 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         NumberOfPieces: quantity,
         DescriptionOfGoods: "UV Car Inspection Device",
         GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
-        ProductGroup: "EXP",
-        ProductType: "PDX",
+        CustomsValueAmount: { Value: totalDeclaredValue, CurrencyCode: "AED" }, // Declared value as mentioned by user
+        ProductGroup: "EXP", // Express
+        ProductType: "PPX", // Priority Parcel Express (Parcel type as mentioned by user)
         PaymentType: "P" // prepaid
       }
     };
@@ -327,7 +407,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // Create Aramex shipment - SIMPLIFIED VERSION to fix HTTP 500
+    // Create Aramex shipment - COMPLETE VERSION with all required elements
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
@@ -337,8 +417,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       console.log('→ Shipment details:', JSON.stringify(maskForLog({
         quantity,
         weight: totalWeight,
+        declaredValue: totalDeclaredValue,
         destination: consigneeAddress.CountryCode,
-        account: clientInfo.AccountNumber
+        account: clientInfo.AccountNumber,
+        productType: 'PPX (Parcel)'
       })));
 
       const xml = buildShipmentCreationXml({
@@ -349,7 +431,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       });
 
       console.log('→ XML length:', xml.length, 'characters');
-      console.log('→ Sending simplified XML to Aramex...');
+      console.log('→ Sending complete XML with all required elements to Aramex...');
 
       // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
       const headers = {
@@ -426,7 +508,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     // Send email notification (if configured)
     if (process.env.SENDGRID_API_KEY && customerEmail) {
       try {
-        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n`;
+        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n- Declared Value: ${totalDeclaredValue} AED\n`;
         
         if (trackingId) {
           emailContent += `\nShipping Information:\n- Tracking ID: ${trackingId}\n`;
