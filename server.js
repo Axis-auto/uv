@@ -316,20 +316,20 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     };
 
     const consigneeAddress = {
-      Line1: address.line1 || (session.customer_details && session.customer_details.name ? session.customer_details.name : ''),
-      Line2: address.line2 || '',
-      Line3: '',
-      City: address.city || '',
-      StateOrProvinceCode: address.state || '',
-      PostCode: address.postal_code || '',
-      CountryCode: address.country || ''
+      Line1: (session.shipping && session.shipping.address && session.shipping.address.line1) ? session.shipping.address.line1 : (address.line1 || (session.customer_details && session.customer_details.name ? session.customer_details.name : "")),
+      Line2: (session.shipping && session.shipping.address && session.shipping.address.line2) ? session.shipping.address.line2 : (address.line2 || ""),
+      Line3: ",
+      City: (session.shipping && session.shipping.address && session.shipping.address.city) ? session.shipping.address.city : (address.city || ""),
+      StateOrProvinceCode: (session.shipping && session.shipping.address && session.shipping.address.state) ? session.shipping.address.state : (address.state || ""),
+      PostCode: (session.shipping && session.shipping.address && session.shipping.address.postal_code) ? session.shipping.address.postal_code : (address.postal_code || ""),
+      CountryCode: (session.shipping && session.shipping.address && session.shipping.address.country) ? session.shipping.address.country : (address.country || "")
     };
     const consigneeContact = {
-      PersonName: customerName || '',
-      CompanyName: customerName || '',
-      PhoneNumber1: phone || '',
+      PersonName: (session.shipping && session.shipping.name) ? session.shipping.name : (customerName || ""),
+      CompanyName: (session.shipping && session.shipping.name) ? session.shipping.name : (customerName || ""),
+      PhoneNumber1: (session.shipping && session.shipping.address && session.shipping.address.phone) ? session.shipping.address.phone : (phone || ""),
       PhoneNumber2: '',
-      CellPhone: phone || '',
+      CellPhone: (session.shipping && session.shipping.address && session.shipping.address.phone) ? session.shipping.address.phone : (phone || ""),
       EmailAddress: customerEmail || '',
       Type: ''
     };
@@ -384,7 +384,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
         const headers = {
           'Content-Type': 'text/xml; charset=utf-8',
-          'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/CreateShipments'
+          'SOAPAction': 'http://tempuri.org/IShipmentAPIService/CreateShipments'
         };
         const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
 
