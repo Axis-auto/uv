@@ -74,7 +74,7 @@ function maskForLog(obj){
   catch(e){ return obj; }
 }
 
-// Build Aramex ShipmentCreation XML - COMPLETE FIX with all required elements
+// Build Aramex ShipmentCreation XML - CORRECT ORDER based on WSDL
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
   const sc = shipment.Shipper.Contact || {};
@@ -82,7 +82,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const cc = shipment.Consignee.Contact || {};
   const d = shipment.Details || {};
 
-  // Complete XML structure with ALL required elements (including Reference2-5)
+  // CORRECT XML structure with proper element order based on WSDL
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -173,8 +173,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Type></tns:Type>
             </tns:Contact>
           </tns:ThirdParty>
+          <tns:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</tns:ShippingDateTime>
+          <tns:Comments>${escapeXml(d.DescriptionOfGoods || '')}</tns:Comments>
+          <tns:PickupLocation></tns:PickupLocation>
+          <tns:OperationsInstructions></tns:OperationsInstructions>
+          <tns:AccountingInstrcutions></tns:AccountingInstrcutions>
           <tns:Details>
-            <tns:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</tns:ShippingDateTime>
             <tns:ActualWeight>
               <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
               <tns:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</tns:Unit>
@@ -407,7 +411,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // Create Aramex shipment - COMPLETE VERSION with all required elements
+    // Create Aramex shipment - CORRECT ORDER VERSION based on WSDL
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
@@ -431,7 +435,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       });
 
       console.log('→ XML length:', xml.length, 'characters');
-      console.log('→ Sending complete XML with all required elements to Aramex...');
+      console.log('→ Sending XML with CORRECT element order based on WSDL...');
 
       // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
       const headers = {
