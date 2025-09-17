@@ -98,6 +98,68 @@ function normalizeShipments(args) {
   return args;
 }
 
+// ---------------------- Utility: retry logic for REQ39 ----------------------
+/**
+ * Attempt CreateShipments, but if Aramex returns REQ39 (exceeded number of shipments)
+ * retry by converting Shipment into an array or vice versa.
+ * Returns the response object from Aramex or throws.
+ */
+async function callCreateShipmentsWithRetry(client, originalArgs) {
+  // clone args shallow (we'll replace Shipments as needed)
+  const args = JSON.parse(JSON.stringify(originalArgs));
+
+  // Helper to check if notifications contain REQ39
+  function hasREQ39(res) {
+    if (!res) return false;
+    const notifs = res.Notifications || res.Notification || null;
+    // Aramex often returns Notifications.Notification as array
+    const arr = (res.Notifications && res.Notifications.Notification) || (res.Notification) || null;
+    if (!arr) return false;
+    const list = Array.isArray(arr) ? arr : [arr];
+    return list.some(n => n && n.Code && n.Code.toString().toUpperCase().includes('REQ39'));
+  }
+
+  // First attempt: use normalizeShipments (single object if length==1)
+  normalizeShipments(args);
+  try {
+    const response = await client.CreateShipmentsAsync(args);
+    const result = response && response[0] ? response[0] : null;
+    if (result && result.HasErrors && hasREQ39(result)) {
+      console.warn('Aramex returned REQ39 on first attempt. Will retry with Shipment wrapped as array.');
+      // fallthrough to retry
+    } else {
+      return response;
+    }
+  } catch (err) {
+    // network/soap-level error — log and fallthrough to retry attempt if it's possible
+    console.error('CreateShipmentsAsync attempt 1 failed with error:', err && err.message ? err.message : err);
+    // attempt retry below
+  }
+
+  // Retry attempt: ensure Shipment is an array and try again
+  try {
+    // convert single shipment object to array if needed
+    if (args && args.Shipments) {
+      const s = args.Shipments.Shipment;
+      if (!Array.isArray(s)) args.Shipments.Shipment = [s];
+    }
+
+    const response2 = await client.CreateShipmentsAsync(args);
+    const result2 = response2 && response2[0] ? response2[0] : null;
+
+    if (result2 && result2.HasErrors && hasREQ39(result2)) {
+      // Still failing with REQ39 — give up and return the response for inspection
+      console.error('Retry also returned REQ39. Returning final response for logging.');
+      return response2;
+    }
+
+    return response2;
+  } catch (err) {
+    console.error('CreateShipmentsAsync retry failed:', err && err.message ? err.message : err);
+    throw err; // bubble up — caller will log lastRequest etc
+  }
+}
+
 // ---------- Create Checkout Session ----------
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
@@ -273,7 +335,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       }
     };
 
-    // Compose SOAP args according to Aramex docs — use Shipment as a single object (not array)
+    // Compose SOAP args according to Aramex docs — start with Shipment as object
     const args = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER || '',
@@ -296,33 +358,23 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         ReportType: "URL"
       },
       Shipments: {
-        // Important: set Shipment as a single object. If you need to send multiple
-        // shipments in one request, you can convert to an array — but many accounts
-        // only allow one shipment per request. We normalize below as well.
         Shipment: shipmentObj
       }
     };
 
-    // Call Aramex SOAP CreateShipments
-    let client = null; // declare outer so we can inspect in catch
+    // Call Aramex SOAP CreateShipments with smart retry (object <-> array) and detailed logging
+    let client = null;
     try {
-      // create client (use the WSDL URL). Increase timeout
       client = await soap.createClientAsync(ARAMEX_WSDL_URL, { timeout: 30000 });
 
-      // sometimes service endpoint is WSDL url without ?wsdl; ensure correct endpoint
       try {
         const endpoint = (process.env.ARAMEX_WSDL_URL && process.env.ARAMEX_WSDL_URL.indexOf('?') !== -1)
           ? process.env.ARAMEX_WSDL_URL.split('?')[0]
           : process.env.ARAMEX_WSDL_URL;
         client.setEndpoint(endpoint);
-      } catch (e) {
-        // ignore if cannot set endpoint
-      }
+      } catch (e) { /* ignore */ }
 
-      // normalize shipments (safety: convert [obj] -> obj if needed)
-      normalizeShipments(args);
-
-      const response = await client.CreateShipmentsAsync(args);
+      const response = await callCreateShipmentsWithRetry(client, args);
 
       console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));
 
@@ -332,25 +384,20 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         console.error('Aramex: empty response or unexpected format.', response);
       } else if (result.HasErrors) {
         console.error('Aramex shipment creation failed:', result.Notifications || result);
-        // Optionally: send internal alert email to admin if configured
       } else {
         // success path
         const processed = result.ProcessedShipment || result.ProcessedShipments || null;
-        // Depending on WSDL, ProcessedShipment may be object or array — attempt to extract tracking
         let trackingNumber = 'N/A';
         let trackingUrl = 'N/A';
         if (processed) {
-          // If processed is array or object
           const p = Array.isArray(processed) ? processed[0] : processed;
           if (p && p.ID) trackingNumber = p.ID;
           if (p && p.ShipmentLabel && p.ShipmentLabel.LabelURL) trackingUrl = p.ShipmentLabel.LabelURL;
           if (p && p.ShipmentLabel && p.ShipmentLabel.Contents && typeof p.ShipmentLabel.Contents === 'string') {
-            // fallback if LabelURL not present
             trackingUrl = trackingUrl === 'N/A' ? 'Label generated' : trackingUrl;
           }
         }
 
-        // send confirmation email via SendGrid
         try {
           if (!process.env.SENDGRID_API_KEY) {
             console.warn('SendGrid API key not configured - skipping customer email.');
@@ -371,20 +418,16 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         }
       }
     } catch (err) {
-      // Detailed logging for SOAP errors
-      console.error('Aramex API error:', (err && err.message) ? err.message : err);
-      // Print lastRequest XML to help Aramex support diagnose if available
+      console.error('Aramex API error (outer):', (err && err.message) ? err.message : err);
       try {
         if (client && client.lastRequest) {
-          console.error('Aramex lastRequest XML:\n', client.lastRequest);
+          console.error('Aramex lastRequest XML:
+', client.lastRequest);
         }
       } catch (e) {
         console.error('Unable to print client.lastRequest:', e);
       }
-      if (err && err.root) {
-        console.error('Aramex error root:', JSON.stringify(err.root, null, 2));
-      }
-      // Do not throw — just log; webhook should still return 200 to Stripe if processed
+      if (err && err.root) console.error('Aramex error root:', JSON.stringify(err.root, null, 2));
     }
   }
 
