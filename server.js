@@ -88,7 +88,11 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const height = 15; // cm
 
   // CORRECT XML structure with Dimensions element BEFORE ActualWeight
-  // Ensure DescriptionOfGoods then GoodsOriginCountry then NumberOfPieces (Aramex expectations)
+  // Re-ordered Details to match Aramex expectations:
+  // Dimensions -> ActualWeight -> ChargeableWeight -> DescriptionOfGoods -> GoodsOriginCountry -> NumberOfPieces
+  // -> ProductGroup -> ProductType -> PaymentType
+  // -> CashOnDeliveryAmount -> InsuranceAmount -> CollectAmount -> CustomsValueAmount
+  // -> Services -> Items
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -199,10 +203,17 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</tns:Unit>
               <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
             </tns:ChargeableWeight>
-            <!-- Ordered to satisfy Aramex: DescriptionOfGoods -> GoodsOriginCountry -> NumberOfPieces -->
+
+            <!-- Ordered to satisfy Aramex expectations -->
             <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
             <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</tns:GoodsOriginCountry>
             <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
+
+            <!-- Product info before monetary amounts (fix for Aramex deserialization) -->
+            <tns:ProductGroup>${escapeXml(d.ProductGroup || '')}</tns:ProductGroup>
+            <tns:ProductType>${escapeXml(d.ProductType || '')}</tns:ProductType>
+            <tns:PaymentType>${escapeXml(d.PaymentType || '')}</tns:PaymentType>
+
             <tns:CashOnDeliveryAmount>
               <tns:Value>0</tns:Value>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
@@ -215,13 +226,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Value>0</tns:Value>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:CollectAmount>
+
             <tns:CustomsValueAmount>
               <tns:Value>${escapeXml(d.CustomsValueAmount && d.CustomsValueAmount.Value != null ? d.CustomsValueAmount.Value : '')}</tns:Value>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:CustomsValueAmount>
-            <tns:ProductGroup>${escapeXml(d.ProductGroup || '')}</tns:ProductGroup>
-            <tns:ProductType>${escapeXml(d.ProductType || '')}</tns:ProductType>
-            <tns:PaymentType>${escapeXml(d.PaymentType || '')}</tns:PaymentType>
+
             <tns:Services></tns:Services>
             <tns:Items>
               <tns:ShipmentItem>
