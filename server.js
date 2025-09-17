@@ -1,4 +1,4 @@
-// server.js — Final (build Aramex XML manually; keep Stripe & email behavior unchanged)
+// server.js — Aramex XML with soapenv/v1 prefixes + SOAPAction + detailed error logs
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -36,8 +36,8 @@ const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || '24', 10);
 const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || '9729', 10);
 const MAX_PER_REQUEST = parseInt(process.env.ARAMEX_MAX_SHIPMENTS_PER_REQUEST || '50', 10);
 
-// Full allowed countries for Stripe shipping collection
-const allowedCountries = [ 
+// Full allowed countries for Stripe shipping collection (kept)
+const allowedCountries = [ /* full list same as before — keep it */ 
   'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
   'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
   'CA','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CV','CW','CY','CZ',
@@ -75,7 +75,7 @@ function maskForLog(obj){
   catch(e){ return obj; }
 }
 
-// build Aramex ShipmentCreation XML (shipments is array of shipmentObj)
+// Build Aramex ShipmentCreation XML with soapenv and v1 prefixes (matches Aramex examples)
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipments }) {
   const shipmentsXml = shipments.map(sh=>{
     const sa = sh.Shipper.PartyAddress || {};
@@ -85,106 +85,108 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
     const d = sh.Details || {};
 
     return `
-      <Shipment>
-        <Shipper>
-          <Reference1>${escapeXml(sh.Shipper.Reference1 || '')}</Reference1>
-          <PartyAddress>
-            <Line1>${escapeXml(sa.Line1 || '')}</Line1>
-            <Line2>${escapeXml(sa.Line2 || '')}</Line2>
-            <Line3>${escapeXml(sa.Line3 || '')}</Line3>
-            <City>${escapeXml(sa.City || '')}</City>
-            <StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</StateOrProvinceCode>
-            <PostCode>${escapeXml(sa.PostCode || '')}</PostCode>
-            <CountryCode>${escapeXml(sa.CountryCode || '')}</CountryCode>
-            <ResidenceType>${escapeXml(sa.ResidenceType || '')}</ResidenceType>
-          </PartyAddress>
-          <Contact>
-            <PersonName>${escapeXml(sc.PersonName || '')}</PersonName>
-            <CompanyName>${escapeXml(sc.CompanyName || '')}</CompanyName>
-            <PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</PhoneNumber1>
-            <PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</PhoneNumber2>
-            <CellPhone>${escapeXml(sc.CellPhone || '')}</CellPhone>
-            <EmailAddress>${escapeXml(sc.EmailAddress || '')}</EmailAddress>
-            <Type>${escapeXml(sc.Type || '')}</Type>
-          </Contact>
-        </Shipper>
+      <v1:Shipment>
+        <v1:Shipper>
+          <v1:Reference1>${escapeXml(sh.Shipper.Reference1 || '')}</v1:Reference1>
+          <v1:PartyAddress>
+            <v1:Line1>${escapeXml(sa.Line1 || '')}</v1:Line1>
+            <v1:Line2>${escapeXml(sa.Line2 || '')}</v1:Line2>
+            <v1:Line3>${escapeXml(sa.Line3 || '')}</v1:Line3>
+            <v1:City>${escapeXml(sa.City || '')}</v1:City>
+            <v1:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
+            <v1:PostCode>${escapeXml(sa.PostCode || '')}</v1:PostCode>
+            <v1:CountryCode>${escapeXml(sa.CountryCode || '')}</v1:CountryCode>
+            <v1:ResidenceType>${escapeXml(sa.ResidenceType || '')}</v1:ResidenceType>
+          </v1:PartyAddress>
+          <v1:Contact>
+            <v1:PersonName>${escapeXml(sc.PersonName || '')}</v1:PersonName>
+            <v1:CompanyName>${escapeXml(sc.CompanyName || '')}</v1:CompanyName>
+            <v1:PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</v1:PhoneNumber1>
+            <v1:PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</v1:PhoneNumber2>
+            <v1:CellPhone>${escapeXml(sc.CellPhone || '')}</v1:CellPhone>
+            <v1:EmailAddress>${escapeXml(sc.EmailAddress || '')}</v1:EmailAddress>
+            <v1:Type>${escapeXml(sc.Type || '')}</v1:Type>
+          </v1:Contact>
+        </v1:Shipper>
 
-        <Consignee>
-          <Reference1>${escapeXml(sh.Consignee.Reference1 || '')}</Reference1>
-          <PartyAddress>
-            <Line1>${escapeXml(ca.Line1 || '')}</Line1>
-            <Line2>${escapeXml(ca.Line2 || '')}</Line2>
-            <Line3>${escapeXml(ca.Line3 || '')}</Line3>
-            <City>${escapeXml(ca.City || '')}</City>
-            <StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</StateOrProvinceCode>
-            <PostCode>${escapeXml(ca.PostCode || '')}</PostCode>
-            <CountryCode>${escapeXml(ca.CountryCode || '')}</CountryCode>
-          </PartyAddress>
-          <Contact>
-            <PersonName>${escapeXml(cc.PersonName || '')}</PersonName>
-            <CompanyName>${escapeXml(cc.CompanyName || '')}</CompanyName>
-            <PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</PhoneNumber1>
-            <PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</PhoneNumber2>
-            <CellPhone>${escapeXml(cc.CellPhone || '')}</CellPhone>
-            <EmailAddress>${escapeXml(cc.EmailAddress || '')}</EmailAddress>
-            <Type>${escapeXml(cc.Type || '')}</Type>
-          </Contact>
-        </Consignee>
+        <v1:Consignee>
+          <v1:Reference1>${escapeXml(sh.Consignee.Reference1 || '')}</v1:Reference1>
+          <v1:PartyAddress>
+            <v1:Line1>${escapeXml(ca.Line1 || '')}</v1:Line1>
+            <v1:Line2>${escapeXml(ca.Line2 || '')}</v1:Line2>
+            <v1:Line3>${escapeXml(ca.Line3 || '')}</v1:Line3>
+            <v1:City>${escapeXml(ca.City || '')}</v1:City>
+            <v1:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
+            <v1:PostCode>${escapeXml(ca.PostCode || '')}</v1:PostCode>
+            <v1:CountryCode>${escapeXml(ca.CountryCode || '')}</v1:CountryCode>
+          </v1:PartyAddress>
+          <v1:Contact>
+            <v1:PersonName>${escapeXml(cc.PersonName || '')}</v1:PersonName>
+            <v1:CompanyName>${escapeXml(cc.CompanyName || '')}</v1:CompanyName>
+            <v1:PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</v1:PhoneNumber1>
+            <v1:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</v1:PhoneNumber2>
+            <v1:CellPhone>${escapeXml(cc.CellPhone || '')}</v1:CellPhone>
+            <v1:EmailAddress>${escapeXml(cc.EmailAddress || '')}</v1:EmailAddress>
+            <v1:Type>${escapeXml(cc.Type || '')}</v1:Type>
+          </v1:Contact>
+        </v1:Consignee>
 
-        <Details>
-          <ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</ShippingDateTime>
-          <ActualWeight>
-            <Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</Value>
-            <Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</Unit>
-          </ActualWeight>
-          <ChargeableWeight>
-            <Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</Value>
-            <Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</Unit>
-          </ChargeableWeight>
-          <NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</NumberOfPieces>
-          <DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</DescriptionOfGoods>
-          <GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</GoodsOriginCountry>
-          <ProductGroup>${escapeXml(d.ProductGroup || '')}</ProductGroup>
-          <ProductType>${escapeXml(d.ProductType || '')}</ProductType>
-          <PaymentType>${escapeXml(d.PaymentType || '')}</PaymentType>
-        </Details>
-      </Shipment>`;
+        <v1:Details>
+          <v1:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</v1:ShippingDateTime>
+          <v1:ActualWeight>
+            <v1:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</v1:Value>
+            <v1:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</v1:Unit>
+          </v1:ActualWeight>
+          <v1:ChargeableWeight>
+            <v1:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</v1:Value>
+            <v1:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</v1:Unit>
+          </v1:ChargeableWeight>
+          <v1:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</v1:NumberOfPieces>
+          <v1:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</v1:DescriptionOfGoods>
+          <v1:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</v1:GoodsOriginCountry>
+          <v1:ProductGroup>${escapeXml(d.ProductGroup || '')}</v1:ProductGroup>
+          <v1:ProductType>${escapeXml(d.ProductType || '')}</v1:ProductType>
+          <v1:PaymentType>${escapeXml(d.PaymentType || '')}</v1:PaymentType>
+        </v1:Details>
+      </v1:Shipment>`;
   }).join('\n');
 
+  // Envelope uses soapenv and v1 namespaces (matches Aramex docs/examples)
   const xml = `<?xml version="1.0" encoding="utf-8"?>
-  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
-    <soap:Body>
-      <ShipmentCreationRequest xmlns="http://ws.aramex.net/ShippingAPI/v1/">
-        <ClientInfo>
-          <UserName>${escapeXml(clientInfo.UserName || '')}</UserName>
-          <Password>${escapeXml(clientInfo.Password || '')}</Password>
-          <Version>${escapeXml(clientInfo.Version || '')}</Version>
-          <AccountNumber>${escapeXml(clientInfo.AccountNumber || '')}</AccountNumber>
-          <AccountPin>${escapeXml(clientInfo.AccountPin || '')}</AccountPin>
-          <AccountEntity>${escapeXml(clientInfo.AccountEntity || '')}</AccountEntity>
-          <AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || '')}</AccountCountryCode>
-          <Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : '')}</Source>
-        </ClientInfo>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.aramex.net/ShippingAPI/v1/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <v1:ShipmentCreationRequest>
+      <v1:ClientInfo>
+        <v1:UserName>${escapeXml(clientInfo.UserName || '')}</v1:UserName>
+        <v1:Password>${escapeXml(clientInfo.Password || '')}</v1:Password>
+        <v1:Version>${escapeXml(clientInfo.Version || '')}</v1:Version>
+        <v1:AccountNumber>${escapeXml(clientInfo.AccountNumber || '')}</v1:AccountNumber>
+        <v1:AccountPin>${escapeXml(clientInfo.AccountPin || '')}</v1:AccountPin>
+        <v1:AccountEntity>${escapeXml(clientInfo.AccountEntity || '')}</v1:AccountEntity>
+        <v1:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || '')}</v1:AccountCountryCode>
+        <v1:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : '')}</v1:Source>
+      </v1:ClientInfo>
 
-        <Transaction>
-          <Reference1>${escapeXml(transactionRef || '')}</Reference1>
-          <Reference2></Reference2>
-          <Reference3></Reference3>
-          <Reference4></Reference4>
-          <Reference5></Reference5>
-        </Transaction>
+      <v1:Transaction>
+        <v1:Reference1>${escapeXml(transactionRef || '')}</v1:Reference1>
+        <v1:Reference2></v1:Reference2>
+        <v1:Reference3></v1:Reference3>
+        <v1:Reference4></v1:Reference4>
+        <v1:Reference5></v1:Reference5>
+      </v1:Transaction>
 
-        <LabelInfo>
-          <ReportID>${escapeXml(labelReportId)}</ReportID>
-          <ReportType>URL</ReportType>
-        </LabelInfo>
+      <v1:LabelInfo>
+        <v1:ReportID>${escapeXml(labelReportId)}</v1:ReportID>
+        <v1:ReportType>URL</v1:ReportType>
+      </v1:LabelInfo>
 
-        <Shipments>
-          ${shipmentsXml}
-        </Shipments>
-      </ShipmentCreationRequest>
-    </soap:Body>
-  </soap:Envelope>`;
+      <v1:Shipments>
+        ${shipmentsXml}
+      </v1:Shipments>
+    </v1:ShipmentCreationRequest>
+  </soapenv:Body>
+</soapenv:Envelope>`;
 
   return xml;
 }
@@ -209,8 +211,22 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
     const unitAmount = Math.floor(totalAmount / quantity);
 
     const shipping_options = (quantity === 1)
-      ? [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: c.shipping, currency }, display_name: 'Standard Shipping', delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } } } }]
-      : [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: 0, currency }, display_name: 'Free Shipping', delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } } } }];
+      ? [{
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: c.shipping, currency },
+            display_name: 'Standard Shipping',
+            delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } }
+          }
+        }]
+      : [{
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: 0, currency },
+            display_name: 'Free Shipping',
+            delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } }
+          }
+        }];
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -261,21 +277,23 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    // gather customer info from Stripe session
     const customerEmail = session.customer_details && session.customer_details.email ? session.customer_details.email : '';
     const customerName = session.customer_details && session.customer_details.name ? session.customer_details.name : '';
     const address = session.customer_details && session.customer_details.address ? session.customer_details.address : {};
     const phone = session.customer_details && session.customer_details.phone ? session.customer_details.phone : (session.customer ? session.customer.phone : '');
 
-    // try retrieve full session for quantity (best effort)
-    let fullSession = null;
-    try { fullSession = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items'] }); } catch (e) { console.warn('Full session retrieve failed:', e && e.message ? e.message : e); }
+    // get full session for quantity
+    let fullSession;
+    try {
+      fullSession = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items'] });
+    } catch (err) {
+      console.warn('Could not retrieve full Stripe session (non-fatal):', err && err.message ? err.message : err);
+      fullSession = null;
+    }
     const quantity = (fullSession && fullSession.line_items && fullSession.line_items.data && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) ? fullSession.line_items.data[0].quantity : (session.quantity || 1);
 
-    // compute weights
     const totalWeight = parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2));
 
-    // build shipment object(s) — shipper read from env; consignee from Stripe
     const shipperAddress = {
       Line1: process.env.SHIPPER_LINE1 || '',
       Line2: process.env.SHIPPER_LINE2 || '',
@@ -286,6 +304,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       CountryCode: process.env.SHIPPER_COUNTRY_CODE || '',
       ResidenceType: process.env.SHIPPER_RESIDENCE_TYPE || 'Business'
     };
+
     const shipperContact = {
       PersonName: process.env.SHIPPER_NAME || '',
       CompanyName: process.env.SHIPPER_NAME || '',
@@ -343,7 +362,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // If you have many shipments in future, chunk them
     const shipmentsArray = [ shipmentObj ];
     const chunks = chunkArray(shipmentsArray, MAX_PER_REQUEST);
     console.log(`→ Will send ${shipmentsArray.length} shipment(s) in ${chunks.length} request(s)`);
@@ -353,7 +371,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-
       const xml = buildShipmentCreationXml({
         clientInfo,
         transactionRef: session.id || '',
@@ -361,23 +378,25 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         shipments: chunk
       });
 
-      // log sanitized preview
       console.log(`→ Sending Aramex XML chunk ${i+1}/${chunks.length} (sanitized):`, JSON.stringify(maskForLog({ AccountNumber: clientInfo.AccountNumber, UserName: clientInfo.UserName })));
 
       try {
-        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers: { 'Content-Type': 'text/xml; charset=utf-8' }, timeout: 30000 });
+        // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
+        const headers = {
+          'Content-Type': 'text/xml; charset=utf-8',
+          'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/CreateShipments'
+        };
+        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
 
-        // log response snippet
-        if (resp && resp.data) console.log(`⤷ Aramex raw response (snippet):`, (typeof resp.data === 'string' ? resp.data.substring(0,1800) : JSON.stringify(resp.data).substring(0,1800)));
+        if (resp && resp.data) console.log(`⤷ Aramex raw response (snippet):`, (typeof resp.data === 'string' ? resp.data.substring(0,2000) : JSON.stringify(resp.data).substring(0,2000)));
 
-        // parse response
         let parsed = null;
         try { parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true }); } catch (e) { console.warn('Could not parse Aramex response XML:', e && e.message ? e.message : e); }
 
-        // find notifications heuristically
+        // look for Notifications or ProcessedShipment
         let notes = [];
         try {
-          const body = parsed && (parsed['soap:Envelope'] && parsed['soap:Envelope']['soap:Body'] ? parsed['soap:Envelope']['soap:Body'] : parsed);
+          const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
           const respRoot = body && (body.ShipmentCreationResponse || body);
           if (respRoot && respRoot.Notifications && respRoot.Notifications.Notification) {
             notes = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
@@ -389,27 +408,33 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         if (notes && notes.length) {
           console.error('Aramex returned Notifications:', notes);
           allNotifications.push(...notes);
-          // special log for REQ39
           notes.forEach(n => { if (n.Code && String(n.Code).includes('REQ39')) {
             console.error('→ REQ39 detected. Sent XML (first 2000 chars):', xml.substring(0,2000));
           }});
-          continue; // skip to next chunk
+          continue;
         }
 
-        // try to extract ProcessedShipment / ProcessedShipments
+        // Try extract processed shipments
         try {
-          const body = parsed && (parsed['soap:Envelope'] && parsed['soap:Envelope']['soap:Body'] ? parsed['soap:Envelope']['soap:Body'] : parsed);
+          const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
           const respRoot = body && (body.ShipmentCreationResponse || body);
           const processed = respRoot && (respRoot.ProcessedShipment || respRoot.ProcessedShipments) ? (respRoot.ProcessedShipment || respRoot.ProcessedShipments) : null;
           if (processed) {
             if (Array.isArray(processed)) {
-              processed.forEach(p => { const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A'); const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A'; allTrackings.push({ id, url }); });
+              processed.forEach(p => {
+                const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A');
+                const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A';
+                allTrackings.push({ id, url });
+              });
             } else {
-              const p = processed; const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A'); const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A'; allTrackings.push({ id, url });
+              const p = processed;
+              const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A');
+              const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A';
+              allTrackings.push({ id, url });
             }
           } else {
-            console.warn('No ProcessedShipment found in Aramex response for chunk', i+1);
-            allNotifications.push({ Code: 'NO_PROCESSED', Message: `No ProcessedShipment in response chunk ${i+1}` });
+            console.warn('No ProcessedShipment found for chunk', i+1);
+            allNotifications.push({ Code: 'NO_PROCESSED', Message: 'No ProcessedShipment' });
           }
         } catch (e) {
           console.error('Error extracting processed shipments:', e && e.message ? e.message : e);
@@ -417,12 +442,21 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         }
 
       } catch (err) {
-        console.error('Aramex HTTP error:', (err && err.message) ? err.message : err);
+        // Improved error logs: show status and response body (SOAP Fault often comes back with HTTP 500)
+        console.error(`Aramex HTTP call error for chunk ${i+1}:`, (err && err.message) ? err.message : err);
+        if (err.response) {
+          try {
+            console.error('Aramex response status:', err.response.status);
+            const respData = typeof err.response.data === 'string' ? err.response.data : JSON.stringify(err.response.data);
+            console.error('Aramex response data (snippet):', respData.substring(0,4000));
+          } catch (e) { console.error('Could not log err.response.data:', e && e.message ? e.message : e); }
+        }
+        console.error('Sent XML (first 2000 chars):', xml.substring(0,2000));
         allNotifications.push({ Code: 'HTTP_ERROR', Message: (err && err.message) ? err.message : 'Unknown' });
       }
     } // end chunks
 
-    // send email (kept same logic you had)
+    // Send email (kept same logic)
     if (allTrackings.length) {
       try {
         if (process.env.SENDGRID_API_KEY) {
@@ -438,17 +472,16 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           await sgMail.send(msg);
           console.log('📧 Email sent to', customerEmail);
         } else {
-          console.warn('SendGrid not configured — skipping email send.');
+          console.warn('SendGrid not configured - skipping email.');
         }
-      } catch (e) {
-        console.error('SendGrid send error:', e && e.message ? e.message : e);
+      } catch (err) {
+        console.error('SendGrid send error:', err && err.message ? err.message : err);
       }
     } else {
       console.error('No tracking numbers generated. Notifications:', allNotifications);
     }
-  } // end if checkout.session.completed
+  }
 
-  // respond to Stripe
   res.json({ received: true });
 });
 
@@ -460,5 +493,5 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
 
 // global handlers
-process.on('unhandledRejection', (r, p) => console.error('Unhandled Rejection', r, p));
-process.on('uncaughtException', (err) => console.error('Uncaught Exception', err));
+process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at Promise', p, 'reason:', reason));
+process.on('uncaughtException', (err) => console.error('Uncaught Exception thrown:', err));
