@@ -154,7 +154,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Line2: "(Registration Village)",  // هذا ثابت، يمكن جعله متغير إذا أردت
       Line3: "Ground Floor - Shop No. 5&6",  // هذا ثابت، يمكن جعله متغير
       City: process.env.SHIPPER_CITY,
-      StateOrProvinceCode: "IST",  // افتراضي لإسطنبول، يمكن جعله متغير إذا لزم
+      StateOrProvinceCode: "",  // غير إلى فارغ لتجنب خطأ (كان "IST" خاطئ لـ Sharjah, AE)
       PostCode: process.env.SHIPPER_POSTCODE,
       CountryCode: process.env.SHIPPER_COUNTRY_CODE,
       ResidenceType: "Business"  // افتراضي، يمكن تعديله
@@ -171,69 +171,71 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       ClientInfo: {
         UserName: process.env.ARAMEX_USER,
         Password: process.env.ARAMEX_PASSWORD,
-        Version: process.env.ARAMEX_VERSION,  // مثل 'v1.0' أو 'v2.0' - جرب تغييرها إلى 'v1.0' في متغيرات البيئة إذا استمر الخطأ
+        Version: process.env.ARAMEX_VERSION,  // 'v2.0' أو 'v1.0' حسب WSDL
         AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
       },
-      Transaction: {  // تم إضافة جميع الـ References حتى لو فارغة لتجنب خطأ deserialization
+      Transaction: {  // تم إضافة جميع الـ References حتى لو فارغة
         Reference1: session.id,  // استخدم ID جلسة Stripe
         Reference2: '',  // فارغ
         Reference3: '',  // فارغ
         Reference4: '',  // فارغ
         Reference5: ''   // فارغ
-        // إذا نجح الاختبار بدون Transaction، يمكنك حذف هذا الكائن بالكامل (الحل البديل)
+        // إذا استمر الخطأ، احذف Transaction تماماً (اختياري)
       },
       LabelInfo: {
         ReportID: 9729,
         ReportType: "URL",
       },
-      Shipments: [{
-        Shipper: {
-          Reference1: process.env.SHIPPER_REFERENCE || '',  // من متغيراتك البيئية
-          PartyAddress: shipperAddress,
-          Contact: {
-            PersonName: process.env.SHIPPER_NAME,
-            CompanyName: process.env.SHIPPER_NAME,  // مطلوب؛ استخدم الاسم كشركة
-            PhoneNumber1: process.env.SHIPPER_PHONE,
-            PhoneNumber2: '',  // فارغ OK
-            CellPhone: process.env.SHIPPER_PHONE,
-            EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
+      Shipments: {
+        Shipment: [{  // أضفت "Shipment" صراحة داخل "Shipments" ليولد <Shipments><Shipment>...</Shipment></Shipments>
+          Shipper: {
+            Reference1: process.env.SHIPPER_REFERENCE || '',  // من متغيراتك البيئية
+            PartyAddress: shipperAddress,
+            Contact: {
+              PersonName: process.env.SHIPPER_NAME,
+              CompanyName: process.env.SHIPPER_NAME,  // مطلوب؛ استخدم الاسم كشركة
+              PhoneNumber1: process.env.SHIPPER_PHONE,
+              PhoneNumber2: '',  // فارغ OK
+              CellPhone: process.env.SHIPPER_PHONE,
+              EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
+            },
           },
-        },
-        Consignee: {
-          Reference1: '',  // اختياري
-          PartyAddress: {
-            Line1: address.line1 || '',
-            Line2: address.line2 || '',
-            Line3: '',
-            City: address.city || '',
-            StateOrProvinceCode: address.state || '',
-            PostCode: address.postal_code || '',
-            CountryCode: address.country,
+          Consignee: {
+            Reference1: '',  // اختياري
+            PartyAddress: {
+              Line1: address.line1 || '',
+              Line2: address.line2 || '',
+              Line3: '',
+              City: address.city || '',
+              StateOrProvinceCode: address.state || '',
+              PostCode: address.postal_code || '',
+              CountryCode: address.country,
+            },
+            Contact: {
+              PersonName: customerName,
+              CompanyName: customerName,  // استخدم الاسم كشركة إذا لم يكن هناك حقل منفصل
+              PhoneNumber1: session.customer_details.phone || '',
+              PhoneNumber2: '',  // فارغ OK
+              CellPhone: session.customer_details.phone || '',
+              EmailAddress: customerEmail,
+            },
           },
-          Contact: {
-            PersonName: customerName,
-            CompanyName: customerName,  // استخدم الاسم كشركة إذا لم يكن هناك حقل منفصل
-            PhoneNumber1: session.customer_details.phone || '',
-            PhoneNumber2: '',  // فارغ OK
-            CellPhone: session.customer_details.phone || '',
-            EmailAddress: customerEmail,
+          Details: {
+            ActualWeight: { Value: quantity * 1.0, Unit: "KG" },  // مثلًا 1kg لكل قطعة؛ قم بتعديل الوزن
+            ChargeableWeight: { Value: quantity * 1.0, Unit: "KG" },
+            NumberOfPieces: quantity,
+            DescriptionOfGoods: "UV Car Inspection Device",
+            GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,
+            ProductGroup: "EXP",  // أو "DOM" بناءً على الوجهة؛ تحقق من الوثائق
+            ProductType: "PDX",  // احتفظ به إذا كان صالحًا لحسابك
+            PaymentType: "P",  // دفع مسبق (تصحيح من "PPR")
+            // لا PaymentOptions أو Services أو CollectAmount للدفع المسبق غير COD
           },
-        },
-        Details: {
-          ActualWeight: { Value: quantity * 1.0, Unit: "KG" },  // مثلًا 1kg لكل قطعة؛ قم بتعديل الوزن
-          ChargeableWeight: { Value: quantity * 1.0, Unit: "KG" },
-          NumberOfPieces: quantity,
-          DescriptionOfGoods: "UV Car Inspection Device",
-          GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,
-          ProductGroup: "EXP",  // أو "DOM" بناءً على الوجهة؛ تحقق من الوثائق
-          ProductType: "PDX",  // احتفظ به إذا كان صالحًا لحسابك
-          PaymentType: "P",  // دفع مسبق (تصحيح من "PPR")
-          // لا PaymentOptions أو Services أو CollectAmount للدفع المسبق غير COD
-        },
-      }],
+        }]
+      },
     };
 
     // استدعاء SOAP
