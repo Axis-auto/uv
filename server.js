@@ -31,7 +31,8 @@ const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf('?') !== -1 ? ARAMEX_WSDL_URL.sp
 
 // constants
 const WEIGHT_PER_PIECE = 1.63; // kg per piece
-const DECLARED_VALUE_PER_PIECE = 200; // AED per piece
+const DECLARED_VALUE_PER_PIECE = 200; // AED per piece (kept for declared value if needed)
+const CUSTOMS_VALUE_PER_PIECE = 250; // AED per piece for customs (as requested)
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || '24', 10);
 const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || '9729', 10);
 
@@ -86,6 +87,9 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const length = 30; // cm
   const width = 20; // cm
   const height = 15; // cm
+
+  // Prepare customs value fallback (ensure numeric non-empty)
+  const customsValue = (d.CustomsValueAmount && (d.CustomsValueAmount.Value != null && d.CustomsValueAmount.Value !== '')) ? d.CustomsValueAmount.Value : '';
 
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
@@ -220,7 +224,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
 
             <tns:PaymentOptions></tns:PaymentOptions>
 
-            <!-- CurrencyCode BEFORE Value (required by Aramex) -->
+            <!-- Ensure CustomsValueAmount present (CurrencyCode before Value) -->
+            <tns:CustomsValueAmount>
+              <tns:CurrencyCode>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode) || 'AED')}</tns:CurrencyCode>
+              <tns:Value>${escapeXml(customsValue !== '' ? customsValue : '')}</tns:Value>
+            </tns:CustomsValueAmount>
+
             <tns:CashOnDeliveryAmount>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
               <tns:Value>0</tns:Value>
@@ -236,11 +245,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Value>0</tns:Value>
             </tns:CollectAmount>
 
-            <tns:CustomsValueAmount>
-              <tns:CurrencyCode>AED</tns:CurrencyCode>
-              <tns:Value>${escapeXml(d.CustomsValueAmount && d.CustomsValueAmount.Value != null ? d.CustomsValueAmount.Value : '')}</tns:Value>
-            </tns:CustomsValueAmount>
-
             <tns:Services></tns:Services>
 
             <tns:Items>
@@ -252,6 +256,13 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
                   <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
                 </tns:Weight>
                 <tns:Comments>${escapeXml(d.DescriptionOfGoods || '')}</tns:Comments>
+
+                <!-- Item-level customs value to satisfy dutiable cases -->
+                <tns:ItemValue>
+                  <tns:CurrencyCode>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode) || 'AED')}</tns:CurrencyCode>
+                  <tns:Value>${escapeXml(customsValue !== '' ? customsValue : '')}</tns:Value>
+                </tns:ItemValue>
+
                 <tns:Reference></tns:Reference>
               </tns:ShipmentItem>
             </tns:Items>
@@ -380,7 +391,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const quantity = (fullSession && fullSession.line_items && fullSession.line_items.data && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) ? fullSession.line_items.data[0].quantity : (session.quantity || parseInt((fullSession.metadata && fullSession.metadata.quantity) || '1', 10));
 
     const totalWeight = parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2));
+    // declared value kept for records (not used for customs calculation per your request)
     const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE; // 200 AED per piece
+    // customs value per your rule: 250 AED per piece, multiplied by quantity
+    const totalCustomsValue = quantity * CUSTOMS_VALUE_PER_PIECE;
 
     const shipping = (fullSession && fullSession.shipping) ? fullSession.shipping : (fullSession && fullSession.customer_details && fullSession.customer_details.address ? { address: fullSession.customer_details.address, name: fullSession.customer_details.name } : null);
 
@@ -425,6 +439,11 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Type: ''
     };
 
+    // Build shipment object and set CustomsValueAmount based on quantity * CUSTOMS_VALUE_PER_PIECE
+    // Also set ProductType and DescriptionOfGoods to the string you requested
+    const productTypeString = 'Parts Machines and Electronics UV inspectiondevice AXIS Model UVRA100 B';
+    const descriptionString = 'Parts Machines and Electronics UV inspectiondevice AXIS Model UVRA100 B';
+
     const shipmentObj = {
       Reference1: session.id || '',
       Shipper: { Reference1: process.env.SHIPPER_REFERENCE || '', PartyAddress: shipperAddress, Contact: shipperContact },
@@ -434,11 +453,12 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         ActualWeight: { Value: totalWeight, Unit: "KG" },
         ChargeableWeight: { Value: totalWeight, Unit: "KG" },
         NumberOfPieces: quantity,
-        DescriptionOfGoods: "UV Car Inspection Device",
+        DescriptionOfGoods: descriptionString,
         GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
-        CustomsValueAmount: { Value: totalDeclaredValue, CurrencyCode: "AED" },
+        // customs value set per your rule (CurrencyCode before Value)
+        CustomsValueAmount: { Value: totalCustomsValue, CurrencyCode: "AED" },
         ProductGroup: "EXP",
-        ProductType: "PPX",
+        ProductType: productTypeString,
         PaymentType: "P"
       }
     };
@@ -478,9 +498,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         quantity,
         weight: totalWeight,
         declaredValue: totalDeclaredValue,
+        customsValue: totalCustomsValue,
         destination: consigneeAddress.CountryCode,
         account: clientInfo.AccountNumber,
-        productType: 'PPX (Parcel)',
+        productType: productTypeString,
         dimensions: '30x20x15 CM'
       })));
 
@@ -508,10 +529,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       }
 
       let parsed = null;
-      try { 
-        parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true }); 
-      } catch (e) { 
-        console.warn('Could not parse Aramex response XML:', e && e.message ? e.message : e); 
+      try {
+        parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
+      } catch (e) {
+        console.warn('Could not parse Aramex response XML:', e && e.message ? e.message : e);
       }
 
       // Collect errors/notifications from multiple possible locations
@@ -595,6 +616,7 @@ Order Details:
 - Quantity: ${quantity}
 - Total Weight: ${totalWeight} KG
 - Declared Value: ${totalDeclaredValue} AED
+- Customs Value: ${totalCustomsValue} AED
 - Dimensions: 30x20x15 CM
 `;
 
