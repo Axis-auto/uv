@@ -111,8 +111,6 @@ async function callCreateShipmentsWithRetry(client, originalArgs) {
   // Helper to check if notifications contain REQ39
   function hasREQ39(res) {
     if (!res) return false;
-    const notifs = res.Notifications || res.Notification || null;
-    // Aramex often returns Notifications.Notification as array
     const arr = (res.Notifications && res.Notifications.Notification) || (res.Notification) || null;
     if (!arr) return false;
     const list = Array.isArray(arr) ? arr : [arr];
@@ -422,8 +420,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       try {
         if (client && client.lastRequest) {
           // Ensure newline is escaped correctly to avoid syntax errors during parsing
-          console.error('Aramex lastRequest XML:
-', client.lastRequest);
+          console.error('Aramex lastRequest XML:\\n', client.lastRequest);
         }
       } catch (e) {
         console.error('Unable to print client.lastRequest:', e);
