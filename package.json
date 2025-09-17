@@ -4,7 +4,8 @@
   "description": "Server for Axis UV - Stripe checkout + Aramex shipment creation",
   "main": "server.js",
   "scripts": {
-    "start": "npm rebuild && node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "engines": {
     "node": ">=16"
@@ -19,3 +20,4 @@
     "xml2js": "^0.6.2"
   }
 }
+
