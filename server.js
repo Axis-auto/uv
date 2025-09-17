@@ -368,120 +368,115 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       shipments: [shipmentObj]
     });
 
-      console.log(`→ Sending Aramex XML chunk ${i+1}/${chunks.length} (sanitized):`, JSON.stringify(maskForLog({ AccountNumber: clientInfo.AccountNumber, UserName: clientInfo.UserName })));
+    // Create Aramex shipment - Fixed the missing loop structure
+    const allTrackings = [];
+    const allNotifications = [];
+    
+    try {
+      console.log('→ Sending Aramex XML (sanitized):', JSON.stringify(maskForLog({ AccountNumber: clientInfo.AccountNumber, UserName: clientInfo.UserName })));
 
+      // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
+      const headers = {
+        'Content-Type': 'text/xml; charset=utf-8',
+        'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments'
+      };
+      const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
+
+      if (resp && resp.data) console.log('⤷ Aramex raw response (snippet):', (typeof resp.data === 'string' ? resp.data.substring(0,2000) : JSON.stringify(resp.data).substring(0,2000)));
+
+      let parsed = null;
+      try { 
+        parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true }); 
+      } catch (e) { 
+        console.warn('Could not parse Aramex response XML:', e && e.message ? e.message : e); 
+      }
+
+      // look for Notifications or ProcessedShipment
+      let notes = [];
       try {
-        // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
-        const headers = {
-          'Content-Type': 'text/xml; charset=utf-8',
-          'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments'
-        };
-        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
-
-        if (resp && resp.data) console.log(`⤷ Aramex raw response (snippet):`, (typeof resp.data === 'string' ? resp.data.substring(0,2000) : JSON.stringify(resp.data).substring(0,2000)));
-
-        let parsed = null;
-        try { parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true }); } catch (e) { console.warn('Could not parse Aramex response XML:', e && e.message ? e.message : e); }
-
-        // look for Notifications or ProcessedShipment
-        let notes = [];
-        try {
-          const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
-          const respRoot = body && (body.ShipmentCreationResponse || body);
-          if (respRoot && respRoot.Notifications && respRoot.Notifications.Notification) {
-            notes = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
-          } else if (respRoot && respRoot.Notification) {
-            notes = Array.isArray(respRoot.Notification) ? respRoot.Notification : [respRoot.Notification];
-          }
-        } catch(e){ /* ignore */ }
-
-        if (notes && notes.length) {
-          console.error('Aramex returned Notifications:', notes);
-          allNotifications.push(...notes);
-          notes.forEach(n => { if (n.Code && String(n.Code).includes('REQ39')) {
-            console.error('→ REQ39 detected. Sent XML (first 2000 chars):', xml.substring(0,2000));
-          }});
-          continue;
+        const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
+        const respRoot = body && (body.ShipmentCreationResponse || body);
+        if (respRoot && respRoot.Notifications && respRoot.Notifications.Notification) {
+          notes = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
+        } else if (respRoot && respRoot.Notification) {
+          notes = Array.isArray(respRoot.Notification) ? respRoot.Notification : [respRoot.Notification];
         }
+      } catch(e){ /* ignore */ }
 
-        // Try extract processed shipments
-        try {
-          const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
-          const respRoot = body && (body.ShipmentCreationResponse || body);
-          const processed = respRoot && (respRoot.ProcessedShipment || respRoot.ProcessedShipments) ? (respRoot.ProcessedShipment || respRoot.ProcessedShipments) : null;
-          if (processed) {
-            if (Array.isArray(processed)) {
-              processed.forEach(p => {
-                const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A');
-                const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A';
-                allTrackings.push({ id, url });
-              });
-            } else {
-              const p = processed;
+      if (notes && notes.length) {
+        console.error('Aramex returned Notifications:', notes);
+        allNotifications.push(...notes);
+        notes.forEach(n => { 
+          if (n.Code && String(n.Code).includes('REQ39')) {
+            console.error('→ REQ39 detected. Sent XML (first 2000 chars):', xml.substring(0,2000));
+          }
+        });
+        // Don't continue here - process the response anyway
+      }
+
+      // Try extract processed shipments
+      try {
+        const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
+        const respRoot = body && (body.ShipmentCreationResponse || body);
+        const processed = respRoot && (respRoot.ProcessedShipment || respRoot.ProcessedShipments) ? (respRoot.ProcessedShipment || respRoot.ProcessedShipments) : null;
+        if (processed) {
+          if (Array.isArray(processed)) {
+            processed.forEach(p => {
               const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A');
               const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A';
               allTrackings.push({ id, url });
-            }
+            });
           } else {
-            console.warn('No ProcessedShipment found for chunk', i+1);
-            allNotifications.push({ Code: 'NO_PROCESSED', Message: 'No ProcessedShipment' });
+            const p = processed;
+            const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A');
+            const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A';
+            allTrackings.push({ id, url });
           }
-        } catch (e) {
-          console.error('Error extracting processed shipments:', e && e.message ? e.message : e);
-          allNotifications.push({ Code: 'PARSE_ERROR', Message: e && e.message ? e.message : String(e) });
         }
-
-      } catch (err) {
-        // Improved error logs: show status and response body (SOAP Fault often comes back with HTTP 500)
-        console.error(`Aramex HTTP call error for chunk ${i+1}:`, (err && err.message) ? err.message : err);
-        if (err.response) {
-          try {
-            console.error('Aramex response status:', err.response.status);
-            const respData = typeof err.response.data === 'string' ? err.response.data : JSON.stringify(err.response.data);
-            console.error('Aramex response data (snippet):', respData.substring(0,4000));
-          } catch (e) { console.error('Could not log err.response.data:', e && e.message ? e.message : e); }
-        }
-        console.error('Sent XML (first 2000 chars):', xml.substring(0,2000));
-        allNotifications.push({ Code: 'HTTP_ERROR', Message: (err && err.message) ? err.message : 'Unknown' });
+      } catch(e) { 
+        console.warn('Could not extract ProcessedShipment:', e && e.message ? e.message : e); 
       }
-    } // end chunks
 
-    // Send email (kept same logic)
-    if (allTrackings.length) {
-      try {
-        if (process.env.SENDGRID_API_KEY) {
-          const trackingLines = allTrackings.map(t => `Tracking Number: ${t.id} — Label: ${t.url}`).join('\n');
-          const htmlLines = allTrackings.map(t => `<li><b>${t.id}</b> — <a href="${t.url}">Label</a></li>`).join('');
-          const msg = {
-            to: customerEmail || process.env.MAIL_FROM,
-            from: process.env.MAIL_FROM,
-            subject: 'Your Order Confirmation & Tracking',
-            text: `Hello ${customerName || ''}, your order is confirmed.\n\n${trackingLines}`,
-            html: `<strong>Hello ${customerName || ''}</strong><br>Your order is confirmed.<br><ul>${htmlLines}</ul>`
-          };
-          await sgMail.send(msg);
-          console.log('📧 Email sent to', customerEmail);
-        } else {
-          console.warn('SendGrid not configured - skipping email.');
-        }
-      } catch (err) {
-        console.error('SendGrid send error:', err && err.message ? err.message : err);
-      }
-    } else {
-      console.error('No tracking numbers generated. Notifications:', allNotifications);
+    } catch (err) {
+      console.error('Aramex API error:', err && err.message ? err.message : err);
+      allNotifications.push({ Code: 'API_ERROR', Message: err && err.message ? err.message : 'Unknown error' });
     }
+
+    // Send email notification (if configured)
+    if (process.env.SENDGRID_API_KEY && customerEmail) {
+      try {
+        const trackingInfo = allTrackings.length ? allTrackings.map(t => `Tracking ID: ${t.id}, Label: ${t.url}`).join('\n') : 'No tracking information available';
+        const msg = {
+          to: customerEmail,
+          from: process.env.MAIL_FROM,
+          subject: 'Order Confirmation - UV Car Inspection Device',
+          text: `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n\nShipping Information:\n${trackingInfo}\n\nBest regards,\nAxis UV Team`
+        };
+        await sgMail.send(msg);
+        console.log('✅ Email sent to:', customerEmail);
+      } catch (emailErr) {
+        console.error('Email sending failed:', emailErr && emailErr.message ? emailErr.message : emailErr);
+      }
+    }
+
+    console.log('✅ Webhook processed successfully');
+    console.log('→ Trackings:', allTrackings);
+    console.log('→ Notifications:', allNotifications);
+
   }
 
-  res.json({ received: true });
+  res.status(200).send('OK');
 });
 
-// health
-app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
 
-// start
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`✅ Server running on port ${port}`));
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log('🔧 Environment check:', missingEnvs.length ? `Missing: ${missingEnvs.join(', ')}` : 'All required env vars present');
+});
 
-// global handlers
-process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at Promise', p, 'reason:', reason));
-process.on('uncaughtException', (err) => console.error('Uncaught Exception thrown:', err));
