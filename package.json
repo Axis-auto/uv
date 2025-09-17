@@ -1,20 +1,20 @@
 {
-"name": "axis-uv-stripe-server",
-"version": "1.0.0",
-"private": true,
-"type": "commonjs",
-"scripts": {
-"start": "node server.js"
-},
-"engines": {
-"node": "20.x"
-},
-"dependencies": {
-"express": "^5.1.0",
-"stripe": "^18.5.0",
-"cors": "^2.8.5",
-"body-parser": "^2.2.0",
-"@sendgrid/mail": "^8.1.5",
-"soap": "^1.4.1"
-}
+  "name": "axis-uv-stripe-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "stripe": "^18.5.0",
+    "cors": "^2.8.5",
+    "body-parser": "^2.2.0",
+    "@sendgrid/mail": "^8.1.5",
+    "soap": "^1.4.1"
+  }
 }
