@@ -1,3 +1,4 @@
+// كامل server.js — Enhanced Aramex debugging + multiple payload attempts
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -29,26 +30,22 @@ const REQUIRED_ENVS = [
   'SHIPPER_PHONE'
 ];
 
-// Warn if any required env missing (but don't crash — we will log clearly).
 const missingEnvs = REQUIRED_ENVS.filter(k => !process.env[k]);
 if (missingEnvs.length) {
   console.warn('⚠️  Warning: the following environment variables are missing or empty:', missingEnvs);
-  console.warn('Some functionality (Aramex / Stripe / SendGrid) may fail until these are provided.');
 }
 
 // Stripe
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY || ''); // will fail if not provided during calls
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 // SendGrid
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex WSDL URL
+// Aramex WSDL
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl';
+const WEIGHT_PER_PIECE = 1.63;
 
-// Weight per piece (as requested)
-const WEIGHT_PER_PIECE = 1.63; // kilograms per piece
-
-// ---------- Utility: full allowed countries list (unchanged, complete) ----------
+// full allowedCountries unchanged
 const allowedCountries = [
   'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
   'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
@@ -75,90 +72,82 @@ const allowedCountries = [
   'ZA','ZM','ZW','ZZ'
 ];
 
-// ---------- Helper: convert allowedCountries to Stripe's allowed list (Stripe expects 2-letter codes uppercase)
 function allowedCountriesForStripe(list) {
   return list.map(c => (typeof c === 'string' ? c.toUpperCase() : c));
 }
 
-// ---------------------- Normalize Shipments ----------------------
-/**
- * Aramex SOAP can be picky about whether Shipments.Shipment is an object
- * or an array. If we only have 1 shipment, send it as an object (not [obj]).
- * This function will also safely convert an array of length 1 into a single object.
- */
+// Helper: normalize shipments (object vs array)
 function normalizeShipments(args) {
   if (!args || !args.Shipments) return args;
   const s = args.Shipments.Shipment;
-
-  // If it's an array with exactly 1 element, convert to single object
-  if (Array.isArray(s) && s.length === 1) {
-    args.Shipments.Shipment = s[0];
-  }
-
+  if (Array.isArray(s) && s.length === 1) args.Shipments.Shipment = s[0];
   return args;
 }
 
-// ---------------------- Utility: retry logic for REQ39 ----------------------
-/**
- * Attempt CreateShipments, but if Aramex returns REQ39 (exceeded number of shipments)
- * retry by converting Shipment into an array or vice versa.
- * Returns the response object from Aramex or throws.
- */
-async function callCreateShipmentsWithRetry(client, originalArgs) {
-  // clone args shallow (we'll replace Shipments as needed)
-  const args = JSON.parse(JSON.stringify(originalArgs));
+// NEW: low-level helper to attempt / log CreateShipments variations
+async function tryCreateShipmentsVariants(client, originalArgs) {
+  // We'll attempt multiple payload shapes and always capture client.lastRequest/lastResponse
+  const attempts = [];
 
-  // Helper to check if notifications contain REQ39
-  function hasREQ39(res) {
-    if (!res) return false;
-    const arr = (res.Notifications && res.Notifications.Notification) || (res.Notification) || null;
-    if (!arr) return false;
-    const list = Array.isArray(arr) ? arr : [arr];
-    return list.some(n => n && n.Code && n.Code.toString().toUpperCase().includes('REQ39'));
+  // Variant A: normalized single object
+  const a = JSON.parse(JSON.stringify(originalArgs));
+  normalizeShipments(a);
+  attempts.push({name: 'object', args: a});
+
+  // Variant B: ensure Shipment is an array
+  const b = JSON.parse(JSON.stringify(originalArgs));
+  if (b && b.Shipments) {
+    if (!Array.isArray(b.Shipments.Shipment)) b.Shipments.Shipment = [b.Shipments.Shipment];
+  }
+  attempts.push({name: 'array', args: b});
+
+  // Variant C: explicit wrapper (alternate namespace-safe attempt) — keep same as array but show difference
+  const c = JSON.parse(JSON.stringify(b));
+  // nothing special here, but keep as separate attempt for visibility
+  attempts.push({name: 'array-2', args: c});
+
+  for (let i = 0; i < attempts.length; i++) {
+    const at = attempts[i];
+    console.log(`--- ARAMEX ATTEMPT ${i+1} (${at.name}) — sending payload (json preview):`);
+    try {
+      // log a small preview (avoid huge output)
+      console.log(JSON.stringify(at.args, (k, v) => (k === 'ClientInfo' ? '<clientinfo redacted>' : v), 2));
+      const response = await client.CreateShipmentsAsync(at.args);
+      // always log the raw XML request/response produced by node-soap
+      try {
+        console.error(`Aramex lastRequest XML (attempt ${i+1}, ${at.name}):\n`, client.lastRequest || '<no lastRequest>');
+        console.error(`Aramex lastResponse XML (attempt ${i+1}, ${at.name}):\n`, client.lastResponse || '<no lastResponse>');
+      } catch (e) {
+        console.error('Could not print lastRequest/lastResponse:', e);
+      }
+      console.log(`--- Received response for attempt ${i+1} (${at.name}):`, JSON.stringify(response && response[0] ? response[0] : response, null, 2));
+      // return response immediately if not HasErrors
+      const resObj = response && response[0] ? response[0] : null;
+      if (resObj && (!resObj.HasErrors || resObj.HasErrors === false)) {
+        console.log(`Aramex accepted payload on attempt ${i+1} (${at.name}).`);
+        return response;
+      } else {
+        // if HasErrors, continue to next attempt but keep last response for inspection
+        console.warn(`Aramex reported errors on attempt ${i+1} (${at.name}).`);
+        // continue loop to try next variant
+      }
+    } catch (err) {
+      console.error(`CreateShipmentsAsync error on attempt ${i+1} (${at.name}):`, err && err.message ? err.message : err);
+      try {
+        console.error(`Aramex lastRequest (error) attempt ${i+1}:\n`, client.lastRequest || '<no lastRequest>');
+        console.error(`Aramex lastResponse (error) attempt ${i+1}:\n`, client.lastResponse || '<no lastResponse>');
+      } catch (e) {
+        console.error('Could not print lastRequest/lastResponse after error:', e);
+      }
+      // continue to next attempt
+    }
   }
 
-  // First attempt: use normalizeShipments (single object if length==1)
-  normalizeShipments(args);
-  try {
-    const response = await client.CreateShipmentsAsync(args);
-    const result = response && response[0] ? response[0] : null;
-    if (result && result.HasErrors && hasREQ39(result)) {
-      console.warn('Aramex returned REQ39 on first attempt. Will retry with Shipment wrapped as array.');
-      // fallthrough to retry
-    } else {
-      return response;
-    }
-  } catch (err) {
-    // network/soap-level error — log and fallthrough to retry attempt if it's possible
-    console.error('CreateShipmentsAsync attempt 1 failed with error:', err && err.message ? err.message : err);
-    // attempt retry below
-  }
-
-  // Retry attempt: ensure Shipment is an array and try again
-  try {
-    // convert single shipment object to array if needed
-    if (args && args.Shipments) {
-      const s = args.Shipments.Shipment;
-      if (!Array.isArray(s)) args.Shipments.Shipment = [s];
-    }
-
-    const response2 = await client.CreateShipmentsAsync(args);
-    const result2 = response2 && response2[0] ? response2[0] : null;
-
-    if (result2 && result2.HasErrors && hasREQ39(result2)) {
-      // Still failing with REQ39 — give up and return the response for inspection
-      console.error('Retry also returned REQ39. Returning final response for logging.');
-      return response2;
-    }
-
-    return response2;
-  } catch (err) {
-    console.error('CreateShipmentsAsync retry failed:', err && err.message ? err.message : err);
-    throw err; // bubble up — caller will log lastRequest etc
-  }
+  // if we exit loop, all attempts failed -> return last attempt's response if available or throw
+  throw new Error('All Aramex CreateShipments attempts failed (see logs for each attempt lastRequest/lastResponse).');
 }
 
-// ---------- Create Checkout Session ----------
+// Create Checkout Session (unchanged)
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -202,7 +191,6 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
           }
         }];
 
-    // create session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -233,7 +221,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   }
 });
 
-// ---------- Stripe Webhook (raw body required) ----------
+// Webhook
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
   console.log('✅ Incoming Stripe webhook body length:', req.body.length);
@@ -247,17 +235,13 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     return res.status(400).send(`Webhook Error: ${err && err.message ? err.message : 'invalid signature'}`);
   }
 
-  console.log('✅ Stripe webhook verified:', event.type);
-
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-
     const customerEmail = session.customer_details && session.customer_details.email ? session.customer_details.email : '';
     const customerName = session.customer_details && session.customer_details.name ? session.customer_details.name : '';
     const address = session.customer_details && session.customer_details.address ? session.customer_details.address : {};
     const phone = session.customer_details && session.customer_details.phone ? session.customer_details.phone : (session.customer ? session.customer.phone : '');
 
-    // Retrieve full session with line_items to get quantity if needed
     let fullSession;
     try {
       fullSession = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items'] });
@@ -267,19 +251,17 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     }
     const quantity = (fullSession && fullSession.line_items && fullSession.line_items.data && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) ? fullSession.line_items.data[0].quantity : (session.quantity || 1);
 
-    // Build shipper address (from env)
     const shipperAddress = {
       Line1: process.env.SHIPPER_LINE1 || '',
       Line2: process.env.SHIPPER_LINE2 || '(Registration Village)',
       Line3: process.env.SHIPPER_LINE3 || 'Ground Floor - Shop No. 5&6',
       City: process.env.SHIPPER_CITY || '',
-      StateOrProvinceCode: process.env.SHIPPER_STATE || '', // keep empty if not applicable
+      StateOrProvinceCode: process.env.SHIPPER_STATE || '',
       PostCode: process.env.SHIPPER_POSTCODE || '',
       CountryCode: process.env.SHIPPER_COUNTRY_CODE || '',
       ResidenceType: process.env.SHIPPER_RESIDENCE_TYPE || 'Business'
     };
 
-    // Compose single shipment object (not array) — safer for Aramex when only 1 shipment
     const shipmentObj = {
       Shipper: {
         Reference1: process.env.SHIPPER_REFERENCE || '',
@@ -291,7 +273,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           PhoneNumber2: '',
           CellPhone: process.env.SHIPPER_PHONE || '',
           EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM || '',
-          Type: '' // <-- IMPORTANT: include Type element (empty string to satisfy schema ordering)
+          Type: ''
         }
       },
       Consignee: {
@@ -312,29 +294,22 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           PhoneNumber2: '',
           CellPhone: phone || '',
           EmailAddress: customerEmail || '',
-          Type: '' // <-- ensure presence
+          Type: ''
         }
       },
       Details: {
-        ActualWeight: {
-          Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)), // e.g., 1.63, 3.26, ...
-          Unit: "KG"
-        },
-        ChargeableWeight: {
-          Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)),
-          Unit: "KG"
-        },
+        ActualWeight: { Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)), Unit: "KG" },
+        ChargeableWeight: { Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)), Unit: "KG" },
         NumberOfPieces: quantity,
         DescriptionOfGoods: "UV Car Inspection Device",
         GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
         ProductGroup: "EXP",
         ProductType: "PDX",
-        PaymentType: "P" // prepaid
+        PaymentType: "P"
       }
     };
 
-    // Compose SOAP args according to Aramex docs — start with Shipment as object
-    const args = {
+    const baseArgs = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER || '',
         Password: process.env.ARAMEX_PASSWORD || '',
@@ -344,27 +319,14 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || '',
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY || ''
       },
-      Transaction: {
-        Reference1: session.id || '',
-        Reference2: '',
-        Reference3: '',
-        Reference4: '',
-        Reference5: ''
-      },
-      LabelInfo: {
-        ReportID: 9729,
-        ReportType: "URL"
-      },
-      Shipments: {
-        Shipment: shipmentObj
-      }
+      Transaction: { Reference1: session.id || '', Reference2: '', Reference3: '', Reference4: '', Reference5: '' },
+      LabelInfo: { ReportID: 9729, ReportType: "URL" },
+      Shipments: { Shipment: shipmentObj }
     };
 
-    // Call Aramex SOAP CreateShipments with smart retry (object <-> array) and detailed logging
     let client = null;
     try {
       client = await soap.createClientAsync(ARAMEX_WSDL_URL, { timeout: 30000 });
-
       try {
         const endpoint = (process.env.ARAMEX_WSDL_URL && process.env.ARAMEX_WSDL_URL.indexOf('?') !== -1)
           ? process.env.ARAMEX_WSDL_URL.split('?')[0]
@@ -372,83 +334,62 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         client.setEndpoint(endpoint);
       } catch (e) { /* ignore */ }
 
-      const response = await callCreateShipmentsWithRetry(client, args);
+      // Try variants and log everything
+      try {
+        const response = await tryCreateShipmentsVariants(client, baseArgs);
+        console.log('✅ Aramex final response:', JSON.stringify(response, null, 2));
 
-      console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));
-
-      const result = response && response[0] ? response[0] : null;
-
-      if (!result) {
-        console.error('Aramex: empty response or unexpected format.', response);
-      } else if (result.HasErrors) {
-        console.error('Aramex shipment creation failed:', result.Notifications || result);
-      } else {
-        // success path
-        const processed = result.ProcessedShipment || result.ProcessedShipments || null;
-        let trackingNumber = 'N/A';
-        let trackingUrl = 'N/A';
-        if (processed) {
-          const p = Array.isArray(processed) ? processed[0] : processed;
-          if (p && p.ID) trackingNumber = p.ID;
-          if (p && p.ShipmentLabel && p.ShipmentLabel.LabelURL) trackingUrl = p.ShipmentLabel.LabelURL;
-          if (p && p.ShipmentLabel && p.ShipmentLabel.Contents && typeof p.ShipmentLabel.Contents === 'string') {
-            trackingUrl = trackingUrl === 'N/A' ? 'Label generated' : trackingUrl;
+        const result = response && response[0] ? response[0] : null;
+        if (!result) {
+          console.error('Aramex: empty response or unexpected format.', response);
+        } else if (result.HasErrors) {
+          console.error('Aramex shipment creation failed (after all attempts):', result.Notifications || result);
+        } else {
+          // success path: send email etc (same as before)
+          const processed = result.ProcessedShipment || result.ProcessedShipments || null;
+          let trackingNumber = 'N/A', trackingUrl = 'N/A';
+          if (processed) {
+            const p = Array.isArray(processed) ? processed[0] : processed;
+            if (p && p.ID) trackingNumber = p.ID;
+            if (p && p.ShipmentLabel && p.ShipmentLabel.LabelURL) trackingUrl = p.ShipmentLabel.LabelURL;
+          }
+          try {
+            if (process.env.SENDGRID_API_KEY) {
+              const msg = {
+                to: customerEmail || process.env.MAIL_FROM,
+                from: process.env.MAIL_FROM,
+                subject: 'Your Order Confirmation',
+                text: `Hello ${customerName || ''}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
+                html: `<strong>Hello ${customerName || ''}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
+              };
+              await sgMail.send(msg);
+              console.log('📧 Email sent to', customerEmail);
+            } else {
+              console.warn('SendGrid API key not configured - skipping email.');
+            }
+          } catch (err) {
+            console.error('SendGrid send error:', err);
           }
         }
-
-        try {
-          if (!process.env.SENDGRID_API_KEY) {
-            console.warn('SendGrid API key not configured - skipping customer email.');
-          } else {
-            const msg = {
-              to: customerEmail || process.env.MAIL_FROM,
-              from: process.env.MAIL_FROM,
-              subject: 'Your Order Confirmation',
-              text: `Hello ${customerName || ''}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-              html: `<strong>Hello ${customerName || ''}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
-            };
-
-            await sgMail.send(msg);
-            console.log('📧 Email sent to', customerEmail);
-          }
-        } catch (err) {
-          console.error('SendGrid send error:', err);
-        }
+      } catch (err) {
+        console.error('All attempts to CreateShipments failed. See above logs for each attempt lastRequest/lastResponse.', err && err.message ? err.message : err);
       }
+
     } catch (err) {
       console.error('Aramex API error (outer):', (err && err.message) ? err.message : err);
-      try {
-        if (client && client.lastRequest) {
-          // Ensure newline is escaped correctly to avoid syntax errors during parsing
-          console.error('Aramex lastRequest XML:\\n', client.lastRequest);
-        }
-      } catch (e) {
-        console.error('Unable to print client.lastRequest:', e);
-      }
-      if (err && err.root) console.error('Aramex error root:', JSON.stringify(err.root, null, 2));
+      try { console.error('Aramex lastRequest (outer):\n', client && client.lastRequest); } catch (e) {}
+      try { console.error('Aramex lastResponse (outer):\n', client && client.lastResponse); } catch (e) {}
     }
   }
 
-  // respond to Stripe to acknowledge receipt
   res.json({ received: true });
 });
 
-// ---------- health check ----------
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// ---------- Start server ----------
+// health & start (unchanged)
+app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
 
-// ---------- Global error handlers to avoid silent process exit ----------
-process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection at Promise', p, 'reason:', reason);
-  // do not exit to allow container to keep running for debugging
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception thrown:', err);
-  // do not exit here — log for debugging. In production you might want to exit.
-});
+// global error handlers
+process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at Promise', p, 'reason:', reason));
+process.on('uncaughtException', (err) => console.error('Uncaught Exception thrown:', err));
