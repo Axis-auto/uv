@@ -318,7 +318,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const consigneeAddress = {
       Line1: (session.shipping && session.shipping.address && session.shipping.address.line1) ? session.shipping.address.line1 : (address.line1 || (session.customer_details && session.customer_details.name ? session.customer_details.name : "")),
       Line2: (session.shipping && session.shipping.address && session.shipping.address.line2) ? session.shipping.address.line2 : (address.line2 || ""),
-      Line3: ",
+      Line3: '',
       City: (session.shipping && session.shipping.address && session.shipping.address.city) ? session.shipping.address.city : (address.city || ""),
       StateOrProvinceCode: (session.shipping && session.shipping.address && session.shipping.address.state) ? session.shipping.address.state : (address.state || ""),
       PostCode: (session.shipping && session.shipping.address && session.shipping.address.postal_code) ? session.shipping.address.postal_code : (address.postal_code || ""),
