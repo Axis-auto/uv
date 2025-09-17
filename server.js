@@ -242,24 +242,32 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       const client = await soap.createClientAsync(process.env.ARAMEX_WSDL_URL, { timeout: 30000 });  // إضافة خيار المهلة هنا (30 ثانية)
       const response = await client.CreateShipmentsAsync(args);
 
-      console.log('✅ Aramex result:', JSON.stringify(response, null, 2));
+      console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));  // سجل الرد الكامل للتصحيح
 
-      const processed = response[0].ProcessedShipment;  // الوصول إلى هيكل الرد
-      const trackingNumber = processed.ID || "N/A";
-      const trackingUrl = processed.ShipmentLabel.LabelURL || "https://tracking.example.com";  // تعديل المسار حسب الوثائق
+      const result = response[0];  // الكائن الرئيسي من الرد
 
-      // 2) إرسال بريد للعميل
-      const msg = {
-        to: customerEmail,
-        from: process.env.MAIL_FROM,
-        subject: 'Your Order Confirmation',
-        text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-        html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
-      };
+      if (result.HasErrors) {
+        console.error('Aramex shipment creation failed:', result.Notifications);  // سجل الأخطاء من Aramex
+        // هنا يمكنك إضافة معالجة إضافية، مثل إرسال إيميل إلى الإدارة أو تجاهل الشحنة
+        // مثال: لا ترسل إيميل للعميل إذا فشل، أو أرسل إشعاراً بالفشل
+      } else {
+        const processed = result.ProcessedShipment;  // افتراض singular؛ إذا كان array، غيره إلى result.ProcessedShipments[0]
+        const trackingNumber = processed.ID || "N/A";
+        const trackingUrl = processed.ShipmentLabel ? (processed.ShipmentLabel.LabelURL || "https://tracking.example.com") : "N/A";
 
-      sgMail.send(msg)
-        .then(() => console.log('📧 Email sent to', customerEmail))
-        .catch(err => console.error('SendGrid error:', err));
+        // إرسال بريد للعميل فقط إذا نجح
+        const msg = {
+          to: customerEmail,
+          from: process.env.MAIL_FROM,
+          subject: 'Your Order Confirmation',
+          text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
+          html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
+        };
+
+        sgMail.send(msg)
+          .then(() => console.log('📧 Email sent to', customerEmail))
+          .catch(err => console.error('SendGrid error:', err));
+      }
 
     } catch (err) {
       console.error('Aramex API error:', err);
