@@ -3,8 +3,7 @@ const Stripe = require('stripe');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
-const axios = require('axios');
-const soap = require('soap');  // إضافة جديدة لدعم SOAP
+const soap = require('soap');
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -15,15 +14,11 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 // SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex JSON Endpoint
-const ARAMEX_API_URL = process.env.ARAMEX_WSDL_URL; 
-const ARAMEX_USERNAME = process.env.ARAMEX_USER;
-const ARAMEX_PASSWORD = process.env.ARAMEX_PASSWORD;
-const ARAMEX_ACCOUNT_NUMBER = process.env.ARAMEX_ACCOUNT_NUMBER;
-const ARAMEX_ACCOUNT_PIN = process.env.ARAMEX_ACCOUNT_PIN;
-const ARAMEX_ACCOUNT_ENTITY = process.env.ARAMEX_ACCOUNT_ENTITY;
-const ARAMEX_ACCOUNT_COUNTRY_CODE = process.env.ARAMEX_ACCOUNT_COUNTRY;
-const ARAMEX_VERSION = process.env.ARAMEX_VERSION;
+// Aramex WSDL URL and credentials are expected in environment variables
+// Ensure ARAMEX_WSDL_URL contains the full WSDL URL (often ends with ?wsdl)
+
+// ثوابت المنتج
+const WEIGHT_PER_PIECE_KG = 1.63; // الوزن لكل قطعة كما طلبت
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -125,7 +120,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   }
 });
 
-// ====== Webhook من Stripe ======
+// ====== Webhook من Stripe (مُحسّن) ======
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
   console.log('✅ Incoming Stripe webhook body length:', req.body.length);
@@ -144,136 +139,158 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    const customerEmail = session.customer_details.email;
-    const customerName = session.customer_details.name;
-    const address = session.customer_details.address;
-
-    // تقسيم عنوان الشاحن (Shipper) كما يطلب Aramex باستخدام المتغيرات البيئية
-    const shipperAddress = {
-      Line1: process.env.SHIPPER_LINE1,
-      Line2: "(Registration Village)",  // هذا ثابت، يمكن جعله متغير إذا أردت
-      Line3: "Ground Floor - Shop No. 5&6",  // هذا ثابت، يمكن جعله متغير
-      City: process.env.SHIPPER_CITY,
-      StateOrProvinceCode: "",  // غير إلى فارغ لتجنب خطأ (كان "IST" خاطئ لـ Sharjah, AE)
-      PostCode: process.env.SHIPPER_POSTCODE,
-      CountryCode: process.env.SHIPPER_COUNTRY_CODE,
-      ResidenceType: "Business"  // افتراضي، يمكن تعديله
-    };
-
-    // أولاً، استرجع الجلسة الكاملة مع line_items للحصول على الكمية
-    const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-      expand: ['line_items'],
-    });
-    const quantity = fullSession.line_items.data[0].quantity || 1;  // افتراضي 1 إذا لم يتم العثور عليه
-
-    // حمولة SOAP (تطابق وثائق Aramex لـ CreateShipments)
-    const args = {
-      ClientInfo: {
-        UserName: process.env.ARAMEX_USER,
-        Password: process.env.ARAMEX_PASSWORD,
-        Version: process.env.ARAMEX_VERSION,  // 'v2.0' أو 'v1.0' حسب WSDL
-        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-        AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
-        AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-      },
-      Transaction: {  // تم إضافة جميع الـ References حتى لو فارغة
-        Reference1: session.id,  // استخدم ID جلسة Stripe
-        Reference2: '',  // فارغ
-        Reference3: '',  // فارغ
-        Reference4: '',  // فارغ
-        Reference5: ''   // فارغ
-        // إذا استمر الخطأ، احذف Transaction تماماً (اختياري)
-      },
-      LabelInfo: {
-        ReportID: 9729,
-        ReportType: "URL",
-      },
-      Shipments: {
-        Shipment: [{  // أضفت "Shipment" صراحة داخل "Shipments" ليولد <Shipments><Shipment>...</Shipment></Shipments>
-          Shipper: {
-            Reference1: process.env.SHIPPER_REFERENCE || '',  // من متغيراتك البيئية
-            PartyAddress: shipperAddress,
-            Contact: {
-              PersonName: process.env.SHIPPER_NAME,
-              CompanyName: process.env.SHIPPER_NAME,  // مطلوب؛ استخدم الاسم كشركة
-              PhoneNumber1: process.env.SHIPPER_PHONE,
-              PhoneNumber2: '',  // فارغ OK
-              CellPhone: process.env.SHIPPER_PHONE,
-              EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
-            },
-          },
-          Consignee: {
-            Reference1: '',  // اختياري
-            PartyAddress: {
-              Line1: address.line1 || '',
-              Line2: address.line2 || '',
-              Line3: '',
-              City: address.city || '',
-              StateOrProvinceCode: address.state || '',
-              PostCode: address.postal_code || '',
-              CountryCode: address.country,
-            },
-            Contact: {
-              PersonName: customerName,
-              CompanyName: customerName,  // استخدم الاسم كشركة إذا لم يكن هناك حقل منفصل
-              PhoneNumber1: session.customer_details.phone || '',
-              PhoneNumber2: '',  // فارغ OK
-              CellPhone: session.customer_details.phone || '',
-              EmailAddress: customerEmail,
-            },
-          },
-          Details: {
-            ActualWeight: { Value: quantity * 1.0, Unit: "KG" },  // مثلًا 1kg لكل قطعة؛ قم بتعديل الوزن
-            ChargeableWeight: { Value: quantity * 1.0, Unit: "KG" },
-            NumberOfPieces: quantity,
-            DescriptionOfGoods: "UV Car Inspection Device",
-            GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,
-            ProductGroup: "EXP",  // أو "DOM" بناءً على الوجهة؛ تحقق من الوثائق
-            ProductType: "PDX",  // احتفظ به إذا كان صالحًا لحسابك
-            PaymentType: "P",  // دفع مسبق (تصحيح من "PPR")
-            // لا PaymentOptions أو Services أو CollectAmount للدفع المسبق غير COD
-          },
-        }]
-      },
-    };
-
-    // استدعاء SOAP
-    const aramexUrl = process.env.ARAMEX_WSDL_URL.replace('?wsdl', '');  // استخدم URL الخدمة، لا WSDL
     try {
-      const client = await soap.createClientAsync(process.env.ARAMEX_WSDL_URL, { timeout: 30000 });  // إضافة خيار المهلة هنا (30 ثانية)
-      const response = await client.CreateShipmentsAsync(args);
+      // استرجاع الجلسة الكاملة مع line_items
+      const fullSession = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items'] });
 
-      console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));  // سجل الرد الكامل للتصحيح
+      // استخراج معلومات العميل مع fallbacks
+      const customerName = fullSession.customer_details?.name || fullSession.shipping?.name || fullSession.customer || 'Customer';
+      const customerEmail = fullSession.customer_details?.email || fullSession.customer_email || '';
+      const customerPhone = fullSession.customer_details?.phone || fullSession.shipping?.phone || '';
+      const address = fullSession.customer_details?.address || fullSession.shipping?.address || {};
 
-      const result = response[0];  // الكائن الرئيسي من الرد
+      const quantity = (fullSession.line_items && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) || 1;
 
-      if (result.HasErrors) {
-        console.error('Aramex shipment creation failed:', result.Notifications);  // سجل الأخطاء من Aramex
-        // هنا يمكنك إضافة معالجة إضافية، مثل إرسال إيميل إلى الإدارة أو تجاهل الشحنة
-        // مثال: لا ترسل إيميل للعميل إذا فشل، أو أرسل إشعاراً بالفشل
-      } else {
-        const processed = result.ProcessedShipment;  // افتراض singular؛ إذا كان array، غيره إلى result.ProcessedShipments[0]
-        const trackingNumber = processed.ID || "N/A";
-        const trackingUrl = processed.ShipmentLabel ? (processed.ShipmentLabel.LabelURL || "https://tracking.example.com") : "N/A";
+      // تحضير عنوان الشاحن (من متغيرات البيئة)
+      const shipperAddress = {
+        Line1: process.env.SHIPPER_LINE1 || '',
+        Line2: process.env.SHIPPER_LINE2 || '(Registration Village)',
+        Line3: process.env.SHIPPER_LINE3 || 'Ground Floor - Shop No. 5&6',
+        City: process.env.SHIPPER_CITY || '',
+        StateOrProvinceCode: process.env.SHIPPER_STATE || '',
+        PostCode: process.env.SHIPPER_POSTCODE || '',
+        CountryCode: process.env.SHIPPER_COUNTRY_CODE || '',
+        ResidenceType: 'Business'
+      };
 
-        // إرسال بريد للعميل فقط إذا نجح
-        const msg = {
-          to: customerEmail,
-          from: process.env.MAIL_FROM,
-          subject: 'Your Order Confirmation',
-          text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-          html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
-        };
+      // وزن الشحنة بناءً على عدد القطع
+      const totalWeight = parseFloat((quantity * WEIGHT_PER_PIECE_KG).toFixed(2));
 
-        sgMail.send(msg)
-          .then(() => console.log('📧 Email sent to', customerEmail))
-          .catch(err => console.error('SendGrid error:', err));
+      // بناء كائن الشحنة (أرسل Shipment ككائن واحد لتجنب مشاكل الـ array)
+      const shipmentObj = {
+        Shipper: {
+          Reference1: process.env.SHIPPER_REFERENCE || '',
+          PartyAddress: shipperAddress,
+          Contact: {
+            PersonName: process.env.SHIPPER_NAME || '',
+            CompanyName: process.env.SHIPPER_NAME || '',
+            PhoneNumber1: process.env.SHIPPER_PHONE || '',
+            PhoneNumber2: '',
+            CellPhone: process.env.SHIPPER_PHONE || '',
+            EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM || ''
+          }
+        },
+        Consignee: {
+          Reference1: '',
+          PartyAddress: {
+            Line1: address.line1 || address.name || '',
+            Line2: address.line2 || '',
+            Line3: '',
+            City: address.city || '',
+            StateOrProvinceCode: address.state || '',
+            PostCode: address.postal_code || address.postcode || '',
+            CountryCode: address.country || ''
+          },
+          Contact: {
+            PersonName: customerName,
+            CompanyName: customerName,
+            PhoneNumber1: customerPhone || '',
+            PhoneNumber2: '',
+            CellPhone: customerPhone || '',
+            EmailAddress: customerEmail || ''
+          }
+        },
+        Details: {
+          ActualWeight: { Value: totalWeight, Unit: 'KG' },
+          ChargeableWeight: { Value: totalWeight, Unit: 'KG' },
+          NumberOfPieces: quantity,
+          DescriptionOfGoods: 'UV Car Inspection Device',
+          GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
+          ProductGroup: 'EXP',
+          ProductType: 'PDX',
+          PaymentType: 'P' // P = prepaid
+        }
+      };
+
+      const args = {
+        ClientInfo: {
+          UserName: process.env.ARAMEX_USER,
+          Password: process.env.ARAMEX_PASSWORD,
+          Version: process.env.ARAMEX_VERSION || 'v2',
+          AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+          AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+          AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+          AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY
+        },
+        Transaction: {
+          Reference1: session.id,
+          Reference2: '',
+          Reference3: '',
+          Reference4: '',
+          Reference5: ''
+        },
+        LabelInfo: {
+          ReportID: 9729,
+          ReportType: 'URL'
+        },
+        // أرسل Shipment ككائن مفرد — هذا يحد من احتمال أن تعامل Aramex الطلب كمجموعة شحنات
+        Shipments: {
+          Shipment: shipmentObj
+        }
+      };
+
+      // سجل الـ args لأجل تتبع المشاكل
+      console.log('➡️ Aramex request args:', JSON.stringify(args, null, 2));
+
+      try {
+        // أنشئ عميل SOAP باستخدام رابط WSDL كما هو موجود في متغير البيئة
+        const client = await soap.createClientAsync(process.env.ARAMEX_WSDL_URL, { timeout: 30000 });
+        const response = await client.CreateShipmentsAsync(args);
+
+        console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));
+
+        const result = response && response[0];
+        if (!result) {
+          console.error('Aramex returned an empty result.');
+        } else if (result.HasErrors) {
+          console.error('Aramex shipment creation failed:', result.Notifications || result);
+          // اختياري: إرسال إيميل إداري أو تنبيه للفريق
+        } else {
+          // حاول استخراج بيانات التتبع والـ label بطرق متعددة لأن الاستجابة قد تتغير
+          let trackingNumber = 'N/A';
+          let trackingUrl = 'N/A';
+
+          // بعض النسخ من Aramex تعيد ProcessedShipment مباشرة أو داخل ProcessedShipments
+          const processed = result.ProcessedShipment || (result.ProcessedShipments && result.ProcessedShipments.ProcessedShipment) || null;
+
+          if (processed) {
+            trackingNumber = processed.ID || (Array.isArray(processed) && processed[0] && processed[0].ID) || trackingNumber;
+            trackingUrl = processed.ShipmentLabel && (processed.ShipmentLabel.LabelURL || processed.ShipmentLabel[0] && processed.ShipmentLabel[0].LabelURL) || trackingUrl;
+          }
+
+          // إرسال بريد للعميل
+          const msg = {
+            to: customerEmail,
+            from: process.env.MAIL_FROM,
+            subject: 'Your Order Confirmation',
+            text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
+            html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
+          };
+
+          try {
+            await sgMail.send(msg);
+            console.log('📧 Email sent to', customerEmail);
+          } catch (err) {
+            console.error('SendGrid error:', err);
+          }
+        }
+
+      } catch (err) {
+        console.error('Aramex API error (SOAP call):', err);
       }
 
     } catch (err) {
-      console.error('Aramex API error:', err);
-      // معالجة الخطأ (مثل إرسال بريد إلى الإدارة أو إعادة المحاولة)
+      console.error('Error processing checkout.session.completed:', err);
     }
   }
 
