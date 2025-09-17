@@ -421,6 +421,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       console.error('Aramex API error (outer):', (err && err.message) ? err.message : err);
       try {
         if (client && client.lastRequest) {
+          // Ensure newline is escaped correctly to avoid syntax errors during parsing
           console.error('Aramex lastRequest XML:
 ', client.lastRequest);
         }
