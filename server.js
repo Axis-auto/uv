@@ -31,7 +31,7 @@ const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf('?') !== -1 ? ARAMEX_WSDL_URL.sp
 
 // constants
 const WEIGHT_PER_PIECE = 1.63; // kg per piece
-const DECLARED_VALUE_PER_PIECE = 200; // AED per piece (as mentioned by user)
+const DECLARED_VALUE_PER_PIECE = 200; // AED per piece
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || '24', 10);
 const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || '9729', 10);
 
@@ -82,17 +82,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const cc = shipment.Consignee.Contact || {};
   const d = shipment.Details || {};
 
-  // Calculate dimensions (standard box dimensions for UV device)
+  // Standard box dimensions for UV device
   const length = 30; // cm
-  const width = 20; // cm  
+  const width = 20; // cm
   const height = 15; // cm
 
-  // CORRECT XML structure with Dimensions element BEFORE ActualWeight
-  // Re-ordered Details to match Aramex expectations:
-  // Dimensions -> ActualWeight -> ChargeableWeight -> DescriptionOfGoods -> GoodsOriginCountry -> NumberOfPieces
-  // -> ProductGroup -> ProductType -> PaymentType
-  // -> CashOnDeliveryAmount -> InsuranceAmount -> CollectAmount -> CustomsValueAmount
-  // -> Services -> Items
+  // Re-ordered Details to match Aramex expectations (including PaymentOptions)
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -188,6 +183,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
           <tns:PickupLocation></tns:PickupLocation>
           <tns:OperationsInstructions></tns:OperationsInstructions>
           <tns:AccountingInstrcutions></tns:AccountingInstrcutions>
+
           <tns:Details>
             <tns:Dimensions>
               <tns:Length>${length}</tns:Length>
@@ -195,33 +191,39 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Height>${height}</tns:Height>
               <tns:Unit>CM</tns:Unit>
             </tns:Dimensions>
+
             <tns:ActualWeight>
               <tns:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</tns:Unit>
               <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
             </tns:ActualWeight>
+
             <tns:ChargeableWeight>
               <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</tns:Unit>
               <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
             </tns:ChargeableWeight>
 
-            <!-- Ordered to satisfy Aramex expectations -->
+            <!-- Ordered for Aramex: Description -> Origin -> Pieces -> Product info -> PaymentOptions -> monetary amounts -->
             <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
             <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</tns:GoodsOriginCountry>
             <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
 
-            <!-- Product info before monetary amounts (fix for Aramex deserialization) -->
             <tns:ProductGroup>${escapeXml(d.ProductGroup || '')}</tns:ProductGroup>
             <tns:ProductType>${escapeXml(d.ProductType || '')}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || '')}</tns:PaymentType>
+
+            <!-- NEW: PaymentOptions element expected by Aramex -->
+            <tns:PaymentOptions></tns:PaymentOptions>
 
             <tns:CashOnDeliveryAmount>
               <tns:Value>0</tns:Value>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:CashOnDeliveryAmount>
+
             <tns:InsuranceAmount>
               <tns:Value>0</tns:Value>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
             </tns:InsuranceAmount>
+
             <tns:CollectAmount>
               <tns:Value>0</tns:Value>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
@@ -233,6 +235,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             </tns:CustomsValueAmount>
 
             <tns:Services></tns:Services>
+
             <tns:Items>
               <tns:ShipmentItem>
                 <tns:PackageType>Box</tns:PackageType>
@@ -245,6 +248,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
                 <tns:Reference></tns:Reference>
               </tns:ShipmentItem>
             </tns:Items>
+
           </tns:Details>
         </tns:Shipment>
       </tns:Shipments>
@@ -405,7 +409,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     };
 
     const shipmentObj = {
-      Reference1: session.id || '', // Add Reference1 for shipment
+      Reference1: session.id || '',
       Shipper: { Reference1: process.env.SHIPPER_REFERENCE || '', PartyAddress: shipperAddress, Contact: shipperContact },
       Consignee: { Reference1: '', PartyAddress: consigneeAddress, Contact: consigneeContact },
       Details: {
@@ -415,10 +419,10 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         NumberOfPieces: quantity,
         DescriptionOfGoods: "UV Car Inspection Device",
         GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
-        CustomsValueAmount: { Value: totalDeclaredValue, CurrencyCode: "AED" }, // Declared value as mentioned by user
-        ProductGroup: "EXP", // Express
-        ProductType: "PPX", // Priority Parcel Express (Parcel type as mentioned by user)
-        PaymentType: "P" // prepaid
+        CustomsValueAmount: { Value: totalDeclaredValue, CurrencyCode: "AED" },
+        ProductGroup: "EXP",
+        ProductType: "PPX",
+        PaymentType: "P"
       }
     };
 
@@ -434,7 +438,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // Create Aramex shipment - WITH DIMENSIONS ELEMENT
+    // Create Aramex shipment
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
@@ -459,9 +463,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       });
 
       console.log('→ XML length:', xml.length, 'characters');
-      console.log('→ Sending XML with DIMENSIONS element before ActualWeight...');
+      console.log('→ Sending XML...');
 
-      // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
       const headers = {
         'Content-Type': 'text/xml; charset=utf-8',
         'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments'
@@ -503,7 +506,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         console.error('❌ Aramex returned errors:', notifications);
         aramexError = notifications.map(n => `${n.Code}: ${n.Message}`).join('; ');
       } else {
-        // Try to extract processed shipment
         try {
           const body = parsed && (parsed['s:Envelope'] && parsed['s:Envelope']['s:Body'] ? parsed['s:Envelope']['s:Body'] : parsed);
           const respRoot = body && (body.ShipmentCreationResponse || body);
