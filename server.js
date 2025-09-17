@@ -73,7 +73,7 @@ function maskForLog(obj){
   catch(e){ return obj; }
 }
 
-// Build Aramex ShipmentCreation XML - Fixed version to avoid REQ39 error
+// Build Aramex ShipmentCreation XML - ULTIMATE FIX: Use proper ArrayOfShipment structure
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
   const sc = shipment.Shipper.Contact || {};
@@ -81,100 +81,123 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const cc = shipment.Consignee.Contact || {};
   const d = shipment.Details || {};
 
-  // Build single shipment XML - this avoids the REQ39 error
+  // Build XML with proper ArrayOfShipment structure - this should fix REQ39
   const xml = `<?xml version="1.0" encoding="utf-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.aramex.net/ShippingAPI/v1/">
-  <soapenv:Header/>
-  <soapenv:Body>
-    <v1:ShipmentCreationRequest>
-      <v1:ClientInfo>
-        <v1:UserName>${escapeXml(clientInfo.UserName || '')}</v1:UserName>
-        <v1:Password>${escapeXml(clientInfo.Password || '')}</v1:Password>
-        <v1:Version>${escapeXml(clientInfo.Version || '')}</v1:Version>
-        <v1:AccountNumber>${escapeXml(clientInfo.AccountNumber || '')}</v1:AccountNumber>
-        <v1:AccountPin>${escapeXml(clientInfo.AccountPin || '')}</v1:AccountPin>
-        <v1:AccountEntity>${escapeXml(clientInfo.AccountEntity || '')}</v1:AccountEntity>
-        <v1:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || '')}</v1:AccountCountryCode>
-        <v1:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : '')}</v1:Source>
-      </v1:ClientInfo>
-      <v1:Transaction>
-        <v1:Reference1>${escapeXml(transactionRef || '')}</v1:Reference1>
-        <v1:Reference2></v1:Reference2>
-        <v1:Reference3></v1:Reference3>
-        <v1:Reference4></v1:Reference4>
-        <v1:Reference5></v1:Reference5>
-      </v1:Transaction>
-      <v1:LabelInfo>
-        <v1:ReportID>${escapeXml(labelReportId)}</v1:ReportID>
-        <v1:ReportType>URL</v1:ReportType>
-      </v1:LabelInfo>
-      <v1:Shipments>
-        <v1:Shipment>
-          <v1:Shipper>
-            <v1:Reference1>${escapeXml(shipment.Shipper.Reference1 || '')}</v1:Reference1>
-            <v1:PartyAddress>
-              <v1:Line1>${escapeXml(sa.Line1 || '')}</v1:Line1>
-              <v1:Line2>${escapeXml(sa.Line2 || '')}</v1:Line2>
-              <v1:Line3>${escapeXml(sa.Line3 || '')}</v1:Line3>
-              <v1:City>${escapeXml(sa.City || '')}</v1:City>
-              <v1:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
-              <v1:PostCode>${escapeXml(sa.PostCode || '')}</v1:PostCode>
-              <v1:CountryCode>${escapeXml(sa.CountryCode || '')}</v1:CountryCode>
-              <v1:ResidenceType>${escapeXml(sa.ResidenceType || '')}</v1:ResidenceType>
-            </v1:PartyAddress>
-            <v1:Contact>
-              <v1:PersonName>${escapeXml(sc.PersonName || '')}</v1:PersonName>
-              <v1:CompanyName>${escapeXml(sc.CompanyName || '')}</v1:CompanyName>
-              <v1:PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</v1:PhoneNumber1>
-              <v1:PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</v1:PhoneNumber2>
-              <v1:CellPhone>${escapeXml(sc.CellPhone || '')}</v1:CellPhone>
-              <v1:EmailAddress>${escapeXml(sc.EmailAddress || '')}</v1:EmailAddress>
-              <v1:Type>${escapeXml(sc.Type || '')}</v1:Type>
-            </v1:Contact>
-          </v1:Shipper>
-          <v1:Consignee>
-            <v1:Reference1>${escapeXml(shipment.Consignee.Reference1 || '')}</v1:Reference1>
-            <v1:PartyAddress>
-              <v1:Line1>${escapeXml(ca.Line1 || '')}</v1:Line1>
-              <v1:Line2>${escapeXml(ca.Line2 || '')}</v1:Line2>
-              <v1:Line3>${escapeXml(ca.Line3 || '')}</v1:Line3>
-              <v1:City>${escapeXml(ca.City || '')}</v1:City>
-              <v1:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
-              <v1:PostCode>${escapeXml(ca.PostCode || '')}</v1:PostCode>
-              <v1:CountryCode>${escapeXml(ca.CountryCode || '')}</v1:CountryCode>
-            </v1:PartyAddress>
-            <v1:Contact>
-              <v1:PersonName>${escapeXml(cc.PersonName || '')}</v1:PersonName>
-              <v1:CompanyName>${escapeXml(cc.CompanyName || '')}</v1:CompanyName>
-              <v1:PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</v1:PhoneNumber1>
-              <v1:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</v1:PhoneNumber2>
-              <v1:CellPhone>${escapeXml(cc.CellPhone || '')}</v1:CellPhone>
-              <v1:EmailAddress>${escapeXml(cc.EmailAddress || '')}</v1:EmailAddress>
-              <v1:Type>${escapeXml(cc.Type || '')}</v1:Type>
-            </v1:Contact>
-          </v1:Consignee>
-          <v1:Details>
-            <v1:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</v1:ShippingDateTime>
-            <v1:ActualWeight>
-              <v1:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</v1:Value>
-              <v1:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</v1:Unit>
-            </v1:ActualWeight>
-            <v1:ChargeableWeight>
-              <v1:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</v1:Value>
-              <v1:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</v1:Unit>
-            </v1:ChargeableWeight>
-            <v1:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</v1:NumberOfPieces>
-            <v1:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</v1:DescriptionOfGoods>
-            <v1:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</v1:GoodsOriginCountry>
-            <v1:ProductGroup>${escapeXml(d.ProductGroup || '')}</v1:ProductGroup>
-            <v1:ProductType>${escapeXml(d.ProductType || '')}</v1:ProductType>
-            <v1:PaymentType>${escapeXml(d.PaymentType || '')}</v1:PaymentType>
-          </v1:Details>
-        </v1:Shipment>
-      </v1:Shipments>
-    </v1:ShipmentCreationRequest>
-  </soapenv:Body>
-</soapenv:Envelope>`;
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
+  <soap:Header/>
+  <soap:Body>
+    <tns:ShipmentCreationRequest>
+      <tns:ClientInfo>
+        <tns:UserName>${escapeXml(clientInfo.UserName || '')}</tns:UserName>
+        <tns:Password>${escapeXml(clientInfo.Password || '')}</tns:Password>
+        <tns:Version>${escapeXml(clientInfo.Version || '')}</tns:Version>
+        <tns:AccountNumber>${escapeXml(clientInfo.AccountNumber || '')}</tns:AccountNumber>
+        <tns:AccountPin>${escapeXml(clientInfo.AccountPin || '')}</tns:AccountPin>
+        <tns:AccountEntity>${escapeXml(clientInfo.AccountEntity || '')}</tns:AccountEntity>
+        <tns:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || '')}</tns:AccountCountryCode>
+        <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : '')}</tns:Source>
+      </tns:ClientInfo>
+      <tns:Transaction>
+        <tns:Reference1>${escapeXml(transactionRef || '')}</tns:Reference1>
+        <tns:Reference2></tns:Reference2>
+        <tns:Reference3></tns:Reference3>
+        <tns:Reference4></tns:Reference4>
+        <tns:Reference5></tns:Reference5>
+      </tns:Transaction>
+      <tns:Shipments>
+        <tns:Shipment>
+          <tns:Reference1>${escapeXml(shipment.Reference1 || '')}</tns:Reference1>
+          <tns:Reference2></tns:Reference2>
+          <tns:Reference3></tns:Reference3>
+          <tns:Shipper>
+            <tns:Reference1>${escapeXml(shipment.Shipper.Reference1 || '')}</tns:Reference1>
+            <tns:PartyAddress>
+              <tns:Line1>${escapeXml(sa.Line1 || '')}</tns:Line1>
+              <tns:Line2>${escapeXml(sa.Line2 || '')}</tns:Line2>
+              <tns:Line3>${escapeXml(sa.Line3 || '')}</tns:Line3>
+              <tns:City>${escapeXml(sa.City || '')}</tns:City>
+              <tns:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
+              <tns:PostCode>${escapeXml(sa.PostCode || '')}</tns:PostCode>
+              <tns:CountryCode>${escapeXml(sa.CountryCode || '')}</tns:CountryCode>
+            </tns:PartyAddress>
+            <tns:Contact>
+              <tns:PersonName>${escapeXml(sc.PersonName || '')}</tns:PersonName>
+              <tns:CompanyName>${escapeXml(sc.CompanyName || '')}</tns:CompanyName>
+              <tns:PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</tns:PhoneNumber1>
+              <tns:PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</tns:PhoneNumber2>
+              <tns:CellPhone>${escapeXml(sc.CellPhone || '')}</tns:CellPhone>
+              <tns:EmailAddress>${escapeXml(sc.EmailAddress || '')}</tns:EmailAddress>
+              <tns:Type>${escapeXml(sc.Type || '')}</tns:Type>
+            </tns:Contact>
+          </tns:Shipper>
+          <tns:Consignee>
+            <tns:Reference1>${escapeXml(shipment.Consignee.Reference1 || '')}</tns:Reference1>
+            <tns:PartyAddress>
+              <tns:Line1>${escapeXml(ca.Line1 || '')}</tns:Line1>
+              <tns:Line2>${escapeXml(ca.Line2 || '')}</tns:Line2>
+              <tns:Line3>${escapeXml(ca.Line3 || '')}</tns:Line3>
+              <tns:City>${escapeXml(ca.City || '')}</tns:City>
+              <tns:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
+              <tns:PostCode>${escapeXml(ca.PostCode || '')}</tns:PostCode>
+              <tns:CountryCode>${escapeXml(ca.CountryCode || '')}</tns:CountryCode>
+            </tns:PartyAddress>
+            <tns:Contact>
+              <tns:PersonName>${escapeXml(cc.PersonName || '')}</tns:PersonName>
+              <tns:CompanyName>${escapeXml(cc.CompanyName || '')}</tns:CompanyName>
+              <tns:PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</tns:PhoneNumber1>
+              <tns:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</tns:PhoneNumber2>
+              <tns:CellPhone>${escapeXml(cc.CellPhone || '')}</tns:CellPhone>
+              <tns:EmailAddress>${escapeXml(cc.EmailAddress || '')}</tns:EmailAddress>
+              <tns:Type>${escapeXml(cc.Type || '')}</tns:Type>
+            </tns:Contact>
+          </tns:Consignee>
+          <tns:ThirdParty>
+            <tns:Reference1></tns:Reference1>
+            <tns:PartyAddress>
+              <tns:Line1></tns:Line1>
+              <tns:Line2></tns:Line2>
+              <tns:Line3></tns:Line3>
+              <tns:City></tns:City>
+              <tns:StateOrProvinceCode></tns:StateOrProvinceCode>
+              <tns:PostCode></tns:PostCode>
+              <tns:CountryCode></tns:CountryCode>
+            </tns:PartyAddress>
+            <tns:Contact>
+              <tns:PersonName></tns:PersonName>
+              <tns:CompanyName></tns:CompanyName>
+              <tns:PhoneNumber1></tns:PhoneNumber1>
+              <tns:PhoneNumber2></tns:PhoneNumber2>
+              <tns:CellPhone></tns:CellPhone>
+              <tns:EmailAddress></tns:EmailAddress>
+              <tns:Type></tns:Type>
+            </tns:Contact>
+          </tns:ThirdParty>
+          <tns:Details>
+            <tns:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</tns:ShippingDateTime>
+            <tns:ActualWeight>
+              <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
+              <tns:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</tns:Unit>
+            </tns:ActualWeight>
+            <tns:ChargeableWeight>
+              <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
+              <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</tns:Unit>
+            </tns:ChargeableWeight>
+            <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
+            <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
+            <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</tns:GoodsOriginCountry>
+            <tns:ProductGroup>${escapeXml(d.ProductGroup || '')}</tns:ProductGroup>
+            <tns:ProductType>${escapeXml(d.ProductType || '')}</tns:ProductType>
+            <tns:PaymentType>${escapeXml(d.PaymentType || '')}</tns:PaymentType>
+          </tns:Details>
+        </tns:Shipment>
+      </tns:Shipments>
+      <tns:LabelInfo>
+        <tns:ReportID>${escapeXml(labelReportId)}</tns:ReportID>
+        <tns:ReportType>URL</tns:ReportType>
+      </tns:LabelInfo>
+    </tns:ShipmentCreationRequest>
+  </soap:Body>
+</soap:Envelope>`;
 
   return xml;
 }
@@ -324,6 +347,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     };
 
     const shipmentObj = {
+      Reference1: session.id || '',
       Shipper: { Reference1: process.env.SHIPPER_REFERENCE || '', PartyAddress: shipperAddress, Contact: shipperContact },
       Consignee: { Reference1: '', PartyAddress: consigneeAddress, Contact: consigneeContact },
       Details: {
@@ -351,7 +375,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // Create Aramex shipment - Fixed to avoid REQ39 error
+    // Create Aramex shipment - ULTIMATE FIX with proper XML structure
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
@@ -371,6 +395,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         labelReportId: DEFAULT_REPORT_ID,
         shipment: shipmentObj
       });
+
+      console.log('→ Sending XML to Aramex (first 1000 chars):', xml.substring(0, 1000));
 
       // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
       const headers = {
