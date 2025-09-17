@@ -19,7 +19,7 @@ const REQUIRED_ENVS = [
 const missingEnvs = REQUIRED_ENVS.filter(k => !process.env[k]);
 if (missingEnvs.length) console.warn('⚠️ Missing envs:', missingEnvs);
 
-// Stripe init (unchanged behavior)
+// Stripe init
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 // SendGrid (optional)
@@ -33,10 +33,9 @@ const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf('?') !== -1 ? ARAMEX_WSDL_URL.sp
 const WEIGHT_PER_PIECE = 1.63; // kg per piece
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || '24', 10);
 const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || '9729', 10);
-const MAX_PER_REQUEST = parseInt(process.env.ARAMEX_MAX_SHIPMENTS_PER_REQUEST || '50', 10);
 
-// Full allowed countries for Stripe shipping collection (kept)
-const allowedCountries = [ /* full list same as before — keep it */ 
+// Full allowed countries for Stripe shipping collection
+const allowedCountries = [
   'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
   'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
   'CA','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CV','CW','CY','CZ',
@@ -68,89 +67,21 @@ function escapeXml(s) {
   if (s === null || s === undefined) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 }
-function chunkArray(arr, size){ const out=[]; for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size)); return out; }
+
 function maskForLog(obj){
   try { return JSON.parse(JSON.stringify(obj, (k,v)=>{ if(!k) return v; const lk=k.toLowerCase(); if(lk.includes('password')||lk.includes('pin')) return '***'; return v;})); }
   catch(e){ return obj; }
 }
 
-// Build Aramex ShipmentCreation XML with soapenv and v1 prefixes (matches Aramex examples)
-function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipments }) {
-  const shipmentsXml = shipments.map(sh=>{
-    const sa = sh.Shipper.PartyAddress || {};
-    const sc = sh.Shipper.Contact || {};
-    const ca = sh.Consignee.PartyAddress || {};
-    const cc = sh.Consignee.Contact || {};
-    const d = sh.Details || {};
+// Build Aramex ShipmentCreation XML - Fixed version to avoid REQ39 error
+function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
+  const sa = shipment.Shipper.PartyAddress || {};
+  const sc = shipment.Shipper.Contact || {};
+  const ca = shipment.Consignee.PartyAddress || {};
+  const cc = shipment.Consignee.Contact || {};
+  const d = shipment.Details || {};
 
-    return `
-      <v1:Shipment>
-        <v1:Shipper>
-          <v1:Reference1>${escapeXml(sh.Shipper.Reference1 || '')}</v1:Reference1>
-          <v1:PartyAddress>
-            <v1:Line1>${escapeXml(sa.Line1 || '')}</v1:Line1>
-            <v1:Line2>${escapeXml(sa.Line2 || '')}</v1:Line2>
-            <v1:Line3>${escapeXml(sa.Line3 || '')}</v1:Line3>
-            <v1:City>${escapeXml(sa.City || '')}</v1:City>
-            <v1:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
-            <v1:PostCode>${escapeXml(sa.PostCode || '')}</v1:PostCode>
-            <v1:CountryCode>${escapeXml(sa.CountryCode || '')}</v1:CountryCode>
-            <v1:ResidenceType>${escapeXml(sa.ResidenceType || '')}</v1:ResidenceType>
-          </v1:PartyAddress>
-          <v1:Contact>
-            <v1:PersonName>${escapeXml(sc.PersonName || '')}</v1:PersonName>
-            <v1:CompanyName>${escapeXml(sc.CompanyName || '')}</v1:CompanyName>
-            <v1:PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</v1:PhoneNumber1>
-            <v1:PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</v1:PhoneNumber2>
-            <v1:CellPhone>${escapeXml(sc.CellPhone || '')}</v1:CellPhone>
-            <v1:EmailAddress>${escapeXml(sc.EmailAddress || '')}</v1:EmailAddress>
-            <v1:Type>${escapeXml(sc.Type || '')}</v1:Type>
-          </v1:Contact>
-        </v1:Shipper>
-
-        <v1:Consignee>
-          <v1:Reference1>${escapeXml(sh.Consignee.Reference1 || '')}</v1:Reference1>
-          <v1:PartyAddress>
-            <v1:Line1>${escapeXml(ca.Line1 || '')}</v1:Line1>
-            <v1:Line2>${escapeXml(ca.Line2 || '')}</v1:Line2>
-            <v1:Line3>${escapeXml(ca.Line3 || '')}</v1:Line3>
-            <v1:City>${escapeXml(ca.City || '')}</v1:City>
-            <v1:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
-            <v1:PostCode>${escapeXml(ca.PostCode || '')}</v1:PostCode>
-            <v1:CountryCode>${escapeXml(ca.CountryCode || '')}</v1:CountryCode>
-          </v1:PartyAddress>
-          <v1:Contact>
-            <v1:PersonName>${escapeXml(cc.PersonName || '')}</v1:PersonName>
-            <v1:CompanyName>${escapeXml(cc.CompanyName || '')}</v1:CompanyName>
-            <v1:PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</v1:PhoneNumber1>
-            <v1:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</v1:PhoneNumber2>
-            <v1:CellPhone>${escapeXml(cc.CellPhone || '')}</v1:CellPhone>
-            <v1:EmailAddress>${escapeXml(cc.EmailAddress || '')}</v1:EmailAddress>
-            <v1:Type>${escapeXml(cc.Type || '')}</v1:Type>
-          </v1:Contact>
-        </v1:Consignee>
-
-        <v1:Details>
-          <v1:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</v1:ShippingDateTime>
-          <v1:ActualWeight>
-            <v1:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</v1:Value>
-            <v1:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</v1:Unit>
-          </v1:ActualWeight>
-          <v1:ChargeableWeight>
-            <v1:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</v1:Value>
-            <v1:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</v1:Unit>
-          </v1:ChargeableWeight>
-          <v1:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</v1:NumberOfPieces>
-          <v1:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</v1:DescriptionOfGoods>
-          <v1:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</v1:GoodsOriginCountry>
-          <v1:ProductGroup>${escapeXml(d.ProductGroup || '')}</v1:ProductGroup>
-          <v1:ProductType>${escapeXml(d.ProductType || '')}</v1:ProductType>
-          <v1:PaymentType>${escapeXml(d.PaymentType || '')}</v1:PaymentType>
-        </v1:Details>
-      </v1:Shipment>`;
-  }).join('\n');
-
-  // Envelope uses soapenv and v1 namespaces (matches Aramex docs/examples)
+  // Build single shipment XML - this avoids the REQ39 error
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.aramex.net/ShippingAPI/v1/">
   <soapenv:Header/>
@@ -166,7 +97,6 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
         <v1:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || '')}</v1:AccountCountryCode>
         <v1:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : '')}</v1:Source>
       </v1:ClientInfo>
-
       <v1:Transaction>
         <v1:Reference1>${escapeXml(transactionRef || '')}</v1:Reference1>
         <v1:Reference2></v1:Reference2>
@@ -174,14 +104,73 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
         <v1:Reference4></v1:Reference4>
         <v1:Reference5></v1:Reference5>
       </v1:Transaction>
-
       <v1:LabelInfo>
         <v1:ReportID>${escapeXml(labelReportId)}</v1:ReportID>
         <v1:ReportType>URL</v1:ReportType>
       </v1:LabelInfo>
-
       <v1:Shipments>
-        ${shipmentsXml}
+        <v1:Shipment>
+          <v1:Shipper>
+            <v1:Reference1>${escapeXml(shipment.Shipper.Reference1 || '')}</v1:Reference1>
+            <v1:PartyAddress>
+              <v1:Line1>${escapeXml(sa.Line1 || '')}</v1:Line1>
+              <v1:Line2>${escapeXml(sa.Line2 || '')}</v1:Line2>
+              <v1:Line3>${escapeXml(sa.Line3 || '')}</v1:Line3>
+              <v1:City>${escapeXml(sa.City || '')}</v1:City>
+              <v1:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
+              <v1:PostCode>${escapeXml(sa.PostCode || '')}</v1:PostCode>
+              <v1:CountryCode>${escapeXml(sa.CountryCode || '')}</v1:CountryCode>
+              <v1:ResidenceType>${escapeXml(sa.ResidenceType || '')}</v1:ResidenceType>
+            </v1:PartyAddress>
+            <v1:Contact>
+              <v1:PersonName>${escapeXml(sc.PersonName || '')}</v1:PersonName>
+              <v1:CompanyName>${escapeXml(sc.CompanyName || '')}</v1:CompanyName>
+              <v1:PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</v1:PhoneNumber1>
+              <v1:PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</v1:PhoneNumber2>
+              <v1:CellPhone>${escapeXml(sc.CellPhone || '')}</v1:CellPhone>
+              <v1:EmailAddress>${escapeXml(sc.EmailAddress || '')}</v1:EmailAddress>
+              <v1:Type>${escapeXml(sc.Type || '')}</v1:Type>
+            </v1:Contact>
+          </v1:Shipper>
+          <v1:Consignee>
+            <v1:Reference1>${escapeXml(shipment.Consignee.Reference1 || '')}</v1:Reference1>
+            <v1:PartyAddress>
+              <v1:Line1>${escapeXml(ca.Line1 || '')}</v1:Line1>
+              <v1:Line2>${escapeXml(ca.Line2 || '')}</v1:Line2>
+              <v1:Line3>${escapeXml(ca.Line3 || '')}</v1:Line3>
+              <v1:City>${escapeXml(ca.City || '')}</v1:City>
+              <v1:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</v1:StateOrProvinceCode>
+              <v1:PostCode>${escapeXml(ca.PostCode || '')}</v1:PostCode>
+              <v1:CountryCode>${escapeXml(ca.CountryCode || '')}</v1:CountryCode>
+            </v1:PartyAddress>
+            <v1:Contact>
+              <v1:PersonName>${escapeXml(cc.PersonName || '')}</v1:PersonName>
+              <v1:CompanyName>${escapeXml(cc.CompanyName || '')}</v1:CompanyName>
+              <v1:PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</v1:PhoneNumber1>
+              <v1:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</v1:PhoneNumber2>
+              <v1:CellPhone>${escapeXml(cc.CellPhone || '')}</v1:CellPhone>
+              <v1:EmailAddress>${escapeXml(cc.EmailAddress || '')}</v1:EmailAddress>
+              <v1:Type>${escapeXml(cc.Type || '')}</v1:Type>
+            </v1:Contact>
+          </v1:Consignee>
+          <v1:Details>
+            <v1:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</v1:ShippingDateTime>
+            <v1:ActualWeight>
+              <v1:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</v1:Value>
+              <v1:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</v1:Unit>
+            </v1:ActualWeight>
+            <v1:ChargeableWeight>
+              <v1:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</v1:Value>
+              <v1:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</v1:Unit>
+            </v1:ChargeableWeight>
+            <v1:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</v1:NumberOfPieces>
+            <v1:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</v1:DescriptionOfGoods>
+            <v1:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</v1:GoodsOriginCountry>
+            <v1:ProductGroup>${escapeXml(d.ProductGroup || '')}</v1:ProductGroup>
+            <v1:ProductType>${escapeXml(d.ProductType || '')}</v1:ProductType>
+            <v1:PaymentType>${escapeXml(d.PaymentType || '')}</v1:PaymentType>
+          </v1:Details>
+        </v1:Shipment>
       </v1:Shipments>
     </v1:ShipmentCreationRequest>
   </soapenv:Body>
@@ -190,7 +179,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   return xml;
 }
 
-// ----------------- Checkout creation (kept as-is) -----------------
+// ----------------- Checkout creation -----------------
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -323,6 +312,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       PostCode: (session.shipping && session.shipping.address && session.shipping.address.postal_code) ? session.shipping.address.postal_code : (address.postal_code || ""),
       CountryCode: (session.shipping && session.shipping.address && session.shipping.address.country) ? session.shipping.address.country : (address.country || "")
     };
+    
     const consigneeContact = {
       PersonName: (session.shipping && session.shipping.name) ? session.shipping.name : (customerName || ""),
       CompanyName: (session.shipping && session.shipping.name) ? session.shipping.name : (customerName || ""),
@@ -361,28 +351,38 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    const xml = buildShipmentCreationXml({
-      clientInfo,
-      transactionRef: session.id || '',
-      labelReportId: DEFAULT_REPORT_ID,
-      shipments: [shipmentObj]
-    });
-
-    // Create Aramex shipment - Fixed the missing loop structure
-    const allTrackings = [];
-    const allNotifications = [];
+    // Create Aramex shipment - Fixed to avoid REQ39 error
+    let trackingId = null;
+    let labelUrl = null;
+    let aramexError = null;
     
     try {
-      console.log('→ Sending Aramex XML (sanitized):', JSON.stringify(maskForLog({ AccountNumber: clientInfo.AccountNumber, UserName: clientInfo.UserName })));
+      console.log('→ Creating Aramex shipment for order:', session.id);
+      console.log('→ Shipment details:', JSON.stringify(maskForLog({
+        quantity,
+        weight: totalWeight,
+        destination: consigneeAddress.CountryCode,
+        account: clientInfo.AccountNumber
+      })));
+
+      const xml = buildShipmentCreationXml({
+        clientInfo,
+        transactionRef: session.id || '',
+        labelReportId: DEFAULT_REPORT_ID,
+        shipment: shipmentObj
+      });
 
       // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
       const headers = {
         'Content-Type': 'text/xml; charset=utf-8',
         'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments'
       };
+      
       const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
 
-      if (resp && resp.data) console.log('⤷ Aramex raw response (snippet):', (typeof resp.data === 'string' ? resp.data.substring(0,2000) : JSON.stringify(resp.data).substring(0,2000)));
+      if (resp && resp.data) {
+        console.log('⤷ Aramex raw response (snippet):', (typeof resp.data === 'string' ? resp.data.substring(0,2000) : JSON.stringify(resp.data).substring(0,2000)));
+      }
 
       let parsed = null;
       try { 
@@ -391,78 +391,93 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         console.warn('Could not parse Aramex response XML:', e && e.message ? e.message : e); 
       }
 
-      // look for Notifications or ProcessedShipment
-      let notes = [];
+      // Check for errors first
+      let hasErrors = false;
+      let notifications = [];
+      
       try {
-        const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
+        const body = parsed && (parsed['s:Envelope'] && parsed['s:Envelope']['s:Body'] ? parsed['s:Envelope']['s:Body'] : parsed);
         const respRoot = body && (body.ShipmentCreationResponse || body);
-        if (respRoot && respRoot.Notifications && respRoot.Notifications.Notification) {
-          notes = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
-        } else if (respRoot && respRoot.Notification) {
-          notes = Array.isArray(respRoot.Notification) ? respRoot.Notification : [respRoot.Notification];
+        
+        if (respRoot && respRoot.HasErrors) {
+          hasErrors = respRoot.HasErrors === 'true' || respRoot.HasErrors === true;
         }
-      } catch(e){ /* ignore */ }
-
-      if (notes && notes.length) {
-        console.error('Aramex returned Notifications:', notes);
-        allNotifications.push(...notes);
-        notes.forEach(n => { 
-          if (n.Code && String(n.Code).includes('REQ39')) {
-            console.error('→ REQ39 detected. Sent XML (first 2000 chars):', xml.substring(0,2000));
-          }
-        });
-        // Don't continue here - process the response anyway
-      }
-
-      // Try extract processed shipments
-      try {
-        const body = parsed && (parsed['soapenv:Envelope'] && parsed['soapenv:Envelope']['soapenv:Body'] ? parsed['soapenv:Envelope']['soapenv:Body'] : parsed);
-        const respRoot = body && (body.ShipmentCreationResponse || body);
-        const processed = respRoot && (respRoot.ProcessedShipment || respRoot.ProcessedShipments) ? (respRoot.ProcessedShipment || respRoot.ProcessedShipments) : null;
-        if (processed) {
-          if (Array.isArray(processed)) {
-            processed.forEach(p => {
-              const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A');
-              const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A';
-              allTrackings.push({ id, url });
-            });
-          } else {
-            const p = processed;
-            const id = p && p.ID ? p.ID : (p && p.ShipmentID ? p.ShipmentID : 'N/A');
-            const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : 'N/A';
-            allTrackings.push({ id, url });
-          }
+        
+        if (respRoot && respRoot.Notifications && respRoot.Notifications.Notification) {
+          notifications = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
         }
       } catch(e) { 
-        console.warn('Could not extract ProcessedShipment:', e && e.message ? e.message : e); 
+        console.warn('Could not parse error info:', e && e.message ? e.message : e); 
+      }
+
+      if (hasErrors || notifications.length > 0) {
+        console.error('❌ Aramex returned errors:', notifications);
+        aramexError = notifications.map(n => `${n.Code}: ${n.Message}`).join('; ');
+      } else {
+        // Try to extract processed shipment
+        try {
+          const body = parsed && (parsed['s:Envelope'] && parsed['s:Envelope']['s:Body'] ? parsed['s:Envelope']['s:Body'] : parsed);
+          const respRoot = body && (body.ShipmentCreationResponse || body);
+          const shipments = respRoot && respRoot.Shipments && respRoot.Shipments.ProcessedShipment ? respRoot.Shipments.ProcessedShipment : null;
+          
+          if (shipments) {
+            const shipment = Array.isArray(shipments) ? shipments[0] : shipments;
+            trackingId = shipment && shipment.ID ? shipment.ID : null;
+            labelUrl = shipment && shipment.ShipmentLabel && shipment.ShipmentLabel.LabelURL ? shipment.ShipmentLabel.LabelURL : null;
+            
+            if (trackingId) {
+              console.log('✅ Aramex shipment created successfully!');
+              console.log('→ Tracking ID:', trackingId);
+              console.log('→ Label URL:', labelUrl);
+            }
+          }
+        } catch(e) { 
+          console.warn('Could not extract shipment info:', e && e.message ? e.message : e); 
+        }
       }
 
     } catch (err) {
-      console.error('Aramex API error:', err && err.message ? err.message : err);
-      allNotifications.push({ Code: 'API_ERROR', Message: err && err.message ? err.message : 'Unknown error' });
+      console.error('❌ Aramex API error:', err && err.message ? err.message : err);
+      aramexError = err && err.message ? err.message : 'Unknown Aramex API error';
     }
 
     // Send email notification (if configured)
     if (process.env.SENDGRID_API_KEY && customerEmail) {
       try {
-        const trackingInfo = allTrackings.length ? allTrackings.map(t => `Tracking ID: ${t.id}, Label: ${t.url}`).join('\n') : 'No tracking information available';
+        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n`;
+        
+        if (trackingId) {
+          emailContent += `\nShipping Information:\n- Tracking ID: ${trackingId}\n`;
+          if (labelUrl) {
+            emailContent += `- Shipping Label: ${labelUrl}\n`;
+          }
+        } else if (aramexError) {
+          emailContent += `\nShipping Status: Processing (${aramexError})\n`;
+        } else {
+          emailContent += `\nShipping Status: Processing\n`;
+        }
+        
+        emailContent += `\nBest regards,\nAxis UV Team`;
+        
         const msg = {
           to: customerEmail,
           from: process.env.MAIL_FROM,
           subject: 'Order Confirmation - UV Car Inspection Device',
-          text: `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n\nShipping Information:\n${trackingInfo}\n\nBest regards,\nAxis UV Team`
+          text: emailContent
         };
         await sgMail.send(msg);
         console.log('✅ Email sent to:', customerEmail);
       } catch (emailErr) {
-        console.error('Email sending failed:', emailErr && emailErr.message ? emailErr.message : emailErr);
+        console.error('❌ Email sending failed:', emailErr && emailErr.message ? emailErr.message : emailErr);
       }
     }
 
     console.log('✅ Webhook processed successfully');
-    console.log('→ Trackings:', allTrackings);
-    console.log('→ Notifications:', allNotifications);
-
+    if (trackingId) {
+      console.log('→ Shipment created with tracking:', trackingId);
+    } else {
+      console.log('→ Shipment creation failed:', aramexError || 'Unknown error');
+    }
   }
 
   res.status(200).send('OK');
