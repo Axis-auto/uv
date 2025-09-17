@@ -234,7 +234,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     // استدعاء SOAP
     const aramexUrl = process.env.ARAMEX_WSDL_URL.replace('?wsdl', '');  // استخدم URL الخدمة، لا WSDL
     try {
-      const client = await soap.createClientAsync(process.env.ARAMEX_WSDL_URL);  // تحميل WSDL مرة واحدة
+      const client = await soap.createClientAsync(process.env.ARAMEX_WSDL_URL, { timeout: 30000 });  // إضافة خيار المهلة هنا (30 ثانية)
       const response = await client.CreateShipmentsAsync(args);
 
       console.log('✅ Aramex result:', JSON.stringify(response, null, 2));
