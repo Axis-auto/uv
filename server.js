@@ -75,22 +75,6 @@ function maskForLog(obj){
   catch(e){ return obj; }
 }
 
-// --- sanitizePostcode: kept (unused for consignee since user requested omission) ---
-function sanitizePostcode(postcode, countryCode) {
-  if (!postcode) return '';
-  const cc = (countryCode || '').toUpperCase();
-  let pc = String(postcode).trim();
-  pc = pc.replace(/[^\w\-]/g, '');
-  if (cc === 'AE') return '';
-  if (cc === 'TR') {
-    const m = pc.match(/^\d{5}$/);
-    if (m) return pc;
-    return '';
-  }
-  if (pc.length > 20) pc = pc.substring(0,20);
-  return pc;
-}
-
 // Build Aramex ShipmentCreation XML - WITH DIMENSIONS ELEMENT
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
@@ -170,7 +154,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Line3>${escapeXml(ca.Line3 || '')}</tns:Line3>
               <tns:City>${escapeXml(ca.City || '')}</tns:City>
               <tns:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
-              <!-- PostCode intentionally omitted for Consignee per request -->
+              <tns:PostCode>${escapeXml(ca.PostCode || '')}</tns:PostCode>
               <tns:CountryCode>${escapeXml(ca.CountryCode || '')}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
@@ -414,17 +398,14 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
     const shipping = (fullSession && fullSession.shipping) ? fullSession.shipping : (fullSession && fullSession.customer_details && fullSession.customer_details.address ? { address: fullSession.customer_details.address, name: fullSession.customer_details.name } : null);
 
-    // ---- build consignee address but DO NOT include PostCode ----
-    const shippingCountry = (shipping && shipping.address && shipping.address.country) ? shipping.address.country : '';
-
     const consigneeAddress = {
       Line1: (shipping && shipping.address && (shipping.address.line1 || shipping.address.address_line1)) ? (shipping.address.line1 || shipping.address.address_line1) : '',
       Line2: (shipping && shipping.address && (shipping.address.line2 || shipping.address.address_line2)) ? (shipping.address.line2 || shipping.address.address_line2) : '',
       Line3: '',
       City: (shipping && shipping.address && (shipping.address.city || shipping.address.locality)) ? (shipping.address.city || shipping.address.locality) : '',
       StateOrProvinceCode: (shipping && shipping.address && (shipping.address.state || shipping.address.region)) ? (shipping.address.state || shipping.address.region) : '',
-      // PostCode intentionally not included for Consignee
-      CountryCode: shippingCountry
+      PostCode: (shipping && shipping.address && (shipping.address.postal_code || shipping.address.postcode)) ? (shipping.address.postal_code || shipping.address.postcode) : '',
+      CountryCode: (shipping && shipping.address && shipping.address.country) ? shipping.address.country : ''
     };
 
     const consigneeContact = {
