@@ -1,4 +1,4 @@
-// server.js (fixed)
+// server.js (updated with Aramex normalization + chunking + better logging)
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -41,7 +41,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '');
 // SendGrid
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex WSDL URL
+// Aramex WSDL URL (fallback)
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl';
 
 // Weight per piece
@@ -78,12 +78,35 @@ function allowedCountriesForStripe(list) {
   return list.map(c => (typeof c === 'string' ? c.toUpperCase() : c));
 }
 
-// Normalize shipments helper (if needed)
+// --- Helpers ---
+
+// Normalize shipments: if Shipments.Shipment is an array of length 1 convert to an object
 function normalizeShipments(args) {
   if (!args || !args.Shipments) return args;
   const s = args.Shipments.Shipment;
   if (Array.isArray(s) && s.length === 1) args.Shipments.Shipment = s[0];
   return args;
+}
+
+// Chunk array into smaller arrays of given size
+function chunkArray(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+// Mask sensitive fields for logging preview
+function maskSensitive(obj) {
+  try {
+    return JSON.parse(JSON.stringify(obj, (k, v) => {
+      if (!k) return v;
+      const low = k.toLowerCase();
+      if (low.includes('password') || low.includes('pin') || low.includes('accountpin')) return '***';
+      return v;
+    }));
+  } catch (e) {
+    return obj;
+  }
 }
 
 // Create Checkout Session
@@ -247,93 +270,153 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       }
     };
 
-    // IMPORTANT: send Shipment as an array (explicit) to satisfy Aramex requirement
-    const args = {
-      ClientInfo: {
-        UserName: process.env.ARAMEX_USER || '',
-        Password: process.env.ARAMEX_PASSWORD || '',
-        Version: process.env.ARAMEX_VERSION || 'v2',
-        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || '',
-        AccountPin: process.env.ARAMEX_ACCOUNT_PIN || '',
-        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || '',
-        AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY || ''
-      },
-      Transaction: { Reference1: session.id || '', Reference2: '', Reference3: '', Reference4: '', Reference5: '' },
-      LabelInfo: { ReportID: 9729, ReportType: "URL" },
-      Shipments: { Shipment: [ shipmentObj ] }
-    };
+    // Ensure shipments list (we support single object or array)
+    const shipmentsArray = Array.isArray(shipmentObj) ? shipmentObj : [shipmentObj];
+    const MAX_PER_REQUEST = parseInt(process.env.ARAMEX_MAX_SHIPMENTS_PER_REQUEST || '50', 10);
 
-    // Print sanitized args preview
-    try {
-      const debugArgs = JSON.parse(JSON.stringify(args, (k, v) => (k === 'Password' || k === 'AccountPin') ? '***' : v));
-      console.log('→ Prepared Aramex CreateShipments args (sanitized preview):', JSON.stringify(debugArgs, null, 2));
-    } catch (e) {
-      console.log('→ Prepared Aramex args (could not stringify fully)');
-    }
-
-    // Call Aramex
+    // Prepare SOAP client once
     try {
       const client = await soap.createClientAsync(ARAMEX_WSDL_URL, { timeout: 30000 });
+
+      // optionally set endpoint without query string
       try {
         const endpoint = (process.env.ARAMEX_WSDL_URL && process.env.ARAMEX_WSDL_URL.indexOf('?') !== -1)
           ? process.env.ARAMEX_WSDL_URL.split('?')[0]
           : process.env.ARAMEX_WSDL_URL;
         client.setEndpoint(endpoint);
-      } catch (e) { /* ignore */ }
+      } catch (e) { /* ignore endpoint set errors */ }
 
-      const response = await client.CreateShipmentsAsync(args);
-      console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));
+      // chunk shipments to avoid exceeding server-per-request limits
+      const chunks = chunkArray(shipmentsArray, MAX_PER_REQUEST);
+      console.log(`→ Will send ${shipmentsArray.length} shipment(s) in ${chunks.length} request(s) (max per request = ${MAX_PER_REQUEST})`);
 
-      // log first 2000 chars of lastRequest to avoid huge logs but keep content
-      try {
-        if (client && client.lastRequest) {
-          console.log('⤷ Aramex lastRequest XML (snippet):', client.lastRequest.substring(0, 2000));
+      const allTrackings = [];
+      const allNotifications = [];
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+
+        const args = {
+          ClientInfo: {
+            UserName: process.env.ARAMEX_USER || '',
+            Password: process.env.ARAMEX_PASSWORD || '',
+            Version: process.env.ARAMEX_VERSION || 'v2',
+            AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || '',
+            AccountPin: process.env.ARAMEX_ACCOUNT_PIN || '',
+            AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || '',
+            AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY || '',
+            Source: parseInt(process.env.ARAMEX_SOURCE || '24', 10)
+          },
+          Transaction: { Reference1: session.id || '', Reference2: '', Reference3: '', Reference4: '', Reference5: '' },
+          LabelInfo: { ReportID: parseInt(process.env.ARAMEX_REPORT_ID || '9729', 10), ReportType: "URL" },
+          Shipments: { Shipment: chunk }
+        };
+
+        // sanitize preview log
+        try {
+          const debugArgs = maskSensitive(args);
+          console.log(`→ Prepared Aramex CreateShipments args chunk ${i+1}/${chunks.length} (sanitized):`, JSON.stringify(debugArgs, null, 2));
+        } catch (e) {
+          console.log(`→ Prepared Aramex args chunk ${i+1}/${chunks.length} (could not stringify fully)`);
         }
-      } catch (e) {
-        console.log('⤷ Could not log client.lastRequest:', e && e.message ? e.message : e);
-      }
 
-      const result = response && response[0] ? response[0] : null;
-      if (!result) {
-        console.error('Aramex: empty response or unexpected format.', response);
-      } else if (result.HasErrors) {
-        console.error('Aramex shipment creation failed:', result.Notifications || result);
-      } else {
-        // success path: extract tracking and send email
-        const processed = result.ProcessedShipment || result.ProcessedShipments || null;
-        let trackingNumber = 'N/A', trackingUrl = 'N/A';
-        if (processed) {
-          const p = Array.isArray(processed) ? processed[0] : processed;
-          if (p && p.ID) trackingNumber = p.ID;
-          if (p && p.ShipmentLabel && p.ShipmentLabel.LabelURL) trackingUrl = p.ShipmentLabel.LabelURL;
+        // normalize shape expected by Aramex (object vs array)
+        normalizeShipments(args);
+
+        // call Aramex for this chunk
+        try {
+          const response = await client.CreateShipmentsAsync(args);
+          console.log(`✅ Aramex response (chunk ${i+1}/${chunks.length}):`, Array.isArray(response) ? '(array) length ' + response.length : typeof response);
+
+          const result = Array.isArray(response) && response[0] ? response[0] : response;
+          if (!result) {
+            console.error('Aramex: empty response or unexpected format for chunk', i+1, response);
+            allNotifications.push({ Code: 'NO_RESPONSE', Message: `Empty/unexpected response for chunk ${i+1}` });
+            continue;
+          }
+
+          if (result.HasErrors) {
+            console.error('Aramex shipment creation failed (chunk):', result.Notifications || result);
+            // normalize notifications
+            const notes = result.Notifications && result.Notifications.Notification
+              ? (Array.isArray(result.Notifications.Notification) ? result.Notifications.Notification : [result.Notifications.Notification])
+              : (result.Notifications || []);
+            allNotifications.push(...(notes || []));
+            continue;
+          } else {
+            // success path: extract processed shipments (could be single or multiple)
+            const processed = result.ProcessedShipment || result.ProcessedShipments || null;
+            if (processed) {
+              if (Array.isArray(processed)) {
+                processed.forEach(p => {
+                  const id = p && p.ID ? p.ID : 'N/A';
+                  const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : (p && p.ShipmentLabel ? p.ShipmentLabel : 'N/A');
+                  allTrackings.push({ id, url });
+                });
+              } else {
+                const p = processed;
+                const id = p && p.ID ? p.ID : 'N/A';
+                const url = p && p.ShipmentLabel && p.ShipmentLabel.LabelURL ? p.ShipmentLabel.LabelURL : (p && p.ShipmentLabel ? p.ShipmentLabel : 'N/A');
+                allTrackings.push({ id, url });
+              }
+            } else {
+              // sometimes API returns differently — safety
+              console.warn('Aramex returned success but no ProcessedShipment(s) found for chunk', i+1, result);
+            }
+          }
+
+          // log lastRequest snippet (helps debugging account-level errors)
+          try {
+            if (client && client.lastRequest) {
+              console.log('⤷ Aramex lastRequest XML (snippet):', client.lastRequest.substring(0, 2000));
+            }
+          } catch (e) {
+            console.log('⤷ Could not log client.lastRequest:', e && e.message ? e.message : e);
+          }
+
+        } catch (err) {
+          console.error(`Aramex API call error for chunk ${i+1}:`, (err && err.message) ? err.message : err);
+          if (err && err.root) {
+            try { console.error('Aramex error root:', JSON.stringify(err.root, null, 2)); } catch (e) { console.error(err.root); }
+          }
+          allNotifications.push({ Code: 'CALL_ERROR', Message: (err && err.message) ? err.message : 'Unknown error' });
         }
+      } // end chunks loop
 
+      // After all chunks: send email if we have tracking info, otherwise log notifications
+      if (allTrackings.length) {
         try {
           if (process.env.SENDGRID_API_KEY) {
+            const trackingLines = allTrackings.map(t => `Tracking Number: ${t.id} — Label: ${t.url}`).join('\n');
+            const htmlLines = allTrackings.map(t => `<li><b>${t.id}</b> — <a href="${t.url}">Label</a></li>`).join('');
             const msg = {
               to: customerEmail || process.env.MAIL_FROM,
               from: process.env.MAIL_FROM,
-              subject: 'Your Order Confirmation',
-              text: `Hello ${customerName || ''}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-              html: `<strong>Hello ${customerName || ''}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
+              subject: 'Your Order Confirmation & Tracking',
+              text: `Hello ${customerName || ''}, your order is confirmed.\n\n${trackingLines}`,
+              html: `<strong>Hello ${customerName || ''}</strong><br>Your order is confirmed.<br><ul>${htmlLines}</ul>`
             };
             await sgMail.send(msg);
-            console.log('📧 Email sent to', customerEmail);
+            console.log('📧 Email sent to', customerEmail, 'with tracking info');
           } else {
             console.warn('SendGrid API key not configured - skipping email.');
           }
         } catch (err) {
           console.error('SendGrid send error:', err && err.message ? err.message : err);
         }
+      } else {
+        console.error('No tracking numbers generated. Aramex notifications:', allNotifications);
       }
+
     } catch (err) {
-      console.error('Aramex API error:', (err && err.message) ? err.message : err);
+      console.error('Aramex client creation / request error:', (err && err.message) ? err.message : err);
       if (err && err.root) {
         try { console.error('Aramex error root:', JSON.stringify(err.root, null, 2)); } catch (e) { console.error(err.root); }
       }
     }
   }
 
+  // respond to Stripe webhook
   res.json({ received: true });
 });
 
