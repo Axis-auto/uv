@@ -191,12 +191,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Unit>CM</tns:Unit>
             </tns:Dimensions>
             <tns:ActualWeight>
-              <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
               <tns:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</tns:Unit>
+              <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
             </tns:ActualWeight>
             <tns:ChargeableWeight>
-              <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
               <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</tns:Unit>
+              <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
             </tns:ChargeableWeight>
             <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
             <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
@@ -226,8 +226,8 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
                 <tns:PackageType>Box</tns:PackageType>
                 <tns:Quantity>${escapeXml(d.NumberOfPieces || 1)}</tns:Quantity>
                 <tns:Weight>
-                  <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
                   <tns:Unit>KG</tns:Unit>
+                  <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
                 </tns:Weight>
                 <tns:Comments>${escapeXml(d.DescriptionOfGoods || '')}</tns:Comments>
                 <tns:Reference></tns:Reference>
@@ -574,4 +574,3 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log('🔧 Environment check:', missingEnvs.length ? `Missing: ${missingEnvs.join(', ')}` : 'All required env vars present');
 });
-
