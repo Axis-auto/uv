@@ -14,11 +14,8 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 // SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex WSDL URL and credentials are expected in environment variables
-// Ensure ARAMEX_WSDL_URL contains the full WSDL URL (often ends with ?wsdl)
-
-// ثوابت المنتج
-const WEIGHT_PER_PIECE_KG = 1.63; // الوزن لكل قطعة كما طلبت
+// ثوابت
+const WEIGHT_PER_PIECE_KG = 1.63; // الوزن لكل قطعة
 
 // ====== إنشاء جلسة الدفع ======
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
@@ -120,6 +117,59 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   }
 });
 
+// ====== دالة مساعدة: تجربة Variants لطلب Aramex ======
+async function tryCreateWithVariants(client, baseArgs, shipmentObj) {
+  const variants = [];
+
+  // Variant A: Shipment ككائن
+  const vA = JSON.parse(JSON.stringify(baseArgs));
+  vA.Shipments = { Shipment: shipmentObj };
+  variants.push({ name: 'ShipmentObject', args: vA });
+
+  // Variant B: Shipment كمصفوفة بطول 1
+  const vB = JSON.parse(JSON.stringify(baseArgs));
+  vB.Shipments = { Shipment: [ shipmentObj ] };
+  variants.push({ name: 'ShipmentArray', args: vB });
+
+  // Variant C: بدون LabelInfo
+  const vC = JSON.parse(JSON.stringify(baseArgs));
+  delete vC.LabelInfo;
+  vC.Shipments = { Shipment: shipmentObj };
+  variants.push({ name: 'NoLabelInfo', args: vC });
+
+  for (const v of variants) {
+    console.log(`🔁 Trying Aramex variant: ${v.name}`);
+    try {
+      const resp = await client.CreateShipmentsAsync(v.args);
+
+      // سجّل الـ XML المُرسَل والمُستلم (node-soap يوفر lastRequest/lastResponse)
+      try { if (client.lastRequest) console.log('--- client.lastRequest ---
+', client.lastRequest); } catch(e) { }
+      try { if (client.lastResponse) console.log('--- client.lastResponse ---
+', client.lastResponse); } catch(e) { }
+
+      console.log('--- response (JS) ---', JSON.stringify(resp, null, 2));
+
+      const result = resp && resp[0];
+      if (result && !result.HasErrors) {
+        console.log(`✅ Success with variant: ${v.name}`);
+        return { success: true, variant: v.name, response: resp };
+      } else {
+        console.warn(`❌ Variant ${v.name} failed:`, result && result.Notifications ? result.Notifications : result);
+      }
+
+    } catch (err) {
+      console.error(`⚠️ Error calling CreateShipments (variant ${v.name}):`, err);
+      try { if (client.lastRequest) console.log('--- client.lastRequest (on error) ---
+', client.lastRequest); } catch(e) {}
+      try { if (client.lastResponse) console.log('--- client.lastResponse (on error) ---
+', client.lastResponse); } catch(e) {}
+    }
+  }
+
+  return { success: false, message: 'All variants failed' };
+}
+
 // ====== Webhook من Stripe (مُحسّن) ======
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
@@ -166,7 +216,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       // وزن الشحنة بناءً على عدد القطع
       const totalWeight = parseFloat((quantity * WEIGHT_PER_PIECE_KG).toFixed(2));
 
-      // بناء كائن الشحنة (أرسل Shipment ككائن واحد لتجنب مشاكل الـ array)
+      // بناء كائن الشحنة
       const shipmentObj = {
         Shipper: {
           Reference1: process.env.SHIPPER_REFERENCE || '',
@@ -233,7 +283,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
           ReportID: 9729,
           ReportType: 'URL'
         },
-        // أرسل Shipment ككائن مفرد — هذا يحد من احتمال أن تعامل Aramex الطلب كمجموعة شحنات
         Shipments: {
           Shipment: shipmentObj
         }
@@ -243,29 +292,28 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       console.log('➡️ Aramex request args:', JSON.stringify(args, null, 2));
 
       try {
-        // أنشئ عميل SOAP باستخدام رابط WSDL كما هو موجود في متغير البيئة
         const client = await soap.createClientAsync(process.env.ARAMEX_WSDL_URL, { timeout: 30000 });
-        const response = await client.CreateShipmentsAsync(args);
 
-        console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));
+        // جرّب عدة صيغ آليا
+        const attempt = await tryCreateWithVariants(client, args, shipmentObj);
 
-        const result = response && response[0];
-        if (!result) {
-          console.error('Aramex returned an empty result.');
-        } else if (result.HasErrors) {
-          console.error('Aramex shipment creation failed:', result.Notifications || result);
-          // اختياري: إرسال إيميل إداري أو تنبيه للفريق
+        if (!attempt.success) {
+          console.error('All Aramex variants failed. Full logs above.');
+          // اختياري: أرسل بريد إداري أو سجل خطأ خارجي
         } else {
-          // حاول استخراج بيانات التتبع والـ label بطرق متعددة لأن الاستجابة قد تتغير
+          console.log('Aramex succeeded with variant:', attempt.variant);
+
+          // استخرج بيانات التتبع من الاستجابة المُنجحة
+          const resp = attempt.response;
+          const result = resp && resp[0];
+
           let trackingNumber = 'N/A';
           let trackingUrl = 'N/A';
-
-          // بعض النسخ من Aramex تعيد ProcessedShipment مباشرة أو داخل ProcessedShipments
-          const processed = result.ProcessedShipment || (result.ProcessedShipments && result.ProcessedShipments.ProcessedShipment) || null;
+          const processed = result && (result.ProcessedShipment || (result.ProcessedShipments && result.ProcessedShipments.ProcessedShipment)) || null;
 
           if (processed) {
             trackingNumber = processed.ID || (Array.isArray(processed) && processed[0] && processed[0].ID) || trackingNumber;
-            trackingUrl = processed.ShipmentLabel && (processed.ShipmentLabel.LabelURL || processed.ShipmentLabel[0] && processed.ShipmentLabel[0].LabelURL) || trackingUrl;
+            trackingUrl = processed.ShipmentLabel && (processed.ShipmentLabel.LabelURL || (processed.ShipmentLabel[0] && processed.ShipmentLabel[0].LabelURL)) || trackingUrl;
           }
 
           // إرسال بريد للعميل
@@ -286,7 +334,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         }
 
       } catch (err) {
-        console.error('Aramex API error (SOAP call):', err);
+        console.error('Aramex API error (SOAP client):', err);
       }
 
     } catch (err) {
