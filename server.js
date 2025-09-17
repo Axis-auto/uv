@@ -1,3 +1,28 @@
+const requiredEnvs = [
+  'STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET',
+  'ARAMEX_WSDL_URL','ARAMEX_USER','ARAMEX_PASSWORD','ARAMEX_ACCOUNT_NUMBER',
+  'ARAMEX_ACCOUNT_PIN','ARAMEX_ACCOUNT_ENTITY','ARAMEX_ACCOUNT_COUNTRY',
+  'MAIL_FROM','SENDGRID_API_KEY',
+  'SHIPPER_CITY','SHIPPER_COUNTRY_CODE','SHIPPER_EMAIL',
+  'SHIPPER_LINE1','SHIPPER_NAME','SHIPPER_PHONE','SHIPPER_POSTCODE','SHIPPER_REFERENCE'
+];
+
+const missing = requiredEnvs.filter(k => !process.env[k]);
+if (missing.length) {
+  console.warn('⚠️ Warning: missing environment variables (not fatal):', missing);
+  console.warn('If these are required for production, add them to Render env settings.');
+}
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception at startup:', err && err.stack ? err.stack : err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled Rejection at startup:', reason && reason.stack ? reason.stack : reason);
+  process.exit(1);
+});
+// ---------- END: Robust startup checks ----------
+
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -9,10 +34,24 @@ const app = express();
 app.use(cors({ origin: true }));
 
 // Stripe
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+let stripe;
+try {
+  stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+} catch (e) {
+  console.warn('⚠️ Stripe initialization failed:', e && e.message ? e.message : e);
+  stripe = null; // so the rest of the server can start for debugging
+}
 
 // SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+try {
+  if (process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  } else {
+    console.warn('⚠️ SENDGRID_API_KEY not set — emails will not be sent until set.');
+  }
+} catch (e) {
+  console.error('❌ SendGrid initialization error:', e && e.stack ? e.stack : e);
+}
 
 // ثوابت
 const WEIGHT_PER_PIECE_KG = 1.63; // الوزن لكل قطعة
@@ -143,10 +182,8 @@ async function tryCreateWithVariants(client, baseArgs, shipmentObj) {
       const resp = await client.CreateShipmentsAsync(v.args);
 
       // سجّل الـ XML المُرسَل والمُستلم (node-soap يوفر lastRequest/lastResponse)
-      try { if (client.lastRequest) console.log('--- client.lastRequest ---
-', client.lastRequest); } catch(e) { }
-      try { if (client.lastResponse) console.log('--- client.lastResponse ---
-', client.lastResponse); } catch(e) { }
+      try { if (client.lastRequest) console.log('--- client.lastRequest ---\n', client.lastRequest); } catch(e) { }
+      try { if (client.lastResponse) console.log('--- client.lastResponse ---\n', client.lastResponse); } catch(e) { }
 
       console.log('--- response (JS) ---', JSON.stringify(resp, null, 2));
 
@@ -160,10 +197,8 @@ async function tryCreateWithVariants(client, baseArgs, shipmentObj) {
 
     } catch (err) {
       console.error(`⚠️ Error calling CreateShipments (variant ${v.name}):`, err);
-      try { if (client.lastRequest) console.log('--- client.lastRequest (on error) ---
-', client.lastRequest); } catch(e) {}
-      try { if (client.lastResponse) console.log('--- client.lastResponse (on error) ---
-', client.lastResponse); } catch(e) {}
+      try { if (client.lastRequest) console.log('--- client.lastRequest (on error) ---\n', client.lastRequest); } catch(e) {}
+      try { if (client.lastResponse) console.log('--- client.lastResponse (on error) ---\n', client.lastResponse); } catch(e) {}
     }
   }
 
@@ -322,7 +357,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             from: process.env.MAIL_FROM,
             subject: 'Your Order Confirmation',
             text: `Hello ${customerName}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
-            html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
+            html: `<strong>Hello ${customerName}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href=\"${trackingUrl}\">Link</a>`
           };
 
           try {
