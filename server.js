@@ -88,7 +88,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const height = 15; // cm
 
   // CORRECT XML structure with Dimensions element BEFORE ActualWeight
-  // Also: ensure DescriptionOfGoods appears BEFORE NumberOfPieces (Aramex expects that)
+  // Ensure DescriptionOfGoods then GoodsOriginCountry then NumberOfPieces (Aramex expectations)
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -199,10 +199,10 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : 'KG')}</tns:Unit>
               <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : '')}</tns:Value>
             </tns:ChargeableWeight>
-            <!-- IMPORTANT: DescriptionOfGoods must come BEFORE NumberOfPieces -->
+            <!-- Ordered to satisfy Aramex: DescriptionOfGoods -> GoodsOriginCountry -> NumberOfPieces -->
             <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || '')}</tns:DescriptionOfGoods>
-            <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
             <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || '')}</tns:GoodsOriginCountry>
+            <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
             <tns:CashOnDeliveryAmount>
               <tns:Value>0</tns:Value>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
