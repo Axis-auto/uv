@@ -1,21 +1,10 @@
-// server.js
+// server.js (fixed)
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
 const soap = require('soap');
-const fetch = require('node-fetch'); // installed as dependency (if not, add to package.json)
-
-/*
-  NOTE:
-  - Keep all required ENV variables set in your Render service:
-    STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SENDGRID_API_KEY, MAIL_FROM,
-    ARAMEX_WSDL_URL, ARAMEX_USER, ARAMEX_PASSWORD, ARAMEX_ACCOUNT_NUMBER,
-    ARAMEX_ACCOUNT_PIN, ARAMEX_ACCOUNT_ENTITY, ARAMEX_ACCOUNT_COUNTRY,
-    SHIPPER_LINE1, SHIPPER_CITY, SHIPPER_POSTCODE, SHIPPER_COUNTRY_CODE,
-    SHIPPER_NAME, SHIPPER_PHONE
-*/
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -44,22 +33,21 @@ const REQUIRED_ENVS = [
 const missingEnvs = REQUIRED_ENVS.filter(k => !process.env[k]);
 if (missingEnvs.length) {
   console.warn('⚠️  Warning: the following environment variables are missing or empty:', missingEnvs);
-  console.warn('Some functionality (Aramex / Stripe / SendGrid) may fail until these are provided.');
 }
 
 // Stripe
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY || ''); // will fail if not provided during calls
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 // SendGrid
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Aramex WSDL URL (default from your original code)
+// Aramex WSDL URL
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl';
 
-// Weight per piece (as requested)
-const WEIGHT_PER_PIECE = 1.63; // kilograms per piece
+// Weight per piece
+const WEIGHT_PER_PIECE = 1.63; // kg per piece
 
-// ---------- Utility: full allowed countries list (unchanged, complete) ----------
+// Full allowed countries (unchanged)
 const allowedCountries = [
   'AC','AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AT','AU','AW','AX','AZ',
   'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ',
@@ -86,7 +74,19 @@ const allowedCountries = [
   'ZA','ZM','ZW','ZZ'
 ];
 
-// ---------- Create Checkout Session ----------
+function allowedCountriesForStripe(list) {
+  return list.map(c => (typeof c === 'string' ? c.toUpperCase() : c));
+}
+
+// Normalize shipments helper (if needed)
+function normalizeShipments(args) {
+  if (!args || !args.Shipments) return args;
+  const s = args.Shipments.Shipment;
+  if (Array.isArray(s) && s.length === 1) args.Shipments.Shipment = s[0];
+  return args;
+}
+
+// Create Checkout Session
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -112,10 +112,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
             type: 'fixed_amount',
             fixed_amount: { amount: c.shipping, currency },
             display_name: 'Standard Shipping',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 5 },
-              maximum: { unit: 'business_day', value: 7 }
-            }
+            delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } }
           }
         }]
       : [{
@@ -123,14 +120,10 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
             type: 'fixed_amount',
             fixed_amount: { amount: 0, currency },
             display_name: 'Free Shipping',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 5 },
-              maximum: { unit: 'business_day', value: 7 }
-            }
+            delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 7 } }
           }
         }];
 
-    // create session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -156,17 +149,12 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
     res.json({ id: session.id });
 
   } catch (err) {
-    console.error('Create session error:', err);
+    console.error('Create session error:', err && err.message ? err.message : err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Helper to convert allowedCountries to Stripe's allowed list (Stripe expects 2-letter codes uppercase)
-function allowedCountriesForStripe(list) {
-  return list.map(c => (typeof c === 'string' ? c.toUpperCase() : c));
-}
-
-// ---------- Stripe Webhook (raw body required) ----------
+// Stripe Webhook (raw body required)
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('✅ Incoming Stripe webhook headers:', req.headers);
   console.log('✅ Incoming Stripe webhook body length:', req.body.length);
@@ -190,7 +178,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const address = session.customer_details && session.customer_details.address ? session.customer_details.address : {};
     const phone = session.customer_details && session.customer_details.phone ? session.customer_details.phone : (session.customer ? session.customer.phone : '');
 
-    // Retrieve full session with line_items to get quantity if needed
+    // get full session for quantity
     let fullSession;
     try {
       fullSession = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items'] });
@@ -200,7 +188,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     }
     const quantity = (fullSession && fullSession.line_items && fullSession.line_items.data && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) ? fullSession.line_items.data[0].quantity : (session.quantity || 1);
 
-    // Build shipper address (from env)
     const shipperAddress = {
       Line1: process.env.SHIPPER_LINE1 || '',
       Line2: process.env.SHIPPER_LINE2 || '(Registration Village)',
@@ -212,7 +199,6 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       ResidenceType: process.env.SHIPPER_RESIDENCE_TYPE || 'Business'
     };
 
-    // Build single shipment object (we keep single Shipment with NumberOfPieces = quantity)
     const shipmentObj = {
       Shipper: {
         Reference1: process.env.SHIPPER_REFERENCE || '',
@@ -249,16 +235,9 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         }
       },
       Details: {
-        // ShippingDateTime is mandatory per Aramex Shipment element (we set to now)
         ShippingDateTime: (new Date()).toISOString(),
-        ActualWeight: {
-          Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)),
-          Unit: "KG"
-        },
-        ChargeableWeight: {
-          Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)),
-          Unit: "KG"
-        },
+        ActualWeight: { Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)), Unit: "KG" },
+        ChargeableWeight: { Value: parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2)), Unit: "KG" },
         NumberOfPieces: quantity,
         DescriptionOfGoods: "UV Car Inspection Device",
         GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
@@ -268,7 +247,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       }
     };
 
-    // Compose SOAP args according to Aramex docs
+    // IMPORTANT: send Shipment as an array (explicit) to satisfy Aramex requirement
     const args = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER || '',
@@ -279,99 +258,58 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || '',
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY || ''
       },
-      Transaction: {
-        Reference1: session.id || '',
-        Reference2: '',
-        Reference3: '',
-        Reference4: '',
-        Reference5: ''
-      },
-      LabelInfo: {
-        ReportID: 9729,
-        ReportType: "URL"
-      },
-      // IMPORTANT: ensure Shipments.Shipment is ALWAYS an array (even for single shipment)
-      Shipments: {
-        Shipment: Array.isArray([shipmentObj]) ? [ shipmentObj ] : [ shipmentObj ]
-      }
+      Transaction: { Reference1: session.id || '', Reference2: '', Reference3: '', Reference4: '', Reference5: '' },
+      LabelInfo: { ReportID: 9729, ReportType: "URL" },
+      Shipments: { Shipment: [ shipmentObj ] }
     };
 
-    // For debugging: print the args (non-sensitive fields only)
+    // Print sanitized args preview
     try {
-      const debugArgs = JSON.parse(JSON.stringify(args, (k, v) => {
-        if (k && ['Password', 'AccountPin'].includes(k)) return '***';
-        return v;
-      }));
-      console.log('→ Prepared Aramex CreateShipments args (sanitized):', JSON.stringify(debugArgs, null, 2));
+      const debugArgs = JSON.parse(JSON.stringify(args, (k, v) => (k === 'Password' || k === 'AccountPin') ? '***' : v));
+      console.log('→ Prepared Aramex CreateShipments args (sanitized preview):', JSON.stringify(debugArgs, null, 2));
     } catch (e) {
       console.log('→ Prepared Aramex args (could not stringify fully)');
     }
 
-    // Call Aramex SOAP CreateShipments
+    // Call Aramex
     try {
-      // create client (use the WSDL URL). Increase timeout
       const client = await soap.createClientAsync(ARAMEX_WSDL_URL, { timeout: 30000 });
-
-      // ensure endpoint is the service (without ?wsdl)
       try {
         const endpoint = (process.env.ARAMEX_WSDL_URL && process.env.ARAMEX_WSDL_URL.indexOf('?') !== -1)
           ? process.env.ARAMEX_WSDL_URL.split('?')[0]
           : process.env.ARAMEX_WSDL_URL;
         client.setEndpoint(endpoint);
-      } catch (e) {
-        // ignore if cannot set endpoint
-      }
+      } catch (e) { /* ignore */ }
 
-      // Perform the call
       const response = await client.CreateShipmentsAsync(args);
-
-      // Log the complete response safely
       console.log('✅ Aramex full response:', JSON.stringify(response, null, 2));
 
-      const result = response && response[0] ? response[0] : null;
-
-      // Also log the raw lastRequest XML (safe single-line label + XML)
+      // log first 2000 chars of lastRequest to avoid huge logs but keep content
       try {
         if (client && client.lastRequest) {
-          console.log('⤷ Aramex lastRequest XML (first 2000 chars):', client.lastRequest.substring(0, 2000));
+          console.log('⤷ Aramex lastRequest XML (snippet):', client.lastRequest.substring(0, 2000));
         }
       } catch (e) {
-        console.log('⤷ Could not log client.lastRequest fully:', e && e.message ? e.message : e);
+        console.log('⤷ Could not log client.lastRequest:', e && e.message ? e.message : e);
       }
 
+      const result = response && response[0] ? response[0] : null;
       if (!result) {
         console.error('Aramex: empty response or unexpected format.', response);
       } else if (result.HasErrors) {
         console.error('Aramex shipment creation failed:', result.Notifications || result);
-
-        // If REQ39 occurs, add more detailed debug instructions and keep flow (we don't throw)
-        try {
-          const notifs = result.Notifications && result.Notifications.Notification ? result.Notifications.Notification : result.Notifications;
-          console.error('Aramex Notifications detail:', JSON.stringify(notifs, null, 2));
-        } catch (e) {
-          // ignore
-        }
-
-        // Optionally: write a small debug file or push metrics here (omitted)
       } else {
-        // success path
+        // success path: extract tracking and send email
         const processed = result.ProcessedShipment || result.ProcessedShipments || null;
-        let trackingNumber = 'N/A';
-        let trackingUrl = 'N/A';
+        let trackingNumber = 'N/A', trackingUrl = 'N/A';
         if (processed) {
           const p = Array.isArray(processed) ? processed[0] : processed;
           if (p && p.ID) trackingNumber = p.ID;
           if (p && p.ShipmentLabel && p.ShipmentLabel.LabelURL) trackingUrl = p.ShipmentLabel.LabelURL;
-          if (p && p.ShipmentLabel && p.ShipmentLabel.Contents && typeof p.ShipmentLabel.Contents === 'string') {
-            trackingUrl = trackingUrl === 'N/A' ? 'Label generated' : trackingUrl;
-          }
         }
 
-        // send confirmation email via SendGrid
         try {
-          if (!process.env.SENDGRID_API_KEY) {
-            console.warn('SendGrid API key not configured - skipping customer email.');
-          } else {
+          if (process.env.SENDGRID_API_KEY) {
             const msg = {
               to: customerEmail || process.env.MAIL_FROM,
               from: process.env.MAIL_FROM,
@@ -379,48 +317,33 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
               text: `Hello ${customerName || ''}, your order is confirmed. Tracking Number: ${trackingNumber}. Track here: ${trackingUrl}`,
               html: `<strong>Hello ${customerName || ''}</strong><br>Your order is confirmed.<br>Tracking Number: <b>${trackingNumber}</b><br>Track here: <a href="${trackingUrl}">Link</a>`
             };
-
             await sgMail.send(msg);
             console.log('📧 Email sent to', customerEmail);
+          } else {
+            console.warn('SendGrid API key not configured - skipping email.');
           }
         } catch (err) {
           console.error('SendGrid send error:', err && err.message ? err.message : err);
         }
       }
     } catch (err) {
-      // Detailed logging for SOAP errors
       console.error('Aramex API error:', (err && err.message) ? err.message : err);
       if (err && err.root) {
-        try {
-          console.error('Aramex error root:', JSON.stringify(err.root, null, 2));
-        } catch (e) {
-          console.error('Aramex error root (could not stringify):', err.root);
-        }
+        try { console.error('Aramex error root:', JSON.stringify(err.root, null, 2)); } catch (e) { console.error(err.root); }
       }
-      // Do not throw — just log; webhook should still return 200 to Stripe if processed
     }
   }
 
-  // respond to Stripe to acknowledge receipt
   res.json({ received: true });
 });
 
-// ---------- health check ----------
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// health
+app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// ---------- Start server ----------
+// start
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
 
-// ---------- Global error handlers to avoid silent process exit ----------
-process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection at Promise', p, 'reason:', reason);
-  // do not exit to allow container to keep running for debugging
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception thrown:', err);
-  // do not exit here — log for debugging. In production you might want to exit.
-});
+// global handlers
+process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at Promise', p, 'reason:', reason));
+process.on('uncaughtException', (err) => console.error('Uncaught Exception thrown:', err));
