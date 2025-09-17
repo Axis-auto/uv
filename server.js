@@ -384,7 +384,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
         const headers = {
           'Content-Type': 'text/xml; charset=utf-8',
-          'SOAPAction': 'http://tempuri.org/IShipmentAPIService/CreateShipments'
+          'SOAPAction': 'http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments'
         };
         const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
 
