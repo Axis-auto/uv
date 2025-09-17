@@ -364,7 +364,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
 
     const xml = buildShipmentCreationXml({
       clientInfo,
-      transactionRef: session.id || ",
+      transactionRef: session.id || '',
       labelReportId: DEFAULT_REPORT_ID,
       shipments: [shipmentObj]
     });
