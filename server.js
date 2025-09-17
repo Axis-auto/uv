@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
 const axios = require('axios');
+const soap = require('soap');  // إضافة جديدة لدعم SOAP
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -159,99 +160,88 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       ResidenceType: "Business"  // افتراضي، يمكن تعديله
     };
 
-    // 1) إنشاء شحنة مع Aramex عبر JSON endpoint (بدون Transaction لتجنب أخطاء سابقة)
-    const shipmentData = {
+    // أولاً، استرجع الجلسة الكاملة مع line_items للحصول على الكمية
+    const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ['line_items'],
+    });
+    const quantity = fullSession.line_items.data[0].quantity || 1;  // افتراضي 1 إذا لم يتم العثور عليه
+
+    // حمولة SOAP (تطابق وثائق Aramex لـ CreateShipments)
+    const args = {
       ClientInfo: {
         UserName: process.env.ARAMEX_USER,
         Password: process.env.ARAMEX_PASSWORD,
+        Version: process.env.ARAMEX_VERSION,  // مثل 'v2.0'
         AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-        Version: process.env.ARAMEX_VERSION  // استخدام المتغير البيئي
       },
-      LabelInfo: { ReportID: 9729, ReportType: "URL" },  // احتفظ به، لكن تحقق من ReportID
+      Transaction: {  // اختياري، لكن أضفه للتتبع
+        Reference1: session.id,  // استخدم ID جلسة Stripe
+      },
+      LabelInfo: {
+        ReportID: 9729,
+        ReportType: "URL",
+      },
       Shipments: [{
         Shipper: {
-          Name: process.env.SHIPPER_NAME,  // من المتغير
-          Company: process.env.SHIPPER_NAME,  // اختياري، استخدم الاسم نفسه
-          CellPhone: process.env.SHIPPER_PHONE,  // من المتغير
-          Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,  // من المتغير أو fallback
+          Reference1: process.env.SHIPPER_REFERENCE || '',  // من متغيراتك البيئية
           PartyAddress: shipperAddress,
-          Contact: {  // نوع Contact مطلوب، مع إضافة الحقول المفقودة
-            PersonName: process.env.SHIPPER_NAME + " Contact",  // مبني على الاسم
-            Company: process.env.SHIPPER_NAME,
+          Contact: {
+            PersonName: process.env.SHIPPER_NAME,
+            CompanyName: process.env.SHIPPER_NAME,  // مطلوب؛ استخدم الاسم كشركة
             PhoneNumber1: process.env.SHIPPER_PHONE,
-            PhoneNumber2: "",  // مضاف: مطلوب في V2
+            PhoneNumber2: '',  // فارغ OK
             CellPhone: process.env.SHIPPER_PHONE,
-            Email: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
-            Type: ""  // مضاف: مطلوب في V2 (جرب "Business" إذا أخطأ الفارغ)
-          }
+            EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM,
+          },
         },
         Consignee: {
-          Name: customerName,  // Party.Name
-          Company: "",  // اختياري
-          CellPhone: session.customer_details.phone || "",  // Party.CellPhone
-          Email: customerEmail,  // Email
+          Reference1: '',  // اختياري
           PartyAddress: {
-            Line1: address.line1 || "",
-            Line2: address.line2 || "",
-            Line3: address.line3 || "",
-            City: address.city || "",
-            StateOrProvinceCode: address.state || "N/A",
-            PostCode: address.postal_code || "00000",
-            CountryCode: address.country || "US",
-            ResidenceType: "Residential"
+            Line1: address.line1 || '',
+            Line2: address.line2 || '',
+            Line3: '',
+            City: address.city || '',
+            StateOrProvinceCode: address.state || '',
+            PostCode: address.postal_code || '',
+            CountryCode: address.country,
           },
-          Contact: {  // نوع Contact مطلوب، مع إضافة الحقول المفقودة
+          Contact: {
             PersonName: customerName,
-            PhoneNumber1: session.customer_details.phone || "",
-            PhoneNumber2: "",  // مضاف: مطلوب في V2
-            CellPhone: session.customer_details.phone || "",
-            Email: customerEmail,
-            Type: ""  // مضاف: مطلوب في V2 (جرب "Residential" إذا أخطأ الفارغ)
-          }
+            CompanyName: customerName,  // استخدم الاسم كشركة إذا لم يكن هناك حقل منفصل
+            PhoneNumber1: session.customer_details.phone || '',
+            PhoneNumber2: '',  // فارغ OK
+            CellPhone: session.customer_details.phone || '',
+            EmailAddress: customerEmail,
+          },
         },
-        Details: {  // تفاصيل الشحنة
-          ActualWeight: {
-            Value: 1.0,
-            Unit: "KG"
-          },
-          ChargeableWeight: {
-            Value: 1.0,
-            Unit: "KG"
-          },
-          NumberOfPieces: 1,
+        Details: {
+          ActualWeight: { Value: quantity * 1.0, Unit: "KG" },  // مثلًا 1kg لكل قطعة؛ قم بتعديل الوزن
+          ChargeableWeight: { Value: quantity * 1.0, Unit: "KG" },
+          NumberOfPieces: quantity,
           DescriptionOfGoods: "UV Car Inspection Device",
           GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE,
-          ProductType: "PDX",
-          PaymentType: "PPR",
-          Services: ["COD"],
-          CollectAmount: {
-            Amount: 0.0,
-            CurrencyCode: "TRY"
-          }
-        }
-      }]
+          ProductGroup: "EXP",  // أو "DOM" بناءً على الوجهة؛ تحقق من الوثائق
+          ProductType: "PDX",  // احتفظ به إذا كان صالحًا لحسابك
+          PaymentType: "P",  // دفع مسبق (تصحيح من "PPR")
+          // لا PaymentOptions أو Services أو CollectAmount للدفع المسبق غير COD
+        },
+      }],
     };
 
+    // استدعاء SOAP
+    const aramexUrl = process.env.ARAMEX_WSDL_URL.replace('?wsdl', '');  // استخدم URL الخدمة، لا WSDL
     try {
-      const response = await axios.post(
-        ARAMEX_API_URL,
-        shipmentData,
-        { 
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          } 
-        }
-      );
+      const client = await soap.createClientAsync(process.env.ARAMEX_WSDL_URL);  // تحميل WSDL مرة واحدة
+      const response = await client.CreateShipmentsAsync(args);
 
-      console.log('✅ Aramex result:', JSON.stringify(response.data, null, 2));
+      console.log('✅ Aramex result:', JSON.stringify(response, null, 2));
 
-      const processed = response.data?.Shipments?.ProcessedShipment;
-      const trackingNumber = processed?.ID || "N/A";
-      const trackingUrl = processed?.LabelURL || "https://tracking.example.com";
+      const processed = response[0].ProcessedShipment;  // الوصول إلى هيكل الرد
+      const trackingNumber = processed.ID || "N/A";
+      const trackingUrl = processed.ShipmentLabel.LabelURL || "https://tracking.example.com";  // تعديل المسار حسب الوثائق
 
       // 2) إرسال بريد للعميل
       const msg = {
@@ -267,7 +257,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         .catch(err => console.error('SendGrid error:', err));
 
     } catch (err) {
-      console.error('Aramex API error:', err.response?.data || err.message);
+      console.error('Aramex API error:', err);
+      // معالجة الخطأ (مثل إرسال بريد إلى الإدارة أو إعادة المحاولة)
     }
   }
 
