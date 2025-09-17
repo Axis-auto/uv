@@ -171,14 +171,19 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       ClientInfo: {
         UserName: process.env.ARAMEX_USER,
         Password: process.env.ARAMEX_PASSWORD,
-        Version: process.env.ARAMEX_VERSION,  // مثل 'v2.0'
+        Version: process.env.ARAMEX_VERSION,  // مثل 'v1.0' أو 'v2.0' - جرب تغييرها إلى 'v1.0' في متغيرات البيئة إذا استمر الخطأ
         AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
       },
-      Transaction: {  // اختياري، لكن أضفه للتتبع
+      Transaction: {  // تم إضافة جميع الـ References حتى لو فارغة لتجنب خطأ deserialization
         Reference1: session.id,  // استخدم ID جلسة Stripe
+        Reference2: '',  // فارغ
+        Reference3: '',  // فارغ
+        Reference4: '',  // فارغ
+        Reference5: ''   // فارغ
+        // إذا نجح الاختبار بدون Transaction، يمكنك حذف هذا الكائن بالكامل (الحل البديل)
       },
       LabelInfo: {
         ReportID: 9729,
