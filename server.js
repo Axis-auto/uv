@@ -362,21 +362,12 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    const shipmentsArray = [ shipmentObj ];
-    const chunks = chunkArray(shipmentsArray, MAX_PER_REQUEST);
-    console.log(`→ Will send ${shipmentsArray.length} shipment(s) in ${chunks.length} request(s)`);
-
-    const allTrackings = [];
-    const allNotifications = [];
-
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      const xml = buildShipmentCreationXml({
-        clientInfo,
-        transactionRef: session.id || '',
-        labelReportId: DEFAULT_REPORT_ID,
-        shipments: chunk
-      });
+    const xml = buildShipmentCreationXml({
+      clientInfo,
+      transactionRef: session.id || ",
+      labelReportId: DEFAULT_REPORT_ID,
+      shipments: [shipmentObj]
+    });
 
       console.log(`→ Sending Aramex XML chunk ${i+1}/${chunks.length} (sanitized):`, JSON.stringify(maskForLog({ AccountNumber: clientInfo.AccountNumber, UserName: clientInfo.UserName })));
 
