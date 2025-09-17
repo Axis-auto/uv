@@ -1,4 +1,3 @@
-// server.js — Aramex XML with soapenv/v1 prefixes + SOAPAction + detailed error logs
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
