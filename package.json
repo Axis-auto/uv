@@ -15,7 +15,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "stripe": "^12.20.0",
-    "@sendgrid/mail": "^7.9.0",
+    "@sendgrid/mail": "^8.1.5",
     "xml2js": "^0.4.23"
   }
 }
