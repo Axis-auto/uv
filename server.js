@@ -74,7 +74,7 @@ function maskForLog(obj){
   catch(e){ return obj; }
 }
 
-// Build Aramex ShipmentCreation XML - CORRECT ORDER based on WSDL
+// Build Aramex ShipmentCreation XML - WITH DIMENSIONS ELEMENT
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
   const sc = shipment.Shipper.Contact || {};
@@ -82,7 +82,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const cc = shipment.Consignee.Contact || {};
   const d = shipment.Details || {};
 
-  // CORRECT XML structure with proper element order based on WSDL
+  // Calculate dimensions (standard box dimensions for UV device)
+  const length = 30; // cm
+  const width = 20; // cm  
+  const height = 15; // cm
+
+  // CORRECT XML structure with Dimensions element BEFORE ActualWeight
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
   <soap:Header/>
@@ -179,6 +184,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
           <tns:OperationsInstructions></tns:OperationsInstructions>
           <tns:AccountingInstrcutions></tns:AccountingInstrcutions>
           <tns:Details>
+            <tns:Dimensions>
+              <tns:Length>${length}</tns:Length>
+              <tns:Width>${width}</tns:Width>
+              <tns:Height>${height}</tns:Height>
+              <tns:Unit>CM</tns:Unit>
+            </tns:Dimensions>
             <tns:ActualWeight>
               <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : '')}</tns:Value>
               <tns:Unit>${escapeXml(d.ActualWeight && d.ActualWeight.Unit ? d.ActualWeight.Unit : 'KG')}</tns:Unit>
@@ -411,7 +422,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       Source: DEFAULT_SOURCE
     };
 
-    // Create Aramex shipment - CORRECT ORDER VERSION based on WSDL
+    // Create Aramex shipment - WITH DIMENSIONS ELEMENT
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
@@ -424,7 +435,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         declaredValue: totalDeclaredValue,
         destination: consigneeAddress.CountryCode,
         account: clientInfo.AccountNumber,
-        productType: 'PPX (Parcel)'
+        productType: 'PPX (Parcel)',
+        dimensions: '30x20x15 CM'
       })));
 
       const xml = buildShipmentCreationXml({
@@ -435,7 +447,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
       });
 
       console.log('→ XML length:', xml.length, 'characters');
-      console.log('→ Sending XML with CORRECT element order based on WSDL...');
+      console.log('→ Sending XML with DIMENSIONS element before ActualWeight...');
 
       // IMPORTANT: set SOAPAction header (value from WSDL for CreateShipments)
       const headers = {
@@ -512,7 +524,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     // Send email notification (if configured)
     if (process.env.SENDGRID_API_KEY && customerEmail) {
       try {
-        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n- Declared Value: ${totalDeclaredValue} AED\n`;
+        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n- Declared Value: ${totalDeclaredValue} AED\n- Dimensions: 30x20x15 CM\n`;
         
         if (trackingId) {
           emailContent += `\nShipping Information:\n- Tracking ID: ${trackingId}\n`;
