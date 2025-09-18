@@ -1082,6 +1082,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       }
 
       // Auto-fix rule 2: try to resolve/normalize city via resolveCity (uses Aramex FetchCities + fuzzy match)
+      // Declare normalizedCity once here
       let normalizedCity = shippingAddress?.city || shippingAddress?.town || shippingAddress?.locality || "";
       try {
         if (normalizedCity && countryCode) {
@@ -1191,7 +1192,8 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       const totalCustomsValue = quantity * CUSTOMS_VALUE_PER_PIECE;
 
       // Resolve / normalize city BEFORE creating the Aramex shipment (we already attempted resolve, but do it again defensively)
-      let normalizedCity = shippingAddress?.city || "";
+      // <-- IMPORTANT FIX: do NOT redeclare normalizedCity (we declared it above). Use assignment only.
+      normalizedCity = shippingAddress?.city || "";
       const country = (shippingAddress?.country || "").toUpperCase();
       const postalAgain = validateAndNormalizePostCode(shippingAddress?.postal_code || shippingAddress?.postalCode || shippingAddress?.postCode || "", country);
 
