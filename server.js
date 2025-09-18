@@ -86,7 +86,7 @@ function escapeXml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replace(/\'/g, "&apos;");
 }
 
 function maskForLog(obj) {
@@ -252,8 +252,8 @@ function extractShippingAddress(session) {
 function validateRequiredFields(session, shippingAddress) {
   const errors = [];
   
-  // Check customer name
-  const customerName = session.customer_details?.name;
+  // Check customer name (prioritize shipping address name, then customer details name)
+  const customerName = shippingAddress?.name || session.customer_details?.name;
   if (!customerName || customerName.trim() === "") {
     errors.push("Customer name is required but not provided by Stripe");
   }
@@ -394,7 +394,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:CountryCode>${escapeXml(consigneeCountryCode)}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
-              <tns:PersonName>${escapeXml(cc.PersonName || "")}</tns:PersonName>
+              <tns:PersonName>${escapeXml(cc.PersonName || "Customer")}</tns:PersonName> <!-- Re-added fallback for Aramex requirement -->
               <tns:CompanyName>${escapeXml(cc.CompanyName || "")}</tns:CompanyName>
               <tns:PhoneNumber1>${escapeXml(consigneePhone)}</tns:PhoneNumber1>
               <tns:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || "")}</tns:PhoneNumber2>
@@ -620,13 +620,17 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
     // Extract customer info and shipping address from the session
     const customerEmail = session.customer_details?.email;
-    const customerName = session.customer_details?.name;
+    const customerNameFromDetails = session.customer_details?.name;
     const customerPhone = session.customer_details?.phone;
 
     // Extract shipping address using the improved function
     const shippingAddress = extractShippingAddress(session);
+    const customerNameFromShipping = shippingAddress?.name; // Get name from shipping address if available
 
-    console.log("→ Customer:", customerName, customerEmail);
+    // Prioritize name from shipping address, then customer details, then fallback
+    const finalCustomerName = customerNameFromShipping || customerNameFromDetails || "Customer";
+
+    console.log("→ Customer:", finalCustomerName, customerEmail);
     console.log("→ Phone:", customerPhone);
     console.log("→ Shipping to:", JSON.stringify(shippingAddress, null, 2));
     console.log("→ Quantity:", quantity);
@@ -712,7 +716,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       };
 
       const consigneeContact = {
-        PersonName: customerName, // NO DEFAULT VALUE - must be provided by Stripe
+        PersonName: finalCustomerName, // Use the prioritized name
         CompanyName: "",
         PhoneNumber1: customerPhone,
         PhoneNumber2: "",
@@ -733,7 +737,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           Contact: shipperContact,
         },
         Consignee: {
-          Reference1: customerName,
+          Reference1: finalCustomerName,
           PartyAddress: consigneeAddress,
           Contact: consigneeContact,
         },
@@ -761,7 +765,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         productType: productTypeString,
         dimensions: "30x20x15 CM",
         consigneeAddress: consigneeAddress,
-        consigneeName: customerName,
+        consigneeName: finalCustomerName,
         consigneePhone: customerPhone,
         consigneeEmail: customerEmail,
       })));
