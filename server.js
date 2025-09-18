@@ -5,7 +5,8 @@ const bodyParser = require("body-parser");
 const sgMail = require("@sendgrid/mail");
 const axios = require("axios");
 const { parseStringPromise } = require("xml2js");
-const { Client } = require("@googlemaps/google-maps-services-js");
+// NOTE: removed hard require here and replaced with safe runtime init further down
+// const { Client } = require("@googlemaps/google-maps-services-js");
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -40,7 +41,21 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "");
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Google Maps client for geocoding
-const googleMapsClient = new Client({});
+let googleMapsClient;
+try {
+  const { Client } = require("@googlemaps/google-maps-services-js");
+  // If package is installed, create real client
+  googleMapsClient = new Client({});
+} catch (err) {
+  // If package missing, fallback to a dummy client so server won't crash.
+  console.warn("⚠️ @googlemaps/google-maps-services-js is not installed. Geocoding disabled. To enable, run: npm install @googlemaps/google-maps-services-js");
+  googleMapsClient = {
+    geocode: async ({ params }) => {
+      // Return empty results so code falls back to local normalization
+      return { data: { results: [] } };
+    },
+  };
+}
 
 // Aramex endpoint (use base URL without ?wsdl)
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
@@ -140,7 +155,7 @@ async function normalizeCityWithGeocoding(city, countryCode) {
       return result.formatted_address.replace(/,.*$/, '').trim();
     }
   } catch (error) {
-    console.warn("Geocoding failed, using fallback normalization:", error.message);
+    console.warn("Geocoding failed, using fallback normalization:", error && error.message ? error.message : error);
   }
   
   // Fallback to basic normalization if geocoding fails
@@ -799,7 +814,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         normalizedCity = await normalizeCityWithGeocoding(shippingAddress.city, shippingAddress.country);
         console.log("→ Normalized city using geocoding:", normalizedCity);
       } catch (geocodeError) {
-        console.warn("→ Geocoding failed, using fallback normalization:", geocodeError.message);
+        console.warn("→ Geocoding failed, using fallback normalization:", geocodeError && geocodeError.message ? geocodeError.message : geocodeError);
         normalizedCity = normalizeCity(shippingAddress.city, shippingAddress.country);
       }
 
