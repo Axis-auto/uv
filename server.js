@@ -1424,6 +1424,19 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         try {
           const logoUrl = "https://github.com/Axis-auto/uv/blob/main/LOGO%20(2).png?raw=true"; // شعار الشركة الجديد
 
+          // Recalculate totalAmount and define currency for email (fix for undefined error)
+          const currency = (session.metadata?.currency || "usd").toLowerCase();
+          const prices = {
+            usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
+            eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
+            try: { single: 2799000, shipping: 150000, double: 4599000, extra: 2400000 },
+          };
+          const c = prices[currency] || prices["usd"];
+          let totalAmount;
+          if (quantity === 1) totalAmount = c.single;
+          else if (quantity === 2) totalAmount = c.double;
+          else totalAmount = c.double + (quantity - 2) * c.extra;
+
           let textContent = `
 Thank you for your purchase from AXIS AUTO!
 
