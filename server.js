@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const sgMail = require("@sendgrid/mail");
 const axios = require("axios");
 const { parseStringPromise } = require("xml2js");
+const { Client } = require("@googlemaps/google-maps-services-js");
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -27,6 +28,7 @@ const REQUIRED_ENVS = [
   "SHIPPER_COUNTRY_CODE",
   "SHIPPER_NAME",
   "SHIPPER_PHONE",
+  "GOOGLE_MAPS_API_KEY" // Added for geocoding
 ];
 const missingEnvs = REQUIRED_ENVS.filter((k) => !process.env[k]);
 if (missingEnvs.length) console.warn("⚠️ Missing envs:", missingEnvs);
@@ -36,6 +38,9 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 // SendGrid (optional)
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+// Google Maps client for geocoding
+const googleMapsClient = new Client({});
 
 // Aramex endpoint (use base URL without ?wsdl)
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
@@ -105,20 +110,98 @@ function maskForLog(obj) {
 }
 
 // Address validation and normalization functions
+async function normalizeCityWithGeocoding(city, countryCode) {
+  if (!city) return "";
+  
+  try {
+    const response = await googleMapsClient.geocode({
+      params: {
+        address: city,
+        components: countryCode ? `country:${countryCode}` : undefined,
+        key: process.env.GOOGLE_MAPS_API_KEY
+      }
+    });
+
+    if (response.data.results && response.data.results.length > 0) {
+      // Get the most relevant result
+      const result = response.data.results[0];
+      
+      // Extract locality or administrative area level 1
+      for (const component of result.address_components) {
+        if (component.types.includes('locality')) {
+          return component.long_name;
+        }
+        if (component.types.includes('administrative_area_level_1')) {
+          return component.long_name;
+        }
+      }
+      
+      // Fallback to formatted address without country
+      return result.formatted_address.replace(/,.*$/, '').trim();
+    }
+  } catch (error) {
+    console.warn("Geocoding failed, using fallback normalization:", error.message);
+  }
+  
+  // Fallback to basic normalization if geocoding fails
+  return normalizeCity(city, countryCode);
+}
+
 function normalizeCity(city, countryCode) {
   if (!city) return "";
 
-  // Common city name mappings for UAE
+  // Common city name mappings for UAE and other countries
   const cityMappings = {
     AE: {
       sharjah: "Sharjah",
       dubai: "Dubai",
       "abu dhabi": "Abu Dhabi",
+      "abu dhabi city": "Abu Dhabi",
+      "al ain": "Al Ain",
       ajman: "Ajman",
       fujairah: "Fujairah",
       "ras al khaimah": "Ras Al Khaimah",
       "umm al quwain": "Umm Al Quwain",
     },
+    US: {
+      "new york": "New York",
+      "ny": "New York",
+      "nyc": "New York",
+      "los angeles": "Los Angeles",
+      "la": "Los Angeles",
+      "chicago": "Chicago",
+      "houston": "Houston",
+      "phoenix": "Phoenix",
+      "philadelphia": "Philadelphia",
+      "san antonio": "San Antonio",
+      "san diego": "San Diego",
+      "dallas": "Dallas",
+      "san jose": "San Jose",
+    },
+    GB: {
+      london: "London",
+      "birmingham": "Birmingham",
+      "glasgow": "Glasgow",
+      "liverpool": "Liverpool",
+      "bristol": "Bristol",
+      "manchester": "Manchester",
+      "sheffield": "Sheffield",
+      "leeds": "Leeds",
+      "edinburgh": "Edinburgh",
+      "leicester": "Leicester",
+    },
+    TR: {
+      "istanbul": "Istanbul",
+      "ankara": "Ankara",
+      "izmir": "Izmir",
+      "bursa": "Bursa",
+      "adana": "Adana",
+      "gaziantep": "Gaziantep",
+      "konya": "Konya",
+      "antalya": "Antalya",
+      "kayseri": "Kayseri",
+      "mersin": "Mersin",
+    }
   };
 
   const normalizedCity = city.trim();
@@ -710,12 +793,22 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         Type: "Shipper",
       };
 
+      // Use geocoding to validate and normalize the city name
+      let normalizedCity = shippingAddress.city;
+      try {
+        normalizedCity = await normalizeCityWithGeocoding(shippingAddress.city, shippingAddress.country);
+        console.log("→ Normalized city using geocoding:", normalizedCity);
+      } catch (geocodeError) {
+        console.warn("→ Geocoding failed, using fallback normalization:", geocodeError.message);
+        normalizedCity = normalizeCity(shippingAddress.city, shippingAddress.country);
+      }
+
       // Consignee address from Stripe - NO DEFAULT VALUES, USE ACTUAL DATA
       const consigneeAddress = {
         Line1: shippingAddress.line1,
         Line2: shippingAddress.line2 || "",
         Line3: "",
-        City: shippingAddress.city,
+        City: normalizedCity,
         StateOrProvinceCode: shippingAddress.state || "",
         PostCode: shippingAddress.postal_code || "",
         CountryCode: shippingAddress.country.toUpperCase(),
