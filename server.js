@@ -1,3 +1,5 @@
+// server.js (complete, with full allowedCountries list and city-resolution logic)
+
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
@@ -5,8 +7,6 @@ const bodyParser = require("body-parser");
 const sgMail = require("@sendgrid/mail");
 const axios = require("axios");
 const { parseStringPromise } = require("xml2js");
-// NOTE: removed hard require here and replaced with safe runtime init further down
-// const { Client } = require("@googlemaps/google-maps-services-js");
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -29,7 +29,6 @@ const REQUIRED_ENVS = [
   "SHIPPER_COUNTRY_CODE",
   "SHIPPER_NAME",
   "SHIPPER_PHONE",
-  "GOOGLE_MAPS_API_KEY" // Added for geocoding
 ];
 const missingEnvs = REQUIRED_ENVS.filter((k) => !process.env[k]);
 if (missingEnvs.length) console.warn("⚠️ Missing envs:", missingEnvs);
@@ -40,35 +39,23 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "");
 // SendGrid (optional)
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Google Maps client for geocoding
-let googleMapsClient;
-try {
-  const { Client } = require("@googlemaps/google-maps-services-js");
-  // If package is installed, create real client
-  googleMapsClient = new Client({});
-} catch (err) {
-  // If package missing, fallback to a dummy client so server won't crash.
-  console.warn("⚠️ @googlemaps/google-maps-services-js is not installed. Geocoding disabled. To enable, run: npm install @googlemaps/google-maps-services-js");
-  googleMapsClient = {
-    geocode: async ({ params }) => {
-      // Return empty results so code falls back to local normalization
-      return { data: { results: [] } };
-    },
-  };
-}
-
 // Aramex endpoint (use base URL without ?wsdl)
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
 const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf("?") !== -1 ? ARAMEX_WSDL_URL.split("?")[0] : ARAMEX_WSDL_URL;
 
+// Location API endpoint (new) - can be overridden by env
+const ARAMEX_LOCATION_ENDPOINT =
+  process.env.ARAMEX_LOCATION_ENDPOINT ||
+  "https://ws.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
+
 // constants
 const WEIGHT_PER_PIECE = 1.63; // kg per piece
-const DECLARED_VALUE_PER_PIECE = 200; // AED per piece (kept for declared value if needed)
-const CUSTOMS_VALUE_PER_PIECE = 250; // AED per piece for customs (as requested)
+const DECLARED_VALUE_PER_PIECE = 200; // AED per piece
+const CUSTOMS_VALUE_PER_PIECE = 250; // AED per piece for customs
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || "24", 10);
 const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || "9729", 10);
 
-// Full allowed countries for Stripe shipping collection
+// Full allowed countries for Stripe shipping collection (exact as original)
 const allowedCountries = [
   "AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AT", "AU", "AW", "AX", "AZ",
   "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
@@ -125,98 +112,20 @@ function maskForLog(obj) {
 }
 
 // Address validation and normalization functions
-async function normalizeCityWithGeocoding(city, countryCode) {
-  if (!city) return "";
-  
-  try {
-    const response = await googleMapsClient.geocode({
-      params: {
-        address: city,
-        components: countryCode ? `country:${countryCode}` : undefined,
-        key: process.env.GOOGLE_MAPS_API_KEY
-      }
-    });
-
-    if (response.data.results && response.data.results.length > 0) {
-      // Get the most relevant result
-      const result = response.data.results[0];
-      
-      // Extract locality or administrative area level 1
-      for (const component of result.address_components) {
-        if (component.types.includes('locality')) {
-          return component.long_name;
-        }
-        if (component.types.includes('administrative_area_level_1')) {
-          return component.long_name;
-        }
-      }
-      
-      // Fallback to formatted address without country
-      return result.formatted_address.replace(/,.*$/, '').trim();
-    }
-  } catch (error) {
-    console.warn("Geocoding failed, using fallback normalization:", error && error.message ? error.message : error);
-  }
-  
-  // Fallback to basic normalization if geocoding fails
-  return normalizeCity(city, countryCode);
-}
-
 function normalizeCity(city, countryCode) {
   if (!city) return "";
 
-  // Common city name mappings for UAE and other countries
+  // Common city name mappings for UAE
   const cityMappings = {
     AE: {
       sharjah: "Sharjah",
       dubai: "Dubai",
       "abu dhabi": "Abu Dhabi",
-      "abu dhabi city": "Abu Dhabi",
-      "al ain": "Al Ain",
       ajman: "Ajman",
       fujairah: "Fujairah",
       "ras al khaimah": "Ras Al Khaimah",
       "umm al quwain": "Umm Al Quwain",
     },
-    US: {
-      "new york": "New York",
-      "ny": "New York",
-      "nyc": "New York",
-      "los angeles": "Los Angeles",
-      "la": "Los Angeles",
-      "chicago": "Chicago",
-      "houston": "Houston",
-      "phoenix": "Phoenix",
-      "philadelphia": "Philadelphia",
-      "san antonio": "San Antonio",
-      "san diego": "San Diego",
-      "dallas": "Dallas",
-      "san jose": "San Jose",
-    },
-    GB: {
-      london: "London",
-      "birmingham": "Birmingham",
-      "glasgow": "Glasgow",
-      "liverpool": "Liverpool",
-      "bristol": "Bristol",
-      "manchester": "Manchester",
-      "sheffield": "Sheffield",
-      "leeds": "Leeds",
-      "edinburgh": "Edinburgh",
-      "leicester": "Leicester",
-    },
-    TR: {
-      "istanbul": "Istanbul",
-      "ankara": "Ankara",
-      "izmir": "Izmir",
-      "bursa": "Bursa",
-      "adana": "Adana",
-      "gaziantep": "Gaziantep",
-      "konya": "Konya",
-      "antalya": "Antalya",
-      "kayseri": "Kayseri",
-      "mersin": "Mersin",
-    }
   };
 
   const normalizedCity = city.trim();
@@ -621,6 +530,227 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   return xml;
 }
 
+// ----------------- City resolution helpers (new) -----------------
+
+function normalizeForCompare(s) {
+  if (!s) return "";
+  try {
+    return s
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\p{L}\p{N}\s]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+  } catch (e) {
+    return s
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+  }
+}
+
+function levenshtein(a, b) {
+  const an = a.length, bn = b.length;
+  if (an === 0) return bn;
+  if (bn === 0) return an;
+  const matrix = Array.from({ length: an + 1 }, (_, i) => Array(bn + 1).fill(0));
+  for (let i = 0; i <= an; i++) matrix[i][0] = i;
+  for (let j = 0; j <= bn; j++) matrix[0][j] = j;
+  for (let i = 1; i <= an; i++) {
+    for (let j = 1; j <= bn; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return matrix[an][bn];
+}
+
+function bestFuzzyMatch(input, candidates, maxDistance = 3) {
+  if (!input || !candidates || candidates.length === 0) return null;
+  const inNorm = normalizeForCompare(input);
+  let best = null;
+  let bestScore = Infinity;
+  for (const c of candidates) {
+    const cNorm = normalizeForCompare(c);
+    const dist = levenshtein(inNorm, cNorm);
+    if (dist < bestScore) {
+      best = c;
+      bestScore = dist;
+    }
+  }
+  if (bestScore <= Math.max(1, Math.floor(inNorm.length * 0.3)) || bestScore <= maxDistance) {
+    return best;
+  }
+  return null;
+}
+
+async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalCode = "" }) {
+  if (!countryCode) return null;
+
+  const xml = `<?xml version="1.0" encoding="utf-8"?>
+  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
+    <soap:Header/>
+    <soap:Body>
+      <tns:FetchCities>
+        <tns:ClientInfo>
+          <tns:UserName>${escapeXml(clientInfo.UserName || "")}</tns:UserName>
+          <tns:Password>${escapeXml(clientInfo.Password || "")}</tns:Password>
+          <tns:Version>${escapeXml(clientInfo.Version || "")}</tns:Version>
+          <tns:AccountNumber>${escapeXml(clientInfo.AccountNumber || "")}</tns:AccountNumber>
+          <tns:AccountPin>${escapeXml(clientInfo.AccountPin || "")}</tns:AccountPin>
+          <tns:AccountEntity>${escapeXml(clientInfo.AccountEntity || "")}</tns:AccountEntity>
+          <tns:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || "")}</tns:AccountCountryCode>
+          <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : "")}</tns:Source>
+        </tns:ClientInfo>
+        <tns:CountryCode>${escapeXml(countryCode)}</tns:CountryCode>
+        <tns:City>${escapeXml(prefix || "")}</tns:City>
+        <tns:ZipCode>${escapeXml(postalCode || "")}</tns:ZipCode>
+      </tns:FetchCities>
+    </soap:Body>
+  </soap:Envelope>`;
+
+  const headersWithSoapAction = {
+    "Content-Type": "text/xml; charset=utf-8",
+    "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/FetchCities",
+  };
+
+  const headersNoSoapAction = {
+    "Content-Type": "text/xml; charset=utf-8",
+  };
+
+  try {
+    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 15000 });
+    if (!resp || !resp.data) throw new Error("Empty response");
+    let parsed = null;
+    try {
+      parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
+    } catch (e) {
+      parsed = null;
+    }
+    const cities = [];
+    try {
+      const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
+      const respRoot = body && (body.FetchCitiesResponse || body);
+      if (respRoot && respRoot.Cities) {
+        const node = respRoot.Cities;
+        if (Array.isArray(node.City)) {
+          for (const cc of node.City) {
+            if (typeof cc === "string") cities.push(cc);
+            else if (cc.Name) cities.push(cc.Name);
+          }
+        } else if (node.City) {
+          const cc = node.City;
+          if (typeof cc === "string") cities.push(cc);
+          else if (cc.Name) cities.push(cc.Name);
+        }
+      }
+    } catch (e) {}
+    if (cities.length === 0) {
+      const raw = typeof resp.data === "string" ? resp.data : JSON.stringify(resp.data);
+      const regex = /<Name>([^<]{2,60})<\/Name>/gi;
+      let m;
+      while ((m = regex.exec(raw)) !== null) {
+        cities.push(m[1]);
+      }
+    }
+    return cities.length ? Array.from(new Set(cities)) : null;
+  } catch (err) {
+    try {
+      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 15000 });
+      if (!resp || !resp.data) throw new Error("Empty response");
+      let parsed = null;
+      try {
+        parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
+      } catch (e) {
+        parsed = null;
+      }
+      const cities = [];
+      try {
+        const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
+        const respRoot = body && (body.FetchCitiesResponse || body);
+        if (respRoot && respRoot.Cities) {
+          const node = respRoot.Cities;
+          if (Array.isArray(node.City)) {
+            for (const cc of node.City) {
+              if (typeof cc === "string") cities.push(cc);
+              else if (cc.Name) cities.push(cc.Name);
+            }
+          } else if (node.City) {
+            const cc = node.City;
+            if (typeof cc === "string") cities.push(cc);
+            else if (cc.Name) cities.push(cc.Name);
+          }
+        }
+      } catch (e) {}
+      if (cities.length === 0) {
+        const raw = typeof resp.data === "string" ? resp.data : JSON.stringify(resp.data);
+        const regex = /<Name>([^<]{2,60})<\/Name>/gi;
+        let m;
+        while ((m = regex.exec(raw)) !== null) {
+          cities.push(m[1]);
+        }
+      }
+      return cities.length ? Array.from(new Set(cities)) : null;
+    } catch (err2) {
+      console.warn("Aramex Location API fetch failed:", (err2 && err2.message) || err.message || err2);
+      return null;
+    }
+  }
+}
+
+async function resolveCity(countryCode, rawCity, postalCode = "") {
+  try {
+    if (!rawCity) return "";
+
+    const quick = normalizeCity(rawCity, countryCode);
+    const clientInfo = {
+      UserName: process.env.ARAMEX_USER,
+      Password: process.env.ARAMEX_PASSWORD,
+      Version: process.env.ARAMEX_VERSION || "v1",
+      AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+      AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+      AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+      AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+      Source: DEFAULT_SOURCE,
+    };
+
+    const prefix = (quick || rawCity).substring(0, 40);
+    const cities = await fetchAramexCities({ clientInfo, countryCode, prefix, postalCode });
+
+    if (cities && cities.length > 0) {
+      const exact = cities.find((c) => normalizeForCompare(c) === normalizeForCompare(rawCity));
+      if (exact) return exact;
+
+      const best = bestFuzzyMatch(rawCity, cities);
+      if (best) return best;
+
+      const starts = cities.find((c) => normalizeForCompare(c).startsWith(normalizeForCompare(rawCity).slice(0, 3)));
+      if (starts) return starts;
+    }
+
+    const fallback = quick
+      .toLowerCase()
+      .split(" ")
+      .map((w) => (w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w))
+      .join(" ");
+
+    return fallback || rawCity;
+  } catch (e) {
+    console.warn("resolveCity error:", e && e.message ? e.message : e);
+    return rawCity;
+  }
+}
+
 // ----------------- Checkout creation with STRICT VALIDATION -----------------
 app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   try {
@@ -770,6 +900,19 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE;
     const totalCustomsValue = quantity * CUSTOMS_VALUE_PER_PIECE;
 
+    // Resolve / normalize city BEFORE creating the Aramex shipment
+    let normalizedCity = shippingAddress?.city || "";
+    const countryCode = (shippingAddress?.country || "").toUpperCase();
+    const postal = validateAndNormalizePostCode(shippingAddress?.postal_code || shippingAddress?.postalCode || shippingAddress?.postCode || "", countryCode);
+
+    try {
+      normalizedCity = await resolveCity(countryCode, normalizedCity, postal);
+      console.log("→ Resolved city:", normalizedCity);
+    } catch (e) {
+      console.warn("→ City resolution failed, using provided city:", e && e.message ? e.message : e);
+      normalizedCity = shippingAddress?.city || normalizedCity;
+    }
+
     // Aramex shipment creation
     let trackingId = null;
     let labelUrl = null;
@@ -808,16 +951,6 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         Type: "Shipper",
       };
 
-      // Use geocoding to validate and normalize the city name
-      let normalizedCity = shippingAddress.city;
-      try {
-        normalizedCity = await normalizeCityWithGeocoding(shippingAddress.city, shippingAddress.country);
-        console.log("→ Normalized city using geocoding:", normalizedCity);
-      } catch (geocodeError) {
-        console.warn("→ Geocoding failed, using fallback normalization:", geocodeError && geocodeError.message ? geocodeError.message : geocodeError);
-        normalizedCity = normalizeCity(shippingAddress.city, shippingAddress.country);
-      }
-
       // Consignee address from Stripe - NO DEFAULT VALUES, USE ACTUAL DATA
       const consigneeAddress = {
         Line1: shippingAddress.line1,
@@ -825,8 +958,8 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         Line3: "",
         City: normalizedCity,
         StateOrProvinceCode: shippingAddress.state || "",
-        PostCode: shippingAddress.postal_code || "",
-        CountryCode: shippingAddress.country.toUpperCase(),
+        PostCode: shippingAddress.postal_code || shippingAddress.postalCode || shippingAddress.postCode || "",
+        CountryCode: countryCode,
       };
 
       // Ensure we always have a non-empty name/company for Aramex
