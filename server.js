@@ -768,7 +768,85 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
     else if (quantity === 2) totalAmount = c.double;
     else totalAmount = c.double + (quantity - 2) * c.extra;
 
-    const unitAmount = Math.floor(totalAmount / quantity);
+    // unitAmount removed as single-source-of-truth because of rounding issues;
+    // we'll construct line_items so that sum(line.amount * qty) === totalAmount exactly.
+
+    // Image URLs provided by user
+    const imageSingle = "https://github.com/Axis-auto/uv/blob/main/one-piece_1%20(1).jpg?raw=true";
+    const imageMulti = "https://github.com/Axis-auto/uv/blob/main/tow-pieces%20(1).jpg?raw=true";
+
+    const selectedImage = quantity === 1 ? imageSingle : imageMulti;
+
+    // Calculate per-piece integer amounts (in smallest currency unit, e.g., cents)
+    const perPiece = Math.floor(totalAmount / quantity);
+    const remainder = totalAmount - perPiece * quantity;
+
+    // Build line_items so Stripe shows correct total (avoid per-unit rounding discrepancies)
+    const line_items = [];
+
+    const baseProductData = {
+      currency,
+      product_data: {
+        name: quantity === 1 ? "UV Car Inspection Device (1 pc)" : `UV Car Inspection Device`,
+        description: "A powerful portable device for car inspection.",
+        images: [selectedImage],
+      }
+    };
+
+    if (remainder === 0) {
+      // Perfect division: one line item with quantity
+      line_items.push({
+        price_data: {
+          currency,
+          product_data: baseProductData.product_data,
+          unit_amount: perPiece,
+        },
+        quantity,
+      });
+    } else {
+      // Non-even division: create two line items to distribute rounding remainder
+      // First line: quantity - 1 pieces at perPiece
+      // Second line: 1 piece with perPiece + remainder (covers total exactly)
+      if (quantity === 1) {
+        // Fallback safety (should not happen because remainder would be zero if qty === 1)
+        line_items.push({
+          price_data: {
+            currency,
+            product_data: baseProductData.product_data,
+            unit_amount: totalAmount,
+          },
+          quantity: 1,
+        });
+      } else {
+        const firstQty = quantity - 1;
+        const firstUnit = perPiece;
+        const lastUnit = perPiece + remainder;
+
+        // Push first line (quantity - 1)
+        line_items.push({
+          price_data: {
+            currency,
+            product_data: baseProductData.product_data,
+            unit_amount: firstUnit,
+          },
+          quantity: firstQty,
+        });
+
+        // Push second line (1 piece with adjusted unit amount)
+        line_items.push({
+          price_data: {
+            currency,
+            product_data: {
+              name: `UV Car Inspection Device (${quantity} pcs) - price adjustment`,
+              description: "Adjustment line to ensure correct total price",
+              images: [selectedImage],
+            },
+            unit_amount: lastUnit,
+          },
+          quantity: 1,
+        });
+      }
+    }
 
     const shipping_options = quantity === 1
       ? [
@@ -795,20 +873,7 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
     const sessionParams = {
       payment_method_types: ["card"],
       mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency,
-            product_data: {
-              name: quantity === 1 ? "UV Car Inspection Device (1 pc)" : "UV Car Inspection Device",
-              description: "A powerful portable device for car inspection.",
-              images: ["https://yourdomain.com/images/device.jpg"],
-            },
-            unit_amount: unitAmount,
-          },
-          quantity,
-        },
-      ],
+      line_items: line_items,
       // STRICT VALIDATION: Make shipping address collection mandatory
       shipping_address_collection: { 
         allowed_countries: allowedCountriesForStripe(allowedCountries)
