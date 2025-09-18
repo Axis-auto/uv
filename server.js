@@ -752,6 +752,115 @@ async function resolveCity(countryCode, rawCity, postalCode = "") {
   }
 }
 
+// ----------------- NEW: Address validation using Aramex API -----------------
+async function validateAramexAddress({ clientInfo, address }) {
+  const { Line1 = "", Line2 = "", Line3 = "", City = "", StateOrProvinceCode = "", PostCode = "", CountryCode = "" } = address || {};
+
+  const xml = `<?xml version="1.0" encoding="utf-8"?>
+  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
+    <soap:Header/>
+    <soap:Body>
+      <tns:AddressValidationRequest>
+        <tns:ClientInfo>
+          <tns:UserName>${escapeXml(clientInfo.UserName || "")}</tns:UserName>
+          <tns:Password>${escapeXml(clientInfo.Password || "")}</tns:Password>
+          <tns:Version>${escapeXml(clientInfo.Version || "")}</tns:Version>
+          <tns:AccountNumber>${escapeXml(clientInfo.AccountNumber || "")}</tns:AccountNumber>
+          <tns:AccountPin>${escapeXml(clientInfo.AccountPin || "")}</tns:AccountPin>
+          <tns:AccountEntity>${escapeXml(clientInfo.AccountEntity || "")}</tns:AccountEntity>
+          <tns:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || "")}</tns:AccountCountryCode>
+          <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : "")}</tns:Source>
+        </tns:ClientInfo>
+        <tns:Address>
+          <tns:Line1>${escapeXml(Line1)}</tns:Line1>
+          <tns:Line2>${escapeXml(Line2)}</tns:Line2>
+          <tns:Line3>${escapeXml(Line3)}</tns:Line3>
+          <tns:City>${escapeXml(City)}</tns:City>
+          <tns:StateOrProvinceCode>${escapeXml(StateOrProvinceCode)}</tns:StateOrProvinceCode>
+          <tns:PostCode>${escapeXml(PostCode)}</tns:PostCode>
+          <tns:CountryCode>${escapeXml(CountryCode)}</tns:CountryCode>
+        </tns:Address>
+      </tns:AddressValidationRequest>
+    </soap:Body>
+  </soap:Envelope>`;
+
+  const headersWithSoapAction = {
+    "Content-Type": "text/xml; charset=utf-8",
+    "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/ValidateAddress",
+  };
+
+  const headersNoSoapAction = {
+    "Content-Type": "text/xml; charset=utf-8",
+  };
+
+  let result = {
+    isValid: false,
+    suggestedAddresses: [],
+    message: "",
+    notifications: [],
+  };
+
+  try {
+    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 15000 });
+    if (!resp || !resp.data) throw new Error("Empty response");
+
+    let parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
+
+    const body = parsed["s:Envelope"] ? parsed["s:Envelope"]["s:Body"] : parsed;
+    const respRoot = body.AddressValidationResponse || body;
+
+    if (respRoot.HasErrors === "true" || respRoot.HasErrors === true) {
+      result.message = "Address validation failed";
+    } else {
+      result.isValid = true;
+    }
+
+    if (respRoot.Notifications && respRoot.Notifications.Notification) {
+      result.notifications = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
+    }
+
+    if (respRoot.SuggestedAddresses && respRoot.SuggestedAddresses.Address) {
+      result.suggestedAddresses = Array.isArray(respRoot.SuggestedAddresses.Address) ? respRoot.SuggestedAddresses.Address : [respRoot.SuggestedAddresses.Address];
+    } else if (respRoot.Message) {
+      result.message = respRoot.Message;
+    }
+
+    return result;
+  } catch (err) {
+    try {
+      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 15000 });
+      if (!resp || !resp.data) throw new Error("Empty response");
+
+      let parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
+
+      const body = parsed["s:Envelope"] ? parsed["s:Envelope"]["s:Body"] : parsed;
+      const respRoot = body.AddressValidationResponse || body;
+
+      if (respRoot.HasErrors === "true" || respRoot.HasErrors === true) {
+        result.message = "Address validation failed";
+      } else {
+        result.isValid = true;
+      }
+
+      if (respRoot.Notifications && respRoot.Notifications.Notification) {
+        result.notifications = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
+      }
+
+      if (respRoot.SuggestedAddresses && respRoot.SuggestedAddresses.Address) {
+        result.suggestedAddresses = Array.isArray(respRoot.SuggestedAddresses.Address) ? respRoot.SuggestedAddresses.Address : [respRoot.SuggestedAddresses.Address];
+      } else if (respRoot.Message) {
+        result.message = respRoot.Message;
+      }
+
+      return result;
+    } catch (err2) {
+      console.warn("Aramex Address Validation failed:", (err2 && err2.message) || err.message || err2);
+      result.message = err2.message || "Validation API error";
+      return result;
+    }
+  }
+}
+
 // ----------------- NEW HELPER: enrich session by fetching Stripe customer/payment info and merging ---
 async function enrichSessionWithStripeData(session) {
   // Returns an object { session, customerObj, paymentIntentObj, billingDetails, mergedShipping, mergedContact }
@@ -990,6 +1099,62 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   } catch (error) {
     console.error("❌ Checkout session creation error:", error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ----------------- NEW ENDPOINT: Fetch Aramex cities for frontend dropdown/auto-complete -----------------
+app.get("/aramex-cities", async (req, res) => {
+  const { country, prefix = "", zip = "" } = req.query;
+
+  if (!country) {
+    return res.status(400).json({ error: "Country code is required" });
+  }
+
+  const clientInfo = {
+    UserName: process.env.ARAMEX_USER,
+    Password: process.env.ARAMEX_PASSWORD,
+    Version: process.env.ARAMEX_VERSION || "v1",
+    AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+    AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+    AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+    AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+    Source: DEFAULT_SOURCE,
+  };
+
+  try {
+    const cities = await fetchAramexCities({ clientInfo, countryCode: country.toUpperCase(), prefix, postalCode: zip });
+    res.json(cities || []);
+  } catch (e) {
+    console.error("❌ Fetch cities error:", e.message);
+    res.status(500).json({ error: "Failed to fetch cities" });
+  }
+});
+
+// ----------------- NEW ENDPOINT: Validate address (including city/postcode) using Aramex API for frontend validation -----------------
+app.post("/validate-address", bodyParser.json(), async (req, res) => {
+  const address = req.body;
+
+  if (!address || !address.CountryCode) {
+    return res.status(400).json({ error: "Address with CountryCode is required" });
+  }
+
+  const clientInfo = {
+    UserName: process.env.ARAMEX_USER,
+    Password: process.env.ARAMEX_PASSWORD,
+    Version: process.env.ARAMEX_VERSION || "v1",
+    AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+    AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+    AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+    AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+    Source: DEFAULT_SOURCE,
+  };
+
+  try {
+    const validationResult = await validateAramexAddress({ clientInfo, address });
+    res.json(validationResult);
+  } catch (e) {
+    console.error("❌ Address validation error:", e.message);
+    res.status(500).json({ error: "Failed to validate address" });
   }
 });
 
