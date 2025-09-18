@@ -1,6 +1,3 @@
-// server.js (complete, updated with enrichSessionWithStripeData and robust webhook handling)
-// Full file — do not truncate
-
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
@@ -752,10 +749,8 @@ async function resolveCity(countryCode, rawCity, postalCode = "") {
   }
 }
 
-// ----------------- NEW: Address validation using Aramex API -----------------
+// ----------------- NEW HELPER: Validate and correct address using Aramex AddressValidationRequest -----------------
 async function validateAramexAddress({ clientInfo, address }) {
-  const { Line1 = "", Line2 = "", Line3 = "", City = "", StateOrProvinceCode = "", PostCode = "", CountryCode = "" } = address || {};
-
   const xml = `<?xml version="1.0" encoding="utf-8"?>
   <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
     <soap:Header/>
@@ -772,13 +767,13 @@ async function validateAramexAddress({ clientInfo, address }) {
           <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : "")}</tns:Source>
         </tns:ClientInfo>
         <tns:Address>
-          <tns:Line1>${escapeXml(Line1)}</tns:Line1>
-          <tns:Line2>${escapeXml(Line2)}</tns:Line2>
-          <tns:Line3>${escapeXml(Line3)}</tns:Line3>
-          <tns:City>${escapeXml(City)}</tns:City>
-          <tns:StateOrProvinceCode>${escapeXml(StateOrProvinceCode)}</tns:StateOrProvinceCode>
-          <tns:PostCode>${escapeXml(PostCode)}</tns:PostCode>
-          <tns:CountryCode>${escapeXml(CountryCode)}</tns:CountryCode>
+          <tns:Line1>${escapeXml(address.Line1 || "")}</tns:Line1>
+          <tns:Line2>${escapeXml(address.Line2 || "")}</tns:Line2>
+          <tns:Line3>${escapeXml(address.Line3 || "")}</tns:Line3>
+          <tns:City>${escapeXml(address.City || "")}</tns:City>
+          <tns:StateOrProvinceCode>${escapeXml(address.StateOrProvinceCode || "")}</tns:StateOrProvinceCode>
+          <tns:PostCode>${escapeXml(address.PostCode || "")}</tns:PostCode>
+          <tns:CountryCode>${escapeXml(address.CountryCode || "")}</tns:CountryCode>
         </tns:Address>
       </tns:AddressValidationRequest>
     </soap:Body>
@@ -793,39 +788,30 @@ async function validateAramexAddress({ clientInfo, address }) {
     "Content-Type": "text/xml; charset=utf-8",
   };
 
-  let result = {
-    isValid: false,
-    suggestedAddresses: [],
-    message: "",
-    notifications: [],
-  };
-
   try {
     let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 15000 });
     if (!resp || !resp.data) throw new Error("Empty response");
 
     let parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
 
-    const body = parsed["s:Envelope"] ? parsed["s:Envelope"]["s:Body"] : parsed;
-    const respRoot = body.AddressValidationResponse || body;
+    const body = parsed["s:Envelope"]["s:Body"];
+    const respRoot = body.AddressValidationResponse;
 
     if (respRoot.HasErrors === "true" || respRoot.HasErrors === true) {
-      result.message = "Address validation failed";
-    } else {
-      result.isValid = true;
+      console.warn("Aramex address validation has errors:", respRoot.Notifications);
+      // Still proceed to check suggestions
     }
 
-    if (respRoot.Notifications && respRoot.Notifications.Notification) {
-      result.notifications = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
-    }
+    let isValid = respRoot.IsValid === "true" || respRoot.IsValid === true;
+    let suggestedAddresses = [];
 
     if (respRoot.SuggestedAddresses && respRoot.SuggestedAddresses.Address) {
-      result.suggestedAddresses = Array.isArray(respRoot.SuggestedAddresses.Address) ? respRoot.SuggestedAddresses.Address : [respRoot.SuggestedAddresses.Address];
-    } else if (respRoot.Message) {
-      result.message = respRoot.Message;
+      suggestedAddresses = Array.isArray(respRoot.SuggestedAddresses.Address) 
+        ? respRoot.SuggestedAddresses.Address 
+        : [respRoot.SuggestedAddresses.Address];
     }
 
-    return result;
+    return { isValid, suggestedAddresses, notifications: respRoot.Notifications || [] };
   } catch (err) {
     try {
       let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 15000 });
@@ -833,30 +819,26 @@ async function validateAramexAddress({ clientInfo, address }) {
 
       let parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
 
-      const body = parsed["s:Envelope"] ? parsed["s:Envelope"]["s:Body"] : parsed;
-      const respRoot = body.AddressValidationResponse || body;
+      const body = parsed["s:Envelope"]["s:Body"];
+      const respRoot = body.AddressValidationResponse;
 
       if (respRoot.HasErrors === "true" || respRoot.HasErrors === true) {
-        result.message = "Address validation failed";
-      } else {
-        result.isValid = true;
+        console.warn("Aramex address validation has errors:", respRoot.Notifications);
       }
 
-      if (respRoot.Notifications && respRoot.Notifications.Notification) {
-        result.notifications = Array.isArray(respRoot.Notifications.Notification) ? respRoot.Notifications.Notification : [respRoot.Notifications.Notification];
-      }
+      let isValid = respRoot.IsValid === "true" || respRoot.IsValid === true;
+      let suggestedAddresses = [];
 
       if (respRoot.SuggestedAddresses && respRoot.SuggestedAddresses.Address) {
-        result.suggestedAddresses = Array.isArray(respRoot.SuggestedAddresses.Address) ? respRoot.SuggestedAddresses.Address : [respRoot.SuggestedAddresses.Address];
-      } else if (respRoot.Message) {
-        result.message = respRoot.Message;
+        suggestedAddresses = Array.isArray(respRoot.SuggestedAddresses.Address) 
+          ? respRoot.SuggestedAddresses.Address 
+          : [respRoot.SuggestedAddresses.Address];
       }
 
-      return result;
+      return { isValid, suggestedAddresses, notifications: respRoot.Notifications || [] };
     } catch (err2) {
-      console.warn("Aramex Address Validation failed:", (err2 && err2.message) || err.message || err2);
-      result.message = err2.message || "Validation API error";
-      return result;
+      console.warn("Aramex Address Validation API failed:", (err2 && err2.message) || err.message || err2);
+      return { isValid: false, suggestedAddresses: [], notifications: [{ Code: "ERR", Message: "API Failure" }] };
     }
   }
 }
@@ -960,34 +942,12 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
     const currency = (req.body.currency || "usd").toLowerCase();
-    const shippingAddress = req.body.shippingAddress;
     const prices = {
       usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       try: { single: 2799000, shipping: 150000, double: 4599000, extra: 2400000 },
     };
     const c = prices[currency] || prices["usd"];
-
-    if (!shippingAddress || typeof shippingAddress !== "object") {
-      return res.status(400).json({ error: "Shipping address is required" });
-    }
-
-    // Validate shipping address using Aramex API
-    const clientInfo = {
-      UserName: process.env.ARAMEX_USER,
-      Password: process.env.ARAMEX_PASSWORD,
-      Version: process.env.ARAMEX_VERSION || "v1",
-      AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-      AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-      AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
-      AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-      Source: DEFAULT_SOURCE,
-    };
-
-    const validation = await validateAramexAddress({ clientInfo, address: shippingAddress });
-    if (!validation.isValid) {
-      return res.status(400).json({ error: "Invalid shipping address", details: validation });
-    }
 
     let totalAmount;
     if (quantity === 1) totalAmount = c.single;
@@ -1074,40 +1034,37 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
       }
     }
 
-    // Add shipping as a line item instead of shipping_options
-    let shippingAmount = 0;
-    if (quantity === 1) {
-      shippingAmount = c.shipping;
-      line_items.push({
-        price_data: {
-          currency,
-          product_data: {
-            name: "Standard Shipping",
-            description: "Shipping fee for 1 piece",
+    const shipping_options = quantity === 1
+      ? [
+          {
+            shipping_rate_data: {
+              type: "fixed_amount",
+              fixed_amount: { amount: c.shipping, currency },
+              display_name: "Standard Shipping",
+              delivery_estimate: { minimum: { unit: "business_day", value: 5 }, maximum: { unit: "business_day", value: 7 } },
+            },
           },
-          unit_amount: shippingAmount,
-        },
-        quantity: 1,
-      });
-    } else {
-      line_items.push({
-        price_data: {
-          currency,
-          product_data: {
-            name: "Free Shipping",
-            description: "Free shipping for 2 or more pieces",
+        ]
+      : [
+          {
+            shipping_rate_data: {
+              type: "fixed_amount",
+              fixed_amount: { amount: 0, currency },
+              display_name: "Free Shipping",
+              delivery_estimate: { minimum: { unit: "business_day", value: 5 }, maximum: { unit: "business_day", value: 7 } },
+            },
           },
-          unit_amount: 0,
-        },
-        quantity: 1,
-      });
-    }
+        ];
 
     const sessionParams = {
       payment_method_types: ["card"],
       mode: "payment",
       line_items: line_items,
-      // No shipping_address_collection since we collect it in frontend
+      // STRICT VALIDATION: Make shipping address collection mandatory
+      shipping_address_collection: { 
+        allowed_countries: allowedCountriesForStripe(allowedCountries)
+      },
+      shipping_options,
       // STRICT VALIDATION: Make phone number collection mandatory
       phone_number_collection: { enabled: true },
       // STRICT VALIDATION: Always create customer to ensure we get customer details
@@ -1116,11 +1073,7 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
       billing_address_collection: 'required',
       success_url: "https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}",
       cancel_url: "https://axis-uv.com/cancel",
-      metadata: { 
-        quantity: quantity.toString(), 
-        currency,
-        shippingAddress: JSON.stringify(shippingAddress),
-      },
+      metadata: { quantity: quantity.toString(), currency },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -1128,62 +1081,6 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   } catch (error) {
     console.error("❌ Checkout session creation error:", error);
     res.status(500).json({ error: error.message });
-  }
-});
-
-// ----------------- NEW ENDPOINT: Fetch Aramex cities for frontend dropdown/auto-complete -----------------
-app.get("/aramex-cities", async (req, res) => {
-  const { country, prefix = "", zip = "" } = req.query;
-
-  if (!country) {
-    return res.status(400).json({ error: "Country code is required" });
-  }
-
-  const clientInfo = {
-    UserName: process.env.ARAMEX_USER,
-    Password: process.env.ARAMEX_PASSWORD,
-    Version: process.env.ARAMEX_VERSION || "v1",
-    AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-    AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-    AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
-    AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-    Source: DEFAULT_SOURCE,
-  };
-
-  try {
-    const cities = await fetchAramexCities({ clientInfo, countryCode: country.toUpperCase(), prefix, postalCode: zip });
-    res.json(cities || []);
-  } catch (e) {
-    console.error("❌ Fetch cities error:", e.message);
-    res.status(500).json({ error: "Failed to fetch cities" });
-  }
-});
-
-// ----------------- NEW ENDPOINT: Validate address (including city/postcode) using Aramex API for frontend validation -----------------
-app.post("/validate-address", bodyParser.json(), async (req, res) => {
-  const address = req.body;
-
-  if (!address || !address.CountryCode) {
-    return res.status(400).json({ error: "Address with CountryCode is required" });
-  }
-
-  const clientInfo = {
-    UserName: process.env.ARAMEX_USER,
-    Password: process.env.ARAMEX_PASSWORD,
-    Version: process.env.ARAMEX_VERSION || "v1",
-    AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-    AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-    AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
-    AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-    Source: DEFAULT_SOURCE,
-  };
-
-  try {
-    const validationResult = await validateAramexAddress({ clientInfo, address });
-    res.json(validationResult);
-  } catch (e) {
-    console.error("❌ Address validation error:", e.message);
-    res.status(500).json({ error: "Failed to validate address" });
   }
 });
 
@@ -1205,18 +1102,37 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     console.log("✅ Payment completed for session:", session.id);
 
     try {
-      // Extract shipping address from metadata (collected in frontend)
-      let shippingAddress;
-      try {
-        shippingAddress = JSON.parse(session.metadata.shippingAddress);
-      } catch (e) {
-        console.error("❌ Invalid shipping address in metadata:", e);
-        return res.status(400).send("Invalid shipping address");
-      }
-
       // Enrich session with extra Stripe data
       const enriched = await enrichSessionWithStripeData(session);
+      const mergedShippingFromStripe = enriched.mergedShipping; // may be null
       const mergedContact = enriched.mergedContact || {};
+
+      // Build shippingAddress object used by downstream (normalize keys)
+      let shippingAddress =
+        // prefer shipping_details.address from session
+        (session.shipping_details && session.shipping_details.address) ||
+        (session.shipping && session.shipping.address) ||
+        mergedShippingFromStripe ||
+        (session.customer_details && session.customer_details.address) ||
+        null;
+
+      // Normalize shape if needed (Stripe sometimes uses different keys)
+      if (shippingAddress && !shippingAddress.line1 && (shippingAddress.address_line1 || shippingAddress.street)) {
+        shippingAddress = {
+          line1: shippingAddress.address_line1 || shippingAddress.street || "",
+          line2: shippingAddress.address_line2 || "",
+          city: shippingAddress.city || shippingAddress.locality || shippingAddress.town || shippingAddress.region || "",
+          state: shippingAddress.state || shippingAddress.province || "",
+          postal_code: shippingAddress.postal_code || shippingAddress.postcode || shippingAddress.zip || "",
+          country: (shippingAddress.country || shippingAddress.country_code || "").toUpperCase(),
+          name: shippingAddress.name || "",
+        };
+      } else if (shippingAddress && shippingAddress.line1 && !shippingAddress.postal_code) {
+        // ensure consistent keys
+        shippingAddress.postal_code = shippingAddress.postal_code || shippingAddress.postcode || shippingAddress.zip || "";
+        shippingAddress.country = (shippingAddress.country || shippingAddress.country_code || "").toUpperCase();
+        shippingAddress.city = shippingAddress.city || shippingAddress.town || shippingAddress.locality || "";
+      }
 
       // Ensure contact fields exist (fallbacks)
       const customerEmail = mergedContact.email || session.customer_details?.email || (enriched.customerObj && enriched.customerObj.email) || "";
@@ -1230,6 +1146,22 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
       console.log("→ Merged customer info:", { finalCustomerName, customerEmail, customerPhone, shippingAddress });
 
+      // If no shippingAddress found at all, attempt to form one from billing details (last resort)
+      if (!shippingAddress) {
+        const bill = enriched.billingDetails || null;
+        if (bill && bill.address) {
+          shippingAddress = {
+            line1: bill.address.line1 || "",
+            line2: bill.address.line2 || "",
+            city: bill.address.city || "",
+            state: bill.address.state || "",
+            postal_code: bill.address.postal_code || bill.address.postcode || bill.address.zip || "",
+            country: (bill.address.country || "").toUpperCase(),
+            name: bill.name || finalCustomerName,
+          };
+        }
+      }
+
       // STRICT VALIDATION + AUTO-FIX: try to normalize postcode and city before validateRequiredFields
       const countryCode = (shippingAddress?.country || "").toUpperCase();
       let postal = validateAndNormalizePostCode(shippingAddress?.postal_code || shippingAddress?.postalCode || shippingAddress?.postCode || "", countryCode);
@@ -1240,34 +1172,63 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         postal = "";
       }
 
-      // Auto-fix rule 2: try to resolve/normalize city via resolveCity (uses Aramex FetchCities + fuzzy match)
-      // Declare normalizedCity once here
+      // NEW: Use Aramex ValidateAddress to validate and correct the entire address (city, postcode, etc.) to match Aramex system
       let normalizedCity = shippingAddress?.city || shippingAddress?.town || shippingAddress?.locality || "";
       try {
-        if (normalizedCity && countryCode) {
-          const resolved = await resolveCity(countryCode, normalizedCity, postal);
-          if (resolved && resolved.length > 0) {
-            normalizedCity = resolved;
-          }
-        } else if (!normalizedCity && postal && countryCode) {
-          // If city empty but postal present: try fetchAramexCities by postal only
-          const clientInfo = {
-            UserName: process.env.ARAMEX_USER,
-            Password: process.env.ARAMEX_PASSWORD,
-            Version: process.env.ARAMEX_VERSION || "v1",
-            AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-            AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-            AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
-            AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-            Source: DEFAULT_SOURCE,
-          };
-          const citiesByPostal = await fetchAramexCities({ clientInfo, countryCode, prefix: "", postalCode: postal });
-          if (citiesByPostal && citiesByPostal.length > 0) {
-            normalizedCity = citiesByPostal[0];
+        const clientInfo = {
+          UserName: process.env.ARAMEX_USER,
+          Password: process.env.ARAMEX_PASSWORD,
+          Version: process.env.ARAMEX_VERSION || "v1",
+          AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+          AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+          AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+          AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+          Source: DEFAULT_SOURCE,
+        };
+
+        const aramexAddress = {
+          Line1: shippingAddress.line1 || "",
+          Line2: shippingAddress.line2 || "",
+          Line3: "",
+          City: normalizedCity,
+          StateOrProvinceCode: shippingAddress.state || "",
+          PostCode: postal,
+          CountryCode: countryCode,
+        };
+
+        const validationResult = await validateAramexAddress({ clientInfo, address: aramexAddress });
+
+        if (validationResult.isValid) {
+          console.log("→ Aramex validated the address successfully.");
+        } else if (validationResult.suggestedAddresses.length > 0) {
+          console.log("→ Aramex suggested corrections; using the first suggested address.");
+          const suggested = validationResult.suggestedAddresses[0];
+          // Update shippingAddress with suggested values
+          shippingAddress.line1 = suggested.Line1 || shippingAddress.line1;
+          shippingAddress.line2 = suggested.Line2 || shippingAddress.line2;
+          normalizedCity = suggested.City || normalizedCity;
+          shippingAddress.state = suggested.StateOrProvinceCode || shippingAddress.state;
+          postal = suggested.PostCode || postal;
+          // CountryCode should remain the same
+        } else {
+          console.warn("→ Aramex address validation failed without suggestions; falling back to fuzzy match.");
+          // Fallback to existing resolveCity if no suggestions
+          if (normalizedCity && countryCode) {
+            const resolved = await resolveCity(countryCode, normalizedCity, postal);
+            if (resolved && resolved.length > 0) {
+              normalizedCity = resolved;
+            }
+          } else if (!normalizedCity && postal && countryCode) {
+            const citiesByPostal = await fetchAramexCities({ clientInfo, countryCode, prefix: "", postalCode: postal });
+            if (citiesByPostal && citiesByPostal.length > 0) {
+              normalizedCity = citiesByPostal[0];
+            }
           }
         }
       } catch (e) {
-        console.warn("City auto-resolve failed:", e && e.message ? e.message : e);
+        console.warn("Aramex ValidateAddress failed; falling back to existing logic:", e && e.message ? e.message : e);
+        // Fallback to resolveCity
+        normalizedCity = await resolveCity(countryCode, normalizedCity, postal);
       }
 
       // If postcode looked invalid for the country (validate returned empty) AND we couldn't get helpful city info via Aramex,
