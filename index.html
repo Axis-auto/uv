@@ -356,7 +356,7 @@
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
       .logo span { font-size: 14px; display: none; } 
-      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } 
+      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 0 8px; } 
       nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* Added padding to nav */
       nav::-webkit-scrollbar { display: none; }
       .btn.ghost { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
@@ -366,7 +366,7 @@
       .kpis { grid-template-columns: repeat(2,1fr); }
       .pricing-options, .shipping-timeline, .payment-methods { flex-direction: column; }
       .shipping-timeline::before { display: none; }
-      .features .feat, .steps .step { flex-direction: column; text-align: center; }
+      .features .feat, .steps .step { flex-direction: row; }
       .icon, .step .num { margin: 0 auto; }
       .footer-bottom { flex-direction: column; text-align: center; }
       .footer-links { justify-content: center; }
@@ -413,7 +413,7 @@
       header .inner { gap: 4px; }
       nav { gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
       nav::-webkit-scrollbar { display: none; }
-      .btn.ghost { padding: 4px 8px; font-size: 10px; }
+      .btn.ghost { padding: 4px 8px; font-size: 10px; } 
       .lang-switcher { padding: 2px 4px; font-size: 10px; gap: 2px; }
       .cart-icon .fa-shopping-cart { font-size: 14px; }
       .cart-count { font-size: 8px; min-width: 14px; padding: 0px 3px; top: -4px; right: -4px; }
@@ -433,7 +433,7 @@
     .checkout-btn { display: block; width: 100%; margin-top: 20px; }
     /* Cart Summary Styles */
     .cart-summary { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-bottom: 16px; }
-    .cart-summary-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+    .cart-summary-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
     .cart-summary-item img { width: 80px; height: auto; object-fit: contain; border-radius: 8px; }
     .cart-summary-details { flex: 1; }
     .cart-summary-subtotal, .cart-summary-shipping, .cart-summary-grandtotal { display: flex; justify-content: space-between; padding: 4px 0; }
@@ -469,6 +469,19 @@
       .whatsapp-icon {
         margin-top: 13px;
       }
+    }
+
+    /* Card Element Style */
+    #card-element {
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    #card-errors {
+      color: var(--danger);
+      font-size: 14px;
     }
 
   </style>
@@ -603,7 +616,7 @@
             <div class="num">1</div>
             <div>
               <div style="font-weight:800" data-translate="how.step1.title">حضّر السيارة</div>
-              <div class="muted" data-translate="how.step1.desc">نظّف السطح وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.</div>
+              <div class="muted" data-translate="how.step1.desc">نظّف وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.</div>
             </div>
           </div>
           <div class="card step card-hover">
@@ -744,7 +757,7 @@
             </div>
           </div>
           <div id="stripe-details" class="payment-details active">
-            <p data-translate="payment.stripeDesc">سيتم توجيهك إلى صفحة دفع آمنة لدى Stripe لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.</p>
+            <p data-translate="payment.stripe">بطاقة ائتمان/خصم</p>
           </div>
           <div id="swift-details" class="payment-details">
             <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0; direction: ltr; text-align: left;">
@@ -758,7 +771,7 @@
          
           <div class="guarantee-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="M21 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
             </svg>
             <span data-translate="payment.guarantee">ضمان استرجاع خلال <span class="numbers-fix">14</span> يوم</span>
           </div>
@@ -842,8 +855,24 @@
            
               <div class="form-group">
                 <label class="form-label" data-translate="order.country">الدولة</label>
-                <input type="text" id="country" class="form-input" required placeholder="مثال: الإمارات العربية المتحدة" data-translate-placeholder="order.countryPlaceholder" />
+                <select id="country" class="form-select" required onchange="handleCountryChange()">
+                  <option value="">اختر الدولة</option>
+                  <!-- Options will be populated dynamically -->
+                </select>
               </div>
+           
+              <div class="form-group">
+                <label class="form-label" data-translate="order.city">المدينة</label>
+                <select id="city" class="form-select" required>
+                  <option value="">اختر المدينة</option>
+                </select>
+              </div>
+           
+              <div class="form-group" id="postalGroup">
+                <label class="form-label" data-translate="order.postal">الرمز البريدي</label>
+                <input type="text" id="postal" class="form-input" placeholder="مثال: 12345" />
+              </div>
+           
               <div class="form-group">
                 <label class="form-label" data-translate="order.address">العنوان</label>
                 <textarea id="address" class="form-textarea" rows="3" required placeholder="مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد" data-translate-placeholder="order.addressPlaceholder"></textarea>
@@ -877,6 +906,12 @@
               <div class="upload-status"><div class="loader" id="uploadLoader"></div><span id="uploadStatusText" class="form-note"></span></div>
             </div>
            
+            <div class="form-group" id="cardElementGroup" style="display: none;">
+              <label class="form-label">بيانات البطاقة</label>
+              <div id="card-element"></div>
+              <div id="card-errors" role="alert"></div>
+            </div>
+           
             <div class="privacy-checkbox" id="privacyCheckbox">
               <input type="checkbox" id="privacyAgreement" required>
               <label for="privacyAgreement">
@@ -905,7 +940,7 @@
             <div class="form-note" data-translate="order.swiftNote">بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.</div>
           </div>
 
-          <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleStripeCheckout()">أتمم عملية الدفع</button>
+          <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleSubmit()">أتمم عملية الدفع</button>
           <div id="paymentIcons" style="display: flex; justify-content: center; gap: 20px; margin-top: 10px;">
             <div style="display: flex; flex-direction: column; align-items: center;">
               <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/visa.svg" alt="Visa" style="height: 30px;">
@@ -1070,10 +1105,10 @@
         <div>
           <h3 data-translate="footer.quickLinks">روابط سريعة</h3>
           <div class="footer-links">
-            <a href="#features" data-translate="nav.features">المميزات</a>
-            <a href="#pricing" data-translate="nav.pricing">السعر</a>
-            <a href="#faq" data-translate="nav.faq">الأسئلة الشائعة</a>
-            <a href="#order" data-translate="nav.order">اطلب الآن</a>
+            <a href="#features" data-translate="footer.features">المميزات</a>
+            <a href="#pricing" data-translate="footer.pricing">السعر</a>
+            <a href="#faq" data-translate="footer.faq">الأسئلة الشائعة</a>
+            <a href="#order" data-translate="footer.order">اطلب الآن</a>
             <a href="#" onclick="showPrivacyPolicy(); return false;" data-translate="footer.privacy">سياسة الخصوصية</a>
           </div>
         </div>
@@ -1129,24 +1164,16 @@
 
   <script>
     const API_BASE = "https://uv-rk1s.onrender.com";
+    const STRIPE_PUBLISHABLE_KEY = 'pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF';
 
     
     let currentLang = 'ar';
     let stripe = null;
+    let elements = null;
+    let cardElement = null;
     let cartQuantity = 0;
-
-    
-    function getQuantity() {
-      const qInput = document.getElementById('quantity');
-      if (qInput && Number(qInput.value) >= 1) return parseInt(qInput.value, 10);
-
-      if (window.cartQuantity && Number(window.cartQuantity) >= 1) {
-        return parseInt(window.cartQuantity, 10);
-      }
-
-     
-      return 1;
-    }
+    let allowedCountries = ["AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CV", "CW", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MK", "ML", "MM", "MN", "MO", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SZ", "TA", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VN", "VU", "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW", "ZZ"];
+    let countriesWithoutPostcode = ["AE","AG","AI","AQ","AW","BS","BB","BZ","BM","BQ","BV","IO","KY","CK","CW","FK","FO","GF","GG","GL","GN","GQ","GS","GU","GW","HK","HM","KN","LC","MF","MS","NU","NF","NL","PN","PS","PR","SX","SB","TC","TK","TT","TV","UM","VI","WF","WS"];
 
     
     const translations = {
@@ -1180,7 +1207,7 @@
         'features.title': 'لماذا جهاز فحص السيارات هذا؟',
         'features.subtitle': 'مصمم خصيصًا لفحص السيارات بسرعة وبدقّة عالية.',
         'features.feat1.title': 'يكشف آثار الدهان والرش',
-        'features.feat1.desc': 'يُبين اختلافات الطبقات، المعجون والتلميع.',
+        'features.feat1.desc': 'يُبين اختلافات الطبلات، المعجون والتلميع.',
         'features.feat2.title': 'كشف تسريبات AC مع صبغة UV',
         'features.feat2.desc': 'متوافق مع أصباغ UV الشائعة لسهولة كشف التسريب.',
         'features.feat3.title': 'بطارية 8400 mAh',
@@ -1191,7 +1218,7 @@
         // كيف يعمل
         'how.title': 'كيف يعمل؟',
         'how.step1.title': 'حضّر السيارة',
-        'how.step1.desc': 'نظّف السطح وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.',
+        'how.step1.desc': 'نظّف وجففه، ويفضّل بيئة مظلمة لتحسين الرؤية.',
         'how.step2.title': 'فعّل الجهاز',
         'how.step2.desc': 'استخدم الجهاز على مسافة 40–60 سم من السطح وزاوج الزوايا.',
         'how.step3.title': 'اقرأ النتائج',
@@ -1322,6 +1349,8 @@
         'order.email': 'البريد الإلكتروني',
         'order.phone': 'رقم الهاتف',
         'order.country': 'الدولة',
+        'order.city': 'المدينة',
+        'order.postal': 'الرمز البريدي',
         'order.address': 'العنوان',
         'order.paymentMethod': 'طريقة الدفع',
         'order.paymentStripe': 'الدفع بالبطاقة',
@@ -1339,7 +1368,9 @@
         'order.namePlaceholder': 'مثال: أحمد خالد',
         'order.emailPlaceholder': 'مثال: example@domain.com',
         'order.phonePlaceholder': 'مثال: 05xxxxxxxx',
-        'order.countryPlaceholder': 'مثال: الإمارات العربية المتحدة',
+        'order.countryPlaceholder': 'اختر الدولة',
+        'order.cityPlaceholder': 'اختر المدينة',
+        'order.postalPlaceholder': 'مثال: 12345',
         'order.addressPlaceholder': 'مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد',
        
         // معلومات إضافية
@@ -1376,7 +1407,7 @@
         'privacy.conditionsTitle': 'شروط الإرجاع:',
         'privacy.condition1': 'أن يكون المنتج في حالته الأصلية وبغلافه الأصلي',
         'privacy.condition2': 'أن تكون جميع الملحقات والوثائق متوفرة',
-        'privacy.condition3': 'أن يتم الإرجاع خلال 14 يوم من تاريخ الاستلام',
+        'privacy.condition3': 'أن يتم الإرجاعخلال 14 يوم من تاريخ الاستلام',
         'privacy.condition4': 'أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام',
         'privacy.refundTitle': 'عملية الاسترداد:',
         'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
@@ -1579,6 +1610,8 @@
         'order.email': 'Email Address',
         'order.phone': 'Phone Number',
         'order.country': 'Country',
+        'order.city': 'City',
+        'order.postal': 'Postal Code',
         'order.address': 'Address',
         'order.paymentMethod': 'Payment Method',
         'order.paymentStripe': 'Card Payment',
@@ -1596,7 +1629,9 @@
         'order.namePlaceholder': 'Example: Ahmed Khalid',
         'order.emailPlaceholder': 'Example: example@domain.com',
         'order.phonePlaceholder': 'Example: 05xxxxxxxx',
-        'order.countryPlaceholder': 'Example: United Arab Emirates',
+        'order.countryPlaceholder': 'Select Country',
+        'order.cityPlaceholder': 'Select City',
+        'order.postalPlaceholder': 'Example: 12345',
         'order.addressPlaceholder': 'Example: Dubai, Al Marrar Area, Sheikh Mohammed Bin Zayed Road',
        
         // Additional Info
@@ -1671,11 +1706,77 @@
       initPage();
       loadCart();
       updateCartSummary();
+      populateCountries();
+      initStripe();
+      handleCountryChange(); 
+      togglePaymentDetails();
     });
 
     
+    function populateCountries() {
+      const countrySelect = document.getElementById('country');
+      allowedCountries.forEach(code => {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = code; 
+        countrySelect.appendChild(option);
+      });
+    }
+
+    
+    function handleCountryChange() {
+      const countryCode = document.getElementById('country').value.toUpperCase();
+      const postalGroup = document.getElementById('postalGroup');
+      const citySelect = document.getElementById('city');
+      citySelect.innerHTML = '<option value="">اختر المدينة</option>';
+      if (countryCode) {
+        fetchCities(countryCode);
+        postalGroup.style.display = countriesWithoutPostcode.includes(countryCode) ? 'none' : 'block';
+      } else {
+        postalGroup.style.display = 'block';
+      }
+    }
+
+    
+    async function fetchCities(countryCode, prefix = '') {
+      try {
+        const response = await fetch(API_BASE + '/fetch-cities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ countryCode, prefix })
+        });
+        const data = await response.json();
+        const citySelect = document.getElementById('city');
+        citySelect.innerHTML = '<option value="">اختر المدينة</option>';
+        if (data.cities && data.cities.length > 0) {
+          data.cities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    }
+
+    
     function initStripe() {
-      stripe = Stripe('pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF'); 
+      stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+      elements = stripe.elements();
+      cardElement = elements.create('card', {
+        style: {
+          base: {
+            fontSize: '16px',
+            color: '#0f172a',
+            '::placeholder': {
+              color: '#475569',
+            },
+          },
+        },
+      });
+      cardElement.mount('#card-element');
     }
 
     
@@ -1730,8 +1831,7 @@
       elements.forEach(element => {
         const key = element.getAttribute('data-translate');
         if (translations[lang] && translations[lang][key]) {
-          if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-            // معالجة العناصر الخاصة (placeholders)
+          if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
             if (element.hasAttribute('data-translate-placeholder')) {
               const placeholderKey = element.getAttribute('data-translate-placeholder');
               if (translations[lang][placeholderKey]) {
@@ -1745,6 +1845,13 @@
           }
         }
       });
+      const selectOptions = document.querySelectorAll('select option[data-translate]');
+      selectOptions.forEach(option => {
+        const key = option.getAttribute('data-translate');
+        if (translations[lang] && translations[lang][key]) {
+          option.textContent = translations[lang][key];
+        }
+      });
      
       
       document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
@@ -1754,32 +1861,27 @@
     function togglePaymentDetails() {
       const method = document.getElementById('paymentMethod').value;
       document.getElementById('receiptGroup').style.display = method === 'swift' ? 'block' : 'none';
-      document.getElementById('personalFields').style.display = method === 'swift' ? 'block' : 'none';
-      document.getElementById('stripePayment').style.display = method === 'stripe' ? 'block' : 'none';
-      document.getElementById('swiftDetails').style.display = method === 'swift' ? 'block' : 'none';
-      document.getElementById('privacyCheckbox').style.display = method === 'swift' ? 'flex' : 'none';
+      document.getElementById('cardElementGroup').style.display = method === 'stripe' ? 'block' : 'none';
+      document.getElementById('personalFields').style.display = 'block';
+      document.getElementById('privacyCheckbox').style.display = 'flex';
       document.getElementById('whatsappCard').style.display = method === 'swift' ? 'block' : 'none';
       document.getElementById('paymentIcons').style.display = method === 'stripe' ? 'flex' : 'none';
 
       const submitBtn = document.getElementById('submitBtn');
       if (method === 'stripe') {
-        submitBtn.textContent = translations[currentLang]['payment.completePayment'];
-        submitBtn.setAttribute('onclick', 'handleStripeCheckout()');
+        submitBtn.textContent = translations[currentLang]['payment.completePayment'] || 'Complete Payment';
+        submitBtn.onclick = handleStripePayment;
       } else {
-        submitBtn.textContent = translations[currentLang]['order.submit'];
-        submitBtn.setAttribute('onclick', 'handleSwiftPayment()');
+        submitBtn.textContent = translations[currentLang]['order.submit'] || 'Submit Order via WhatsApp';
+        submitBtn.onclick = handleSwiftPayment;
       }
     }
 
     
     function selectPaymentMethod(method) {
       document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-      document.querySelector(`.payment-method:nth-child(${method === 'stripe' ? 1 : 2})`).classList.add('selected');
-      
+      document.querySelector(`[onclick="selectPaymentMethod('${method}')"]`).classList.add('selected');
       document.getElementById('paymentMethod').value = method;
-      document.querySelectorAll('.payment-details').forEach(el => el.classList.remove('active'));
-      document.getElementById(`${method}-details`).classList.add('active');
-      
       togglePaymentDetails();
     }
 
@@ -1804,7 +1906,7 @@
           imagePreview.style.display = 'none';
         }
       } else {
-        fileNameField.textContent = currentLang === 'ar' ? 'لم يتم اختيار ملف' : 'No file selected';
+        fileNameField.textContent = translations[currentLang]['order.noFile'];
         fileNameField.style.color = "var(--muted)";
         imagePreview.style.display = 'none';
       }
@@ -1843,34 +1945,65 @@
     }
 
     
-    async function handleStripeCheckout() {
-      try {
-        const quantity = cartQuantity; 
+    async function handleStripePayment() {
+      if (!validateForm()) return;
 
-        const res = await fetch(API_BASE + "/create-checkout-session", {
+      showAlert(translations[currentLang]['order.processing'] || 'Processing...', 'success');
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const country = document.getElementById('country').value.toUpperCase();
+      const city = document.getElementById('city').value.trim();
+      const postal = document.getElementById('postal').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const quantity = cartQuantity;
+
+      try {
+        const response = await fetch(API_BASE + '/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ quantity })
         });
 
-        const data = await res.json();
-        if (!res.ok) {
-          console.error('Server error', data);
-          alert('تعذّر إنشاء جلسة الدفع. افتح Console للمزيد من التفاصيل.');
-          return;
-        }
-        if (!data.id) {
-          console.error('No session id', data);
-          alert('تعذّر استلام Session ID من الخادم.');
-          return;
-        }
+        const { clientSecret } = await response.json();
 
-        const stripe = Stripe('pk_test_51S0LPVC5jJB1UkBOoIx2Ei5nXIfqSwz3pdNNDwGiKm9dZFaBtCjTJ825bJ1qwbhL7YGyQCvTa5iP75dewbFXOYUP00dSkZJmwF');
-        const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
-        if (error) alert(error.message);
+        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: name,
+              email: email,
+              phone: phone,
+              address: {
+                line1: address,
+                city: city,
+                postal_code: postal,
+                country: country,
+              }
+            }
+          },
+          shipping: {
+            name: name,
+            phone: phone,
+            address: {
+              line1: address,
+              city: city,
+              postal_code: postal,
+              country: country,
+            }
+          }
+        });
+
+        if (error) {
+          showAlert(error.message, 'error');
+        } else if (paymentIntent.status === 'succeeded') {
+          showAlert(translations[currentLang]['order.success'] || 'Payment successful!', 'success');
+          resetForm();
+          clearCart();
+        }
       } catch (err) {
-        console.error(err);
-        alert('حدث خطأ أثناء محاولة إنشاء جلسة الدفع.');
+        showAlert(translations[currentLang]['order.error'] || 'An error occurred.', 'error');
       }
     }
 
@@ -1895,22 +2028,31 @@
 
     
     function validateForm() {
-      const requiredFields = ['name', 'email', 'phone', 'country', 'address'];
+      const requiredFields = ['name', 'email', 'phone', 'country', 'city', 'address'];
       for (const field of requiredFields) {
         const value = document.getElementById(field).value.trim();
         if (!value) {
-          showAlert(currentLang === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', 'error');
+          showAlert(translations[currentLang]['order.requiredFields'] || 'Please fill all required fields', 'error');
+          return false;
+        }
+      }
+
+      const countryCode = document.getElementById('country').value.toUpperCase();
+      if (!countriesWithoutPostcode.includes(countryCode)) {
+        const postal = document.getElementById('postal').value.trim();
+        if (!postal) {
+          showAlert(translations[currentLang]['order.postalRequired'] || 'Postal code is required for this country', 'error');
           return false;
         }
       }
      
       if (!document.getElementById('privacyAgreement').checked) {
-        showAlert(currentLang === 'ar' ? 'يجب الموافقة على سياسة الخصوصية والإرجاع وشروط الاستخدام' : 'You must agree to the Privacy and Return Policy and Terms of Use', 'error');
+        showAlert(translations[currentLang]['order.privacyRequired'] || 'You must agree to the Privacy and Return Policy and Terms of Use', 'error');
         return false;
       }
      
       if (cartQuantity === 0) {
-        showAlert(currentLang === 'ar' ? 'السلة فارغة' : 'Cart is empty', 'error');
+        showAlert(translations[currentLang]['cart.empty'] || 'Cart is empty', 'error');
         return false;
       }
      
@@ -1923,16 +2065,16 @@
       const uploadStatusText = document.getElementById('uploadStatusText');
      
       uploadLoader.style.display = 'inline-block';
-      uploadStatusText.textContent = currentLang === 'ar' ? 'جاري رفع الصورة...' : 'Uploading image...';
+      uploadStatusText.textContent = translations[currentLang]['order.uploading'] || 'Uploading image...';
       uploadStatusText.style.color = 'var(--brand)';
      
       try {
         const imageUrl = await uploadImageToImgBB(file);
-        uploadStatusText.textContent = currentLang === 'ar' ? 'تم رفع الصورة بنجاح!' : 'Image uploaded successfully!';
+        uploadStatusText.textContent = translations[currentLang]['order.uploadSuccess'] || 'Image uploaded successfully!';
         uploadStatusText.style.color = 'var(--ok)';
         return imageUrl;
       } catch (error) {
-        uploadStatusText.textContent = currentLang === 'ar' ? 'فشل في رفع الصورة، سيتم إرسال الطلب بدونها' : 'Failed to upload image, order will be sent without it';
+        uploadStatusText.textContent = translations[currentLang]['order.uploadFail'] || 'Failed to upload image, order will be sent without it';
         uploadStatusText.style.color = 'var(--danger)';
         console.error('Upload failed:', error);
         throw error;
@@ -1946,43 +2088,48 @@
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
       const phone = document.getElementById('phone').value.trim();
-      const country = document.getElementById('country').value.trim();
+      const country = document.getElementById('country').value.toUpperCase();
+      const city = document.getElementById('city').value.trim();
+      const postal = document.getElementById('postal').value.trim();
       const address = document.getElementById('address').value.trim();
       const paymentMethod = document.getElementById('paymentMethod').value;
      
-      let msg = currentLang === 'ar' ? `طلب جهاز فحص السيارات%0A%0A` : `Car Inspection Device Order%0A%0A`;
-      msg += `${currentLang === 'ar' ? 'الاسم' : 'Name'}: ${name}%0A`;
-      msg += `${currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email'}: ${email}%0A`;
-      msg += `${currentLang === 'ar' ? 'رقم الهاتف' : 'Phone'}: ${phone}%0A`;
-      msg += `${currentLang === 'ar' ? 'الدولة' : 'Country'}: ${country}%0A`;
-      msg += `${currentLang === 'ar' ? 'العنوان' : 'Address'}: ${address}%0A`;
-      msg += `${currentLang === 'ar' ? 'الكمية' : 'Quantity'}: ${cartQuantity}%0A`;
-      msg += `${currentLang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}: ${calculateSubtotal()} $%0A`;
-      msg += `${currentLang === 'ar' ? 'الشحن' : 'Shipping'}: ${calculateShipping()} $%0A`;
-      msg += `${currentLang === 'ar' ? 'الإجمالي الكلي' : 'Grand Total'}: ${calculateGrandTotal()} $%0A`;
-      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
+      let msg = `${translations[currentLang]['order.title'] || 'Car Inspection Device Order'}%0A%0A`;
+      msg += `${translations[currentLang]['order.fullName']}: ${name}%0A`;
+      msg += `${translations[currentLang]['order.email']}: ${email}%0A`;
+      msg += `${translations[currentLang]['order.phone']}: ${phone}%0A`;
+      msg += `${translations[currentLang]['order.country']}: ${country}%0A`;
+      msg += `${translations[currentLang]['order.city']}: ${city}%0A`;
+      msg += `${translations[currentLang]['order.postal']}: ${postal}%0A`;
+      msg += `${translations[currentLang]['order.address']}: ${address}%0A`;
+      msg += `${translations[currentLang]['cart.quantity']}: ${cartQuantity}%0A`;
+      msg += `${translations[currentLang]['cart.subtotal']}: ${calculateSubtotal()} $%0A`;
+      msg += `${translations[currentLang]['cart.shipping']}: ${calculateShipping()} $%0A`;
+      msg += `${translations[currentLang]['cart.grandtotal']}: ${calculateGrandTotal()} $%0A`;
+      msg += `${translations[currentLang]['order.paymentMethod']}: ${paymentMethod === 'stripe' ? (translations[currentLang]['order.paymentStripe'] || 'Credit Card (Stripe)') : (translations[currentLang]['order.paymentSwift'] || 'Bank Transfer (SWIFT)')}%0A%0A`;
      
       if (imageUrl) {
-        msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment Receipt'}: ${imageUrl}%0A%0A`;
-        msg += `${currentLang === 'ar' ? 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.' : 'You can click the link above to view the receipt image.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.receipt']}: ${imageUrl}%0A%0A`;
       } else {
-        msg += `${currentLang === 'ar' ? 'لم يتم رفع إيصال الدفع بعد.' : 'Payment receipt has not been uploaded yet.'}%0A%0A`;
-        msg += `${currentLang === 'ar' ? 'يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.' : 'You can send the receipt image later via WhatsApp.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.noReceipt'] || 'Payment receipt has not been uploaded yet.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.sendReceiptLater'] || 'You can send the receipt image later via WhatsApp.'}%0A%0A`;
       }
      
-      msg += `${currentLang === 'ar' ? 'شكراً لخدمتكم!' : 'Thank you for your service!'}`;
+      msg += `${translations[currentLang]['order.thankYou'] || 'Thank you!'}`;
      
       window.open(`https://wa.me/905075803495?text=${decodeURIComponent(msg)}`, '_blank');
-      showAlert(currentLang === 'ar' ? 'تم إرسال طلبك بنجاح! سيتم توجيهك إلى واتساب الآن.' : 'Your order has been sent successfully! You will be redirected to WhatsApp now.', 'success');
+      showAlert(translations[currentLang]['order.sentSuccess'] || 'Your order has been sent successfully! You will be redirected to WhatsApp now.', 'success');
     }
 
     
     function resetForm() {
       document.getElementById('orderForm').reset();
-      document.getElementById('fileName').textContent = currentLang === 'ar' ? 'لم يتم اختيار ملف' : 'No file selected';
+      document.getElementById('fileName').textContent = translations[currentLang]['order.noFile'];
       document.getElementById('fileName').style.color = "var(--muted)";
       document.getElementById('imagePreview').style.display = 'none';
       document.getElementById('uploadStatusText').textContent = '';
+      document.getElementById('city').innerHTML = '<option value="">اختر المدينة</option>';
+      document.getElementById('postalGroup').style.display = 'block';
     }
 
     
@@ -2014,7 +2161,7 @@
       cartQuantity += qty;
       saveCart();
       updateCartCount();
-      showAlert(currentLang === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', 'success');
+      showAlert(translations[currentLang]['order.addedToCart'] || 'Added to cart', 'success');
       updateCartDisplay();
       updateCartSummary();
       openCartModal();
@@ -2154,8 +2301,18 @@
     }
 
     
-    function closePrivacyModal() {
+    function closePrivacyPolicy() {
       document.getElementById('privacyModal').style.display = 'none';
+    }
+
+    
+    function handleSubmit() {
+      const method = document.getElementById('paymentMethod').value;
+      if (method === 'stripe') {
+        handleStripePayment();
+      } else {
+        handleSwiftPayment();
+      }
     }
 
     
