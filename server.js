@@ -177,6 +177,28 @@ function validatePhoneNumber(phone, countryCode) {
   return cleaned;
 }
 
+// Enhanced function to get shipping address from Stripe session
+async function getShippingAddressFromSession(sessionId) {
+  try {
+    console.log('→ Retrieving full session details for shipping address...');
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['shipping_details', 'customer_details']
+    });
+    
+    console.log('→ Session shipping_details:', JSON.stringify(session.shipping_details, null, 2));
+    console.log('→ Session customer_details:', JSON.stringify(session.customer_details, null, 2));
+    
+    return {
+      session: session,
+      shippingAddress: session.shipping_details?.address || session.shipping?.address,
+      customerDetails: session.customer_details
+    };
+  } catch (error) {
+    console.error('❌ Error retrieving session details:', error);
+    return { session: null, shippingAddress: null, customerDetails: null };
+  }
+}
+
 // Build Aramex ShipmentCreation XML - WITH IMPROVED ADDRESS VALIDATION
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
@@ -200,8 +222,21 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const shipperPhone = validatePhoneNumber(sc.PhoneNumber1 || sc.CellPhone, sa.CountryCode);
   const consigneePhone = validatePhoneNumber(cc.PhoneNumber1 || cc.CellPhone, ca.CountryCode);
 
+  // Ensure country code is not empty
+  const consigneeCountryCode = ca.CountryCode || 'US'; // Default to US if empty
+  const shipperCountryCode = sa.CountryCode || 'AE'; // Default to AE for shipper
+
   // Prepare customs value fallback (ensure numeric non-empty)
   const customsValue = (d.CustomsValueAmount && (d.CustomsValueAmount.Value != null && d.CustomsValueAmount.Value !== '')) ? d.CustomsValueAmount.Value : '';
+
+  console.log('→ Address validation results:', {
+    shipperCity,
+    consigneeCity,
+    shipperCountryCode,
+    consigneeCountryCode,
+    consigneePostCode,
+    shipperPostCode
+  });
 
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
@@ -245,7 +280,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:City>${escapeXml(shipperCity)}</tns:City>
               <tns:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
               <tns:PostCode>${escapeXml(shipperPostCode)}</tns:PostCode>
-              <tns:CountryCode>${escapeXml(sa.CountryCode || '')}</tns:CountryCode>
+              <tns:CountryCode>${escapeXml(shipperCountryCode)}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
               <tns:PersonName>${escapeXml(sc.PersonName || '')}</tns:PersonName>
@@ -264,10 +299,10 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Line1>${escapeXml(ca.Line1 || '')}</tns:Line1>
               <tns:Line2>${escapeXml(ca.Line2 || '')}</tns:Line2>
               <tns:Line3>${escapeXml(ca.Line3 || '')}</tns:Line3>
-              <tns:City>${escapeXml(consigneeCity)}</tns:City>
+              <tns:City>${escapeXml(consigneeCity || 'Unknown City')}</tns:City>
               <tns:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
               <tns:PostCode>${escapeXml(consigneePostCode)}</tns:PostCode>
-              <tns:CountryCode>${escapeXml(ca.CountryCode || '')}</tns:CountryCode>
+              <tns:CountryCode>${escapeXml(consigneeCountryCode)}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
               <tns:PersonName>${escapeXml(cc.PersonName || '')}</tns:PersonName>
@@ -477,18 +512,62 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const session = event.data.object;
     console.log('✅ Payment completed for session:', session.id);
 
+    // Get full session details with shipping information
+    const { session: fullSession, shippingAddress, customerDetails } = await getShippingAddressFromSession(session.id);
+    
     const quantity = parseInt(session.metadata?.quantity || '1', 10);
     const currency = session.metadata?.currency || 'usd';
 
-    // Extract customer info
-    const customerEmail = session.customer_details?.email;
-    const customerName = session.customer_details?.name;
-    const customerPhone = session.customer_details?.phone;
-    const shippingAddress = session.shipping_details?.address;
+    // Extract customer info - use fullSession if available, fallback to webhook session
+    const sessionToUse = fullSession || session;
+    const customerEmail = customerDetails?.email || sessionToUse.customer_details?.email;
+    const customerName = customerDetails?.name || sessionToUse.customer_details?.name;
+    const customerPhone = customerDetails?.phone || sessionToUse.customer_details?.phone;
+    
+    // Use shipping address from expanded session
+    const finalShippingAddress = shippingAddress || sessionToUse.shipping_details?.address || sessionToUse.shipping?.address;
 
     console.log('→ Customer:', customerName, customerEmail);
-    console.log('→ Shipping to:', shippingAddress);
+    console.log('→ Shipping to:', JSON.stringify(finalShippingAddress, null, 2));
     console.log('→ Quantity:', quantity);
+
+    // Validate that we have shipping address
+    if (!finalShippingAddress || !finalShippingAddress.country) {
+      console.error('❌ No shipping address found in session. Cannot create shipment.');
+      console.log('→ Available session data:', JSON.stringify({
+        shipping_details: sessionToUse.shipping_details,
+        shipping: sessionToUse.shipping,
+        customer_details: sessionToUse.customer_details
+      }, null, 2));
+      
+      // Still send email but note the shipping issue
+      if (process.env.SENDGRID_API_KEY && customerEmail) {
+        try {
+          const msg = {
+            to: customerEmail,
+            from: process.env.MAIL_FROM,
+            subject: 'Order Confirmation - UV Car Inspection Device (Shipping Address Required)',
+            text: `Thank you for your order!
+
+Unfortunately, we could not retrieve your shipping address from the payment system. 
+Please reply to this email with your complete shipping address so we can process your shipment.
+
+Order Details:
+- Quantity: ${quantity}
+- Order ID: ${session.id}
+
+Best regards,
+Axis UV Team`
+          };
+          await sgMail.send(msg);
+          console.log('✅ Email sent requesting shipping address');
+        } catch (emailErr) {
+          console.error('❌ Email sending failed:', emailErr);
+        }
+      }
+      
+      return res.status(200).send('OK - No shipping address');
+    }
 
     // Calculate weights and values
     const totalWeight = quantity * WEIGHT_PER_PIECE;
@@ -533,19 +612,19 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         Type: 'Shipper'
       };
 
-      // Consignee address from Stripe
+      // Consignee address from Stripe - with validation
       const consigneeAddress = {
-        Line1: shippingAddress?.line1 || '',
-        Line2: shippingAddress?.line2 || '',
+        Line1: finalShippingAddress?.line1 || 'Address Line 1',
+        Line2: finalShippingAddress?.line2 || '',
         Line3: '',
-        City: shippingAddress?.city || '',
-        StateOrProvinceCode: shippingAddress?.state || '',
-        PostCode: shippingAddress?.postal_code || '',
-        CountryCode: shippingAddress?.country || ''
+        City: finalShippingAddress?.city || 'Unknown City',
+        StateOrProvinceCode: finalShippingAddress?.state || '',
+        PostCode: finalShippingAddress?.postal_code || '',
+        CountryCode: finalShippingAddress?.country?.toUpperCase() || 'US'
       };
 
       const consigneeContact = {
-        PersonName: customerName || '',
+        PersonName: customerName || 'Customer',
         CompanyName: '',
         PhoneNumber1: customerPhone || '',
         PhoneNumber2: '',
@@ -592,7 +671,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         destination: consigneeAddress.CountryCode,
         account: clientInfo.AccountNumber,
         productType: productTypeString,
-        dimensions: '30x20x15 CM'
+        dimensions: '30x20x15 CM',
+        consigneeAddress: consigneeAddress
       })));
 
       const xml = buildShipmentCreationXml({
