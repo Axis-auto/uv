@@ -138,6 +138,11 @@ function validateAndNormalizePostCode(postCode, countryCode) {
       const frMatch = normalized.match(/^\d{5}$/);
       return frMatch ? normalized : '';
       
+    case 'TR':
+      // Turkish postal codes: 5 digits
+      const trMatch = normalized.match(/^\d{5}$/);
+      return trMatch ? normalized : '';
+      
     default:
       // For other countries, return as-is but ensure it's not too long
       return normalized.length > 10 ? normalized.substring(0, 10) : normalized;
@@ -170,6 +175,11 @@ function validatePhoneNumber(phone, countryCode) {
           cleaned = '44' + cleaned;
         }
         break;
+      case 'TR':
+        if (!cleaned.startsWith('90')) {
+          cleaned = '90' + cleaned;
+        }
+        break;
     }
     cleaned = '+' + cleaned;
   }
@@ -177,26 +187,36 @@ function validatePhoneNumber(phone, countryCode) {
   return cleaned;
 }
 
-// Enhanced function to get shipping address from Stripe session
-async function getShippingAddressFromSession(sessionId) {
-  try {
-    console.log('→ Retrieving full session details for shipping address...');
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['shipping_details', 'customer_details']
-    });
-    
-    console.log('→ Session shipping_details:', JSON.stringify(session.shipping_details, null, 2));
-    console.log('→ Session customer_details:', JSON.stringify(session.customer_details, null, 2));
-    
-    return {
-      session: session,
-      shippingAddress: session.shipping_details?.address || session.shipping?.address,
-      customerDetails: session.customer_details
-    };
-  } catch (error) {
-    console.error('❌ Error retrieving session details:', error);
-    return { session: null, shippingAddress: null, customerDetails: null };
+// Extract shipping address from session - FIXED VERSION
+function extractShippingAddress(session) {
+  console.log('→ Extracting shipping address from session...');
+  
+  // Try multiple possible locations for shipping address
+  let shippingAddress = null;
+  
+  // Method 1: Check shipping_details.address (if available)
+  if (session.shipping_details && session.shipping_details.address) {
+    console.log('→ Found shipping address in shipping_details.address');
+    shippingAddress = session.shipping_details.address;
   }
+  // Method 2: Check shipping.address (alternative location)
+  else if (session.shipping && session.shipping.address) {
+    console.log('→ Found shipping address in shipping.address');
+    shippingAddress = session.shipping.address;
+  }
+  // Method 3: Check customer_details.address (fallback)
+  else if (session.customer_details && session.customer_details.address) {
+    console.log('→ Found address in customer_details.address (using as shipping address)');
+    shippingAddress = session.customer_details.address;
+  }
+  
+  if (shippingAddress) {
+    console.log('→ Extracted shipping address:', JSON.stringify(shippingAddress, null, 2));
+    return shippingAddress;
+  }
+  
+  console.log('→ No shipping address found in any location');
+  return null;
 }
 
 // Build Aramex ShipmentCreation XML - WITH IMPROVED ADDRESS VALIDATION
@@ -512,32 +532,28 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
     const session = event.data.object;
     console.log('✅ Payment completed for session:', session.id);
 
-    // Get full session details with shipping information
-    const { session: fullSession, shippingAddress, customerDetails } = await getShippingAddressFromSession(session.id);
-    
     const quantity = parseInt(session.metadata?.quantity || '1', 10);
     const currency = session.metadata?.currency || 'usd';
 
-    // Extract customer info - use fullSession if available, fallback to webhook session
-    const sessionToUse = fullSession || session;
-    const customerEmail = customerDetails?.email || sessionToUse.customer_details?.email;
-    const customerName = customerDetails?.name || sessionToUse.customer_details?.name;
-    const customerPhone = customerDetails?.phone || sessionToUse.customer_details?.phone;
+    // Extract customer info and shipping address from the session
+    const customerEmail = session.customer_details?.email;
+    const customerName = session.customer_details?.name;
+    const customerPhone = session.customer_details?.phone;
     
-    // Use shipping address from expanded session
-    const finalShippingAddress = shippingAddress || sessionToUse.shipping_details?.address || sessionToUse.shipping?.address;
+    // Extract shipping address using the improved function
+    const shippingAddress = extractShippingAddress(session);
 
     console.log('→ Customer:', customerName, customerEmail);
-    console.log('→ Shipping to:', JSON.stringify(finalShippingAddress, null, 2));
+    console.log('→ Shipping to:', JSON.stringify(shippingAddress, null, 2));
     console.log('→ Quantity:', quantity);
 
     // Validate that we have shipping address
-    if (!finalShippingAddress || !finalShippingAddress.country) {
+    if (!shippingAddress || !shippingAddress.country) {
       console.error('❌ No shipping address found in session. Cannot create shipment.');
       console.log('→ Available session data:', JSON.stringify({
-        shipping_details: sessionToUse.shipping_details,
-        shipping: sessionToUse.shipping,
-        customer_details: sessionToUse.customer_details
+        shipping_details: session.shipping_details,
+        shipping: session.shipping,
+        customer_details: session.customer_details
       }, null, 2));
       
       // Still send email but note the shipping issue
@@ -614,13 +630,13 @@ Axis UV Team`
 
       // Consignee address from Stripe - with validation
       const consigneeAddress = {
-        Line1: finalShippingAddress?.line1 || 'Address Line 1',
-        Line2: finalShippingAddress?.line2 || '',
+        Line1: shippingAddress?.line1 || 'Address Line 1',
+        Line2: shippingAddress?.line2 || '',
         Line3: '',
-        City: finalShippingAddress?.city || 'Unknown City',
-        StateOrProvinceCode: finalShippingAddress?.state || '',
-        PostCode: finalShippingAddress?.postal_code || '',
-        CountryCode: finalShippingAddress?.country?.toUpperCase() || 'US'
+        City: shippingAddress?.city || 'Unknown City',
+        StateOrProvinceCode: shippingAddress?.state || '',
+        PostCode: shippingAddress?.postal_code || '',
+        CountryCode: shippingAddress?.country?.toUpperCase() || 'US'
       };
 
       const consigneeContact = {
