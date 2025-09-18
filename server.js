@@ -1,6 +1,3 @@
-// server.js (complete, updated with enrichSessionWithStripeData and robust webhook handling)
-// Full file — do not truncate
-
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
@@ -846,35 +843,8 @@ async function enrichSessionWithStripeData(session) {
   }
 }
 
-// ----------------- Fetch cities endpoint for client-side integration with Aramex-like address collection -----------------
-app.post("/fetch-cities", bodyParser.json(), async (req, res) => {
-  try {
-    const { countryCode, prefix = "", postalCode = "" } = req.body;
-    if (!countryCode) {
-      return res.status(400).json({ error: "Country code is required" });
-    }
-
-    const clientInfo = {
-      UserName: process.env.ARAMEX_USER,
-      Password: process.env.ARAMEX_PASSWORD,
-      Version: process.env.ARAMEX_VERSION || "v1",
-      AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-      AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-      AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
-      AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
-      Source: DEFAULT_SOURCE,
-    };
-
-    const cities = await fetchAramexCities({ clientInfo, countryCode, prefix, postalCode });
-    res.json({ cities: cities || [] });
-  } catch (error) {
-    console.error("❌ Fetch cities error:", error);
-    res.status(500).json({ error: "Failed to fetch cities" });
-  }
-});
-
-// ----------------- PaymentIntent creation (replaced Checkout session for Elements integration) -----------------
-app.post("/create-payment-intent", bodyParser.json(), async (req, res) => {
+// ----------------- Checkout creation with STRICT VALIDATION -----------------
+app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
     const currency = (req.body.currency || "usd").toLowerCase();
@@ -890,22 +860,132 @@ app.post("/create-payment-intent", bodyParser.json(), async (req, res) => {
     else if (quantity === 2) totalAmount = c.double;
     else totalAmount = c.double + (quantity - 2) * c.extra;
 
-    // Add shipping cost if applicable
-    const shippingAmount = quantity === 1 ? c.shipping : 0;
-    totalAmount += shippingAmount;
+    // unitAmount removed as single-source-of-truth because of rounding issues;
+    // we'll construct line_items so that sum(line.amount * qty) === totalAmount exactly.
 
-    // Create PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalAmount,
+    // Image URLs provided by user
+    const imageSingle = "https://github.com/Axis-auto/uv/blob/main/one-piece_1%20(1).jpg?raw=true";
+    const imageMulti = "https://github.com/Axis-auto/uv/blob/main/tow-pieces%20(1).jpg?raw=true";
+
+    const selectedImage = quantity === 1 ? imageSingle : imageMulti;
+
+    // Calculate per-piece integer amounts (in smallest currency unit, e.g., cents)
+    const perPiece = Math.floor(totalAmount / quantity);
+    const remainder = totalAmount - perPiece * quantity;
+
+    // Build line_items so Stripe shows correct total (avoid per-unit rounding discrepancies)
+    const line_items = [];
+
+    const baseProductData = {
       currency,
-      payment_method_types: ["card"],
-      metadata: { quantity: quantity.toString(), currency },
-      automatic_payment_methods: { enabled: true }, // For Elements
-    });
+      product_data: {
+        name: quantity === 1 ? "UV Car Inspection Device (1 pc)" : `UV Car Inspection Device`,
+        description: "A powerful portable device for car inspection.",
+        images: [selectedImage],
+      }
+    };
 
-    res.json({ clientSecret: paymentIntent.client_secret });
+    if (remainder === 0) {
+      // Perfect division: one line item with quantity
+      line_items.push({
+        price_data: {
+          currency,
+          product_data: baseProductData.product_data,
+          unit_amount: perPiece,
+        },
+        quantity,
+      });
+    } else {
+      // Non-even division: create two line items to distribute rounding remainder
+      // First line: quantity - 1 pieces at perPiece
+      // Second line: 1 piece with perPiece + remainder (covers total exactly)
+      if (quantity === 1) {
+        // Fallback safety (should not happen because remainder would be zero if qty === 1)
+        line_items.push({
+          price_data: {
+            currency,
+            product_data: baseProductData.product_data,
+            unit_amount: totalAmount,
+          },
+          quantity: 1,
+        });
+      } else {
+        const firstQty = quantity - 1;
+        const firstUnit = perPiece;
+        const lastUnit = perPiece + remainder;
+
+        // Push first line (quantity - 1)
+        line_items.push({
+          price_data: {
+            currency,
+            product_data: baseProductData.product_data,
+            unit_amount: firstUnit,
+          },
+          quantity: firstQty,
+        });
+
+        // Push second line (1 piece with adjusted unit amount)
+        line_items.push({
+          price_data: {
+            currency,
+            product_data: {
+              name: `UV Car Inspection Device (${quantity} pcs) - price adjustment`,
+              description: "Adjustment line to ensure correct total price",
+              images: [selectedImage],
+            },
+            unit_amount: lastUnit,
+          },
+          quantity: 1,
+        });
+      }
+    }
+
+    const shipping_options = quantity === 1
+      ? [
+          {
+            shipping_rate_data: {
+              type: "fixed_amount",
+              fixed_amount: { amount: c.shipping, currency },
+              display_name: "Standard Shipping",
+              delivery_estimate: { minimum: { unit: "business_day", value: 5 }, maximum: { unit: "business_day", value: 7 } },
+            },
+          },
+        ]
+      : [
+          {
+            shipping_rate_data: {
+              type: "fixed_amount",
+              fixed_amount: { amount: 0, currency },
+              display_name: "Free Shipping",
+              delivery_estimate: { minimum: { unit: "business_day", value: 5 }, maximum: { unit: "business_day", value: 7 } },
+            },
+          },
+        ];
+
+    const sessionParams = {
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: line_items,
+      // STRICT VALIDATION: Make shipping address collection mandatory
+      shipping_address_collection: { 
+        allowed_countries: allowedCountriesForStripe(allowedCountries)
+      },
+      shipping_options,
+      // STRICT VALIDATION: Make phone number collection mandatory
+      phone_number_collection: { enabled: true },
+      // STRICT VALIDATION: Always create customer to ensure we get customer details
+      customer_creation: 'always',
+      // STRICT VALIDATION: Collect billing address to ensure we have complete customer info
+      billing_address_collection: 'required',
+      success_url: "https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: "https://axis-uv.com/cancel",
+      metadata: { quantity: quantity.toString(), currency },
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+    res.json({ id: session.id });
   } catch (error) {
-    console.error("❌ PaymentIntent creation error:", error);
+    console.error("❌ Checkout session creation error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -922,29 +1002,24 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  if (event.type === "payment_intent.succeeded") {
+  if (event.type === "checkout.session.completed") {
     // start processing
-    let pi = event.data.object;
-    console.log("✅ Payment succeeded for PaymentIntent:", pi.id);
+    const session = event.data.object;
+    console.log("✅ Payment completed for session:", session.id);
 
     try {
-      // Retrieve full PaymentIntent with expansions
-      pi = await stripe.paymentIntents.retrieve(pi.id, {
-        expand: ["customer", "charges.data"],
-      });
-
-      // Enrich (adapt enrich function for PaymentIntent)
-      const enriched = await enrichSessionWithStripeData(pi); // Reuse function by passing pi as session (adjustments inside handle compatibility)
+      // Enrich session with extra Stripe data
+      const enriched = await enrichSessionWithStripeData(session);
       const mergedShippingFromStripe = enriched.mergedShipping; // may be null
       const mergedContact = enriched.mergedContact || {};
 
       // Build shippingAddress object used by downstream (normalize keys)
       let shippingAddress =
-        // prefer shipping_details.address from pi
-        (pi.shipping_details && pi.shipping_details.address) ||
-        (pi.shipping && pi.shipping.address) ||
+        // prefer shipping_details.address from session
+        (session.shipping_details && session.shipping_details.address) ||
+        (session.shipping && session.shipping.address) ||
         mergedShippingFromStripe ||
-        (pi.customer_details && pi.customer_details.address) ||
+        (session.customer_details && session.customer_details.address) ||
         null;
 
       // Normalize shape if needed (Stripe sometimes uses different keys)
@@ -966,9 +1041,9 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       }
 
       // Ensure contact fields exist (fallbacks)
-      const customerEmail = mergedContact.email || pi.customer_details?.email || (enriched.customerObj && enriched.customerObj.email) || (pi.charges.data[0]?.billing_details?.email) || "";
-      const customerNameFromDetails = mergedContact.name || pi.customer_details?.name || (enriched.customerObj && enriched.customerObj.name) || (pi.charges.data[0]?.billing_details?.name) || "";
-      const customerPhone = mergedContact.phone || pi.customer_details?.phone || (enriched.customerObj && enriched.customerObj.phone) || (pi.charges.data[0]?.billing_details?.phone) || "";
+      const customerEmail = mergedContact.email || session.customer_details?.email || (enriched.customerObj && enriched.customerObj.email) || "";
+      const customerNameFromDetails = mergedContact.name || session.customer_details?.name || (enriched.customerObj && enriched.customerObj.name) || "";
+      const customerPhone = mergedContact.phone || session.customer_details?.phone || (enriched.customerObj && enriched.customerObj.phone) || "";
 
       // Prefer name in shipping address if present
       const customerNameFromShipping = shippingAddress?.name || "";
@@ -1045,7 +1120,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       shippingAddress.city = normalizedCity || shippingAddress.city || "";
 
       // Run validation; if missing required fields, attempt automated corrections before failing
-      const validationErrors = validateRequiredFields(pi, shippingAddress);
+      const validationErrors = validateRequiredFields(session, shippingAddress);
 
       // Attempt automated corrections if there are missing required fields
       if (validationErrors.length > 0) {
@@ -1076,7 +1151,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         }
 
         // Re-run validation after attempted fixes
-        const reValidationErrors = validateRequiredFields(pi, shippingAddress);
+        const reValidationErrors = validateRequiredFields(session, shippingAddress);
         if (reValidationErrors.length > 0) {
           console.error("❌ After auto-fixes, still missing fields:", reValidationErrors);
 
@@ -1087,7 +1162,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
                 to: customerEmail,
                 from: process.env.MAIL_FROM,
                 subject: "Order Confirmation - Additional Information Required",
-                text: `Thank you for your order!\n\nWe need some additional information to process your shipment:\n\n${reValidationErrors.map(err => "- " + err).join("\n")}\n\nPlease reply to this email with the missing information so we can process your shipment.\n\nOrder Details:\n- Order ID: ${pi.id}\n\nBest regards,\nAxis UV Team`,
+                text: `Thank you for your order!\n\nWe need some additional information to process your shipment:\n\n${reValidationErrors.map(err => "- " + err).join("\n")}\n\nPlease reply to this email with the missing information so we can process your shipment.\n\nOrder Details:\n- Order ID: ${session.id}\n\nBest regards,\nAxis UV Team`,
               };
               await sgMail.send(msg);
               console.log("✅ Email sent requesting missing information (final fallback)");
@@ -1108,7 +1183,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       // Continue with existing Aramex shipment creation logic (unchanged) but using shippingAddress, finalCustomerName, customerEmail, customerPhone
 
       // Calculate weights and values
-      const quantity = parseInt(pi.metadata?.quantity || "1", 10);
+      const quantity = parseInt(session.metadata?.quantity || "1", 10);
       const totalWeight = quantity * WEIGHT_PER_PIECE;
       const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE;
       const totalCustomsValue = quantity * CUSTOMS_VALUE_PER_PIECE;
@@ -1195,7 +1270,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         const productTypeString = isInternational ? "EPX" : "CDS";
 
         const shipmentObj = {
-          Reference1: pi.id,
+          Reference1: session.id,
           Shipper: {
             Reference1: "AXIS AUTO. TECHNICAL TESTING",
             PartyAddress: shipperAddress,
@@ -1245,7 +1320,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
         const xml = buildShipmentCreationXml({
           clientInfo,
-          transactionRef: pi.id || "",
+          transactionRef: session.id || "",
           labelReportId: DEFAULT_REPORT_ID,
           shipment: shipmentObj,
         });
