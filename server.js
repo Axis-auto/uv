@@ -1,3 +1,6 @@
+// server.js (complete, updated with enrichSessionWithStripeData and robust webhook handling)
+// Full file — do not truncate
+
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
