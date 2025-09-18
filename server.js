@@ -651,12 +651,77 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       // Send email to customer requesting missing information
       if (process.env.SENDGRID_API_KEY && customerEmail) {
         try {
+          // Determine routing type for clarity in the email
+          const destCountry = (shippingAddress && shippingAddress.country && shippingAddress.country.toString().toUpperCase()) || (session.customer_details && session.customer_details.address && session.customer_details.address.country && session.customer_details.address.country.toString().toUpperCase()) || "";
+          const shipperCountry = (process.env.SHIPPER_COUNTRY_CODE || "AE").toString().toUpperCase();
+          const routeType = destCountry && destCountry !== shipperCountry ? "international" : "domestic routing";
+
+          const subject = `Action Required: Additional information needed to ship your order (${session.id})`;
+
+          const textBody = `Dear ${finalCustomerName},
+
+Thank you for your order with Axis UV. We are ready to process and ship your purchase, but we are missing some required information to complete the booking with our carrier. Please provide the missing information listed below so we can proceed:
+
+${validationErrors.map(err => "- " + err).join("
+")}
+
+Order summary:
+- Order ID: ${session.id}
+- Quantity: ${quantity}
+- Destination Country: ${destCountry || "(not provided)"}
+- Routing: ${routeType}
+
+How to provide the missing information:
+1) Reply directly to this email with the requested details.
+2) Or contact our support at ${process.env.MAIL_FROM || "support@axis-uv.com"} and mention your Order ID.
+
+We will process your shipment as soon as we receive the missing information.
+
+Best regards,
+Axis UV Team
+`; 
+
+          const htmlBody = `
+            <div style="font-family: Arial, Helvetica, sans-serif; font-size:14px; color:#222;">
+              <p>Dear ${escapeXml(finalCustomerName)},</p>
+              <p>Thank you for your order with <strong>Axis UV</strong>. We are ready to process and ship your purchase, but we need a few additional details to complete the booking with our carrier.</p>
+
+              <h3>Missing information</h3>
+              <ul>
+                ${validationErrors.map(err => `<li>${escapeXml(err)}</li>`).join("
+                ")}
+              </ul>
+
+              <h3>Order summary</h3>
+              <table cellpadding="4" cellspacing="0" style="border-collapse:collapse;">
+                <tr><td><strong>Order ID:</strong></td><td>${escapeXml(session.id || "")}</td></tr>
+                <tr><td><strong>Quantity:</strong></td><td>${quantity}</td></tr>
+                <tr><td><strong>Destination:</strong></td><td>${escapeXml(destCountry || "(not provided)")}</td></tr>
+                <tr><td><strong>Routing:</strong></td><td>${escapeXml(routeType)}</td></tr>
+              </table>
+
+              <p>Please reply to this email with the missing information, or contact our support at <a href="mailto:${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}">${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}</a> and mention your Order ID.</p>
+
+              <p>We will process your shipment as soon as we receive the requested details.</p>
+
+              <p>Kind regards,<br/><strong>Axis UV Team</strong></p>
+            </div>
+          `;
+
           const msg = {
             to: customerEmail,
             from: process.env.MAIL_FROM,
-            subject: "Order Confirmation - Additional Information Required",
-            text: `Thank you for your order!\n\nWe need some additional information to process your shipment:\n\n${validationErrors.map(err => "- " + err).join("\n")}\n\nPlease reply to this email with the missing information so we can process your shipment.\n\nOrder Details:\n- Quantity: ${quantity}\n- Order ID: ${session.id}\n\nBest regards,\nAxis UV Team`,
+            subject,
+            text: textBody,
+            html: htmlBody,
           };
+
+          await sgMail.send(msg);
+          console.log("✅ Email sent requesting missing information");
+        } catch (emailErr) {
+          console.error("❌ Email sending failed:", emailErr);
+        }
+      };
           await sgMail.send(msg);
           console.log("✅ Email sent requesting missing information");
         } catch (emailErr) {
@@ -893,13 +958,89 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     // Send email notification (if configured)
     if (process.env.SENDGRID_API_KEY && customerEmail) {
       try {
-        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n- Declared Value: ${totalDeclaredValue} AED\n- Customs Value: ${totalCustomsValue} AED\n- Dimensions: 30x20x15 CM\n`;
+        // Determine routing label based on destination
+        const routeType = (typeof isInternational !== "undefined" && isInternational) ? "international" : "domestic routing";
+
+        // Build professional email content (text + HTML)
+        const textBodyLines = [];
+        textBodyLines.push(`Dear ${finalCustomerName},`);
+        textBodyLines.push('');
+        textBodyLines.push('Thank you for your purchase from Axis UV. Your order has been received and is being processed. Below are the details of your order and shipment:');
+        textBodyLines.push('');
+        textBodyLines.push('Order details:');
+        textBodyLines.push(`- Order ID: ${session.id}`);
+        textBodyLines.push(`- Quantity: ${quantity}`);
+        textBodyLines.push(`- Total weight: ${totalWeight} KG`);
+        textBodyLines.push(`- Declared value: ${totalDeclaredValue} AED`);
+        textBodyLines.push(`- Customs value: ${totalCustomsValue} AED`);
+        textBodyLines.push(`- Dimensions: 30x20x15 CM`);
+        textBodyLines.push('');
 
         if (trackingId) {
-          emailContent += `\nShipping Information:\n- Tracking ID: ${trackingId}\n`;
-          if (labelUrl) {
-            emailContent += `- Shipping Label: ${labelUrl}\n`;
-          }
+          textBodyLines.push('Shipping information:');
+          textBodyLines.push(`- Tracking ID: ${trackingId}`);
+          if (labelUrl) textBodyLines.push(`- Shipping label: ${labelUrl}`);
+        } else if (aramexError) {
+          textBodyLines.push(`Shipping status: Processing (${aramexError})`);
+        } else {
+          textBodyLines.push('Shipping status: Processing');
+        }
+
+        textBodyLines.push('');
+        textBodyLines.push(`Routing: ${routeType}`);
+        textBodyLines.push('');
+        textBodyLines.push('If you have any questions, please reply to this email or contact our support team.');
+        textBodyLines.push('');
+        textBodyLines.push('Kind regards,');
+        textBodyLines.push('Axis UV Team');
+
+        const textBody = textBodyLines.join('
+');
+
+        const htmlBody = `
+          <div style="font-family: Arial, Helvetica, sans-serif; color:#222; font-size:14px;">
+            <p>Dear ${escapeXml(finalCustomerName)},</p>
+            <p>Thank you for your purchase from <strong>Axis UV</strong>. Your order has been received and is being processed. Below are the details of your order and shipment.</p>
+
+            <h3>Order details</h3>
+            <table cellpadding="4" cellspacing="0" style="border-collapse:collapse;">
+              <tr><td><strong>Order ID:</strong></td><td>${escapeXml(session.id || "")}</td></tr>
+              <tr><td><strong>Quantity:</strong></td><td>${quantity}</td></tr>
+              <tr><td><strong>Total weight:</strong></td><td>${totalWeight} KG</td></tr>
+              <tr><td><strong>Declared value:</strong></td><td>${totalDeclaredValue} AED</td></tr>
+              <tr><td><strong>Customs value:</strong></td><td>${totalCustomsValue} AED</td></tr>
+              <tr><td><strong>Dimensions:</strong></td><td>30x20x15 CM</td></tr>
+            </table>
+
+            <h3>Shipping information</h3>
+            <ul>
+              ${trackingId ? `<li><strong>Tracking ID:</strong> ${escapeXml(trackingId)}</li>` : ''}
+              ${labelUrl ? `<li><strong>Shipping label:</strong> <a href="${escapeXml(labelUrl)}">Download label</a></li>` : ''}
+              ${aramexError && !trackingId ? `<li><strong>Status:</strong> Processing (${escapeXml(aramexError)})</li>` : ''}
+              ${(!aramexError && !trackingId) ? `<li><strong>Status:</strong> Processing</li>` : ''}
+              <li><strong>Routing:</strong> ${escapeXml(routeType)}</li>
+            </ul>
+
+            <p>If you have any questions or need assistance, please reply to this email or contact our support at <a href="mailto:${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}">${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}</a>.</p>
+
+            <p>Best regards,<br/><strong>Axis UV Team</strong></p>
+          </div>
+        `;
+
+        const msg = {
+          to: customerEmail,
+          from: process.env.MAIL_FROM,
+          subject: `Order Confirmation - ${escapeXml(session.id || "")}`,
+          text: textBody,
+          html: htmlBody,
+        };
+
+        await sgMail.send(msg);
+        console.log("✅ Email sent to:", customerEmail);
+      } catch (emailErr) {
+        console.error("❌ Email sending failed:", emailErr && emailErr.message ? emailErr.message : emailErr);
+      }
+    }
         } else if (aramexError) {
           emailContent += `\nShipping Status: Processing (${aramexError})\n`;
         } else {
