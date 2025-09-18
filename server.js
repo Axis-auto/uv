@@ -960,12 +960,34 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
     const currency = (req.body.currency || "usd").toLowerCase();
+    const shippingAddress = req.body.shippingAddress;
     const prices = {
       usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
       try: { single: 2799000, shipping: 150000, double: 4599000, extra: 2400000 },
     };
     const c = prices[currency] || prices["usd"];
+
+    if (!shippingAddress || typeof shippingAddress !== "object") {
+      return res.status(400).json({ error: "Shipping address is required" });
+    }
+
+    // Validate shipping address using Aramex API
+    const clientInfo = {
+      UserName: process.env.ARAMEX_USER,
+      Password: process.env.ARAMEX_PASSWORD,
+      Version: process.env.ARAMEX_VERSION || "v1",
+      AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+      AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+      AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+      AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+      Source: DEFAULT_SOURCE,
+    };
+
+    const validation = await validateAramexAddress({ clientInfo, address: shippingAddress });
+    if (!validation.isValid) {
+      return res.status(400).json({ error: "Invalid shipping address", details: validation });
+    }
 
     let totalAmount;
     if (quantity === 1) totalAmount = c.single;
@@ -1052,37 +1074,40 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
       }
     }
 
-    const shipping_options = quantity === 1
-      ? [
-          {
-            shipping_rate_data: {
-              type: "fixed_amount",
-              fixed_amount: { amount: c.shipping, currency },
-              display_name: "Standard Shipping",
-              delivery_estimate: { minimum: { unit: "business_day", value: 5 }, maximum: { unit: "business_day", value: 7 } },
-            },
+    // Add shipping as a line item instead of shipping_options
+    let shippingAmount = 0;
+    if (quantity === 1) {
+      shippingAmount = c.shipping;
+      line_items.push({
+        price_data: {
+          currency,
+          product_data: {
+            name: "Standard Shipping",
+            description: "Shipping fee for 1 piece",
           },
-        ]
-      : [
-          {
-            shipping_rate_data: {
-              type: "fixed_amount",
-              fixed_amount: { amount: 0, currency },
-              display_name: "Free Shipping",
-              delivery_estimate: { minimum: { unit: "business_day", value: 5 }, maximum: { unit: "business_day", value: 7 } },
-            },
+          unit_amount: shippingAmount,
+        },
+        quantity: 1,
+      });
+    } else {
+      line_items.push({
+        price_data: {
+          currency,
+          product_data: {
+            name: "Free Shipping",
+            description: "Free shipping for 2 or more pieces",
           },
-        ];
+          unit_amount: 0,
+        },
+        quantity: 1,
+      });
+    }
 
     const sessionParams = {
       payment_method_types: ["card"],
       mode: "payment",
       line_items: line_items,
-      // STRICT VALIDATION: Make shipping address collection mandatory
-      shipping_address_collection: { 
-        allowed_countries: allowedCountriesForStripe(allowedCountries)
-      },
-      shipping_options,
+      // No shipping_address_collection since we collect it in frontend
       // STRICT VALIDATION: Make phone number collection mandatory
       phone_number_collection: { enabled: true },
       // STRICT VALIDATION: Always create customer to ensure we get customer details
@@ -1091,7 +1116,11 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
       billing_address_collection: 'required',
       success_url: "https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}",
       cancel_url: "https://axis-uv.com/cancel",
-      metadata: { quantity: quantity.toString(), currency },
+      metadata: { 
+        quantity: quantity.toString(), 
+        currency,
+        shippingAddress: JSON.stringify(shippingAddress),
+      },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -1176,37 +1205,18 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     console.log("✅ Payment completed for session:", session.id);
 
     try {
+      // Extract shipping address from metadata (collected in frontend)
+      let shippingAddress;
+      try {
+        shippingAddress = JSON.parse(session.metadata.shippingAddress);
+      } catch (e) {
+        console.error("❌ Invalid shipping address in metadata:", e);
+        return res.status(400).send("Invalid shipping address");
+      }
+
       // Enrich session with extra Stripe data
       const enriched = await enrichSessionWithStripeData(session);
-      const mergedShippingFromStripe = enriched.mergedShipping; // may be null
       const mergedContact = enriched.mergedContact || {};
-
-      // Build shippingAddress object used by downstream (normalize keys)
-      let shippingAddress =
-        // prefer shipping_details.address from session
-        (session.shipping_details && session.shipping_details.address) ||
-        (session.shipping && session.shipping.address) ||
-        mergedShippingFromStripe ||
-        (session.customer_details && session.customer_details.address) ||
-        null;
-
-      // Normalize shape if needed (Stripe sometimes uses different keys)
-      if (shippingAddress && !shippingAddress.line1 && (shippingAddress.address_line1 || shippingAddress.street)) {
-        shippingAddress = {
-          line1: shippingAddress.address_line1 || shippingAddress.street || "",
-          line2: shippingAddress.address_line2 || "",
-          city: shippingAddress.city || shippingAddress.locality || shippingAddress.town || shippingAddress.region || "",
-          state: shippingAddress.state || shippingAddress.province || "",
-          postal_code: shippingAddress.postal_code || shippingAddress.postcode || shippingAddress.zip || "",
-          country: (shippingAddress.country || shippingAddress.country_code || "").toUpperCase(),
-          name: shippingAddress.name || "",
-        };
-      } else if (shippingAddress && shippingAddress.line1 && !shippingAddress.postal_code) {
-        // ensure consistent keys
-        shippingAddress.postal_code = shippingAddress.postal_code || shippingAddress.postcode || shippingAddress.zip || "";
-        shippingAddress.country = (shippingAddress.country || shippingAddress.country_code || "").toUpperCase();
-        shippingAddress.city = shippingAddress.city || shippingAddress.town || shippingAddress.locality || "";
-      }
 
       // Ensure contact fields exist (fallbacks)
       const customerEmail = mergedContact.email || session.customer_details?.email || (enriched.customerObj && enriched.customerObj.email) || "";
@@ -1219,22 +1229,6 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       const finalCustomerName = (customerNameFromShipping || customerNameFromDetails || customerEmail || "Customer").toString();
 
       console.log("→ Merged customer info:", { finalCustomerName, customerEmail, customerPhone, shippingAddress });
-
-      // If no shippingAddress found at all, attempt to form one from billing details (last resort)
-      if (!shippingAddress) {
-        const bill = enriched.billingDetails || null;
-        if (bill && bill.address) {
-          shippingAddress = {
-            line1: bill.address.line1 || "",
-            line2: bill.address.line2 || "",
-            city: bill.address.city || "",
-            state: bill.address.state || "",
-            postal_code: bill.address.postal_code || bill.address.postcode || bill.address.zip || "",
-            country: (bill.address.country || "").toUpperCase(),
-            name: bill.name || finalCustomerName,
-          };
-        }
-      }
 
       // STRICT VALIDATION + AUTO-FIX: try to normalize postcode and city before validateRequiredFields
       const countryCode = (shippingAddress?.country || "").toUpperCase();
