@@ -1424,6 +1424,10 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         try {
           const logoUrl = "https://github.com/Axis-auto/uv/blob/main/LOGO%20(2).png?raw=true"; // شعار الشركة الجديد
 
+          // Fetch the logo image and convert to base64
+          const axiosResponse = await axios.get(logoUrl, { responseType: 'arraybuffer' });
+          const logoBase64 = Buffer.from(axiosResponse.data, 'binary').toString('base64');
+
           // Recalculate totalAmount and define currency for email (fix for undefined error)
           const currency = (session.metadata?.currency || "usd").toLowerCase();
           const prices = {
@@ -1480,7 +1484,7 @@ SHIPPING INFORMATION
 </head>
 <body>
   <div class="header">
-    <img src="${logoUrl}" alt="AXIS AUTO" class="logo">
+    <img src="cid:logo" alt="AXIS AUTO" class="logo">
     <h1>Order Confirmation</h1>
   </div>
 
@@ -1574,6 +1578,15 @@ AXIS AUTO. TECHNICAL TESTING
             subject: `Order Confirmation #${session.id} - AXIS AUTO`,
             text: textContent,
             html: htmlContent,
+            attachments: [
+              {
+                content: logoBase64,
+                filename: 'logo.png',
+                type: 'image/png',
+                disposition: 'inline',
+                content_id: 'logo'
+              }
+            ]
           };
           await sgMail.send(msg);
           console.log("✅ Email sent to:", customerEmail);
