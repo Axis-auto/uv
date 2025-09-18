@@ -75,7 +75,109 @@ function maskForLog(obj){
   catch(e){ return obj; }
 }
 
-// Build Aramex ShipmentCreation XML - WITH DIMENSIONS ELEMENT
+// Address validation and normalization functions
+function normalizeCity(city, countryCode) {
+  if (!city) return '';
+  
+  // Common city name mappings for UAE
+  const cityMappings = {
+    'AE': {
+      'sharjah': 'Sharjah',
+      'dubai': 'Dubai',
+      'abu dhabi': 'Abu Dhabi',
+      'ajman': 'Ajman',
+      'fujairah': 'Fujairah',
+      'ras al khaimah': 'Ras Al Khaimah',
+      'umm al quwain': 'Umm Al Quwain'
+    }
+  };
+  
+  const normalizedCity = city.trim();
+  const countryMappings = cityMappings[countryCode?.toUpperCase()];
+  
+  if (countryMappings) {
+    const lowerCity = normalizedCity.toLowerCase();
+    return countryMappings[lowerCity] || normalizedCity;
+  }
+  
+  return normalizedCity;
+}
+
+function validateAndNormalizePostCode(postCode, countryCode) {
+  if (!postCode) return '';
+  
+  const normalized = postCode.toString().trim();
+  
+  // Country-specific postal code validation and normalization
+  switch (countryCode?.toUpperCase()) {
+    case 'US':
+      // US ZIP codes: 5 digits or 5+4 format
+      const usMatch = normalized.match(/^(\d{5})(-?\d{4})?$/);
+      return usMatch ? usMatch[1] + (usMatch[2] ? usMatch[2].replace('-', '') : '') : normalized;
+      
+    case 'CA':
+      // Canadian postal codes: A1A 1A1 format
+      const caMatch = normalized.toUpperCase().match(/^([A-Z]\d[A-Z])\s*(\d[A-Z]\d)$/);
+      return caMatch ? `${caMatch[1]} ${caMatch[2]}` : normalized;
+      
+    case 'GB':
+      // UK postal codes: various formats
+      return normalized.toUpperCase();
+      
+    case 'AE':
+      // UAE doesn't use postal codes, return empty string
+      return '';
+      
+    case 'DE':
+      // German postal codes: 5 digits
+      const deMatch = normalized.match(/^\d{5}$/);
+      return deMatch ? normalized : '';
+      
+    case 'FR':
+      // French postal codes: 5 digits
+      const frMatch = normalized.match(/^\d{5}$/);
+      return frMatch ? normalized : '';
+      
+    default:
+      // For other countries, return as-is but ensure it's not too long
+      return normalized.length > 10 ? normalized.substring(0, 10) : normalized;
+  }
+}
+
+function validatePhoneNumber(phone, countryCode) {
+  if (!phone) return '';
+  
+  // Remove all non-digit characters except +
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  
+  // If it starts with +, keep it, otherwise add country code if needed
+  if (!cleaned.startsWith('+')) {
+    // Add common country codes
+    switch (countryCode?.toUpperCase()) {
+      case 'AE':
+        if (!cleaned.startsWith('971')) {
+          cleaned = '971' + cleaned;
+        }
+        break;
+      case 'US':
+      case 'CA':
+        if (!cleaned.startsWith('1')) {
+          cleaned = '1' + cleaned;
+        }
+        break;
+      case 'GB':
+        if (!cleaned.startsWith('44')) {
+          cleaned = '44' + cleaned;
+        }
+        break;
+    }
+    cleaned = '+' + cleaned;
+  }
+  
+  return cleaned;
+}
+
+// Build Aramex ShipmentCreation XML - WITH IMPROVED ADDRESS VALIDATION
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
   const sc = shipment.Shipper.Contact || {};
@@ -87,6 +189,16 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const length = 30; // cm
   const width = 20; // cm
   const height = 15; // cm
+
+  // Normalize and validate addresses
+  const shipperCity = normalizeCity(sa.City, sa.CountryCode) || 'Dubai'; // Default to Dubai if empty
+  const consigneeCity = normalizeCity(ca.City, ca.CountryCode);
+  const shipperPostCode = validateAndNormalizePostCode(sa.PostCode, sa.CountryCode);
+  const consigneePostCode = validateAndNormalizePostCode(ca.PostCode, ca.CountryCode);
+  
+  // Validate and normalize phone numbers
+  const shipperPhone = validatePhoneNumber(sc.PhoneNumber1 || sc.CellPhone, sa.CountryCode);
+  const consigneePhone = validatePhoneNumber(cc.PhoneNumber1 || cc.CellPhone, ca.CountryCode);
 
   // Prepare customs value fallback (ensure numeric non-empty)
   const customsValue = (d.CustomsValueAmount && (d.CustomsValueAmount.Value != null && d.CustomsValueAmount.Value !== '')) ? d.CustomsValueAmount.Value : '';
@@ -130,17 +242,17 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Line1>${escapeXml(sa.Line1 || '')}</tns:Line1>
               <tns:Line2>${escapeXml(sa.Line2 || '')}</tns:Line2>
               <tns:Line3>${escapeXml(sa.Line3 || '')}</tns:Line3>
-              <tns:City>${escapeXml(sa.City || '')}</tns:City>
+              <tns:City>${escapeXml(shipperCity)}</tns:City>
               <tns:StateOrProvinceCode>${escapeXml(sa.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
-              <tns:PostCode>${escapeXml(sa.PostCode || '')}</tns:PostCode>
+              <tns:PostCode>${escapeXml(shipperPostCode)}</tns:PostCode>
               <tns:CountryCode>${escapeXml(sa.CountryCode || '')}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
               <tns:PersonName>${escapeXml(sc.PersonName || '')}</tns:PersonName>
               <tns:CompanyName>${escapeXml(sc.CompanyName || '')}</tns:CompanyName>
-              <tns:PhoneNumber1>${escapeXml(sc.PhoneNumber1 || '')}</tns:PhoneNumber1>
+              <tns:PhoneNumber1>${escapeXml(shipperPhone)}</tns:PhoneNumber1>
               <tns:PhoneNumber2>${escapeXml(sc.PhoneNumber2 || '')}</tns:PhoneNumber2>
-              <tns:CellPhone>${escapeXml(sc.CellPhone || '')}</tns:CellPhone>
+              <tns:CellPhone>${escapeXml(shipperPhone)}</tns:CellPhone>
               <tns:EmailAddress>${escapeXml(sc.EmailAddress || '')}</tns:EmailAddress>
               <tns:Type>${escapeXml(sc.Type || '')}</tns:Type>
             </tns:Contact>
@@ -152,17 +264,17 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Line1>${escapeXml(ca.Line1 || '')}</tns:Line1>
               <tns:Line2>${escapeXml(ca.Line2 || '')}</tns:Line2>
               <tns:Line3>${escapeXml(ca.Line3 || '')}</tns:Line3>
-              <tns:City>${escapeXml(ca.City || '')}</tns:City>
+              <tns:City>${escapeXml(consigneeCity)}</tns:City>
               <tns:StateOrProvinceCode>${escapeXml(ca.StateOrProvinceCode || '')}</tns:StateOrProvinceCode>
-              <tns:PostCode>${escapeXml(ca.PostCode || '')}</tns:PostCode>
+              <tns:PostCode>${escapeXml(consigneePostCode)}</tns:PostCode>
               <tns:CountryCode>${escapeXml(ca.CountryCode || '')}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
               <tns:PersonName>${escapeXml(cc.PersonName || '')}</tns:PersonName>
               <tns:CompanyName>${escapeXml(cc.CompanyName || '')}</tns:CompanyName>
-              <tns:PhoneNumber1>${escapeXml(cc.PhoneNumber1 || '')}</tns:PhoneNumber1>
+              <tns:PhoneNumber1>${escapeXml(consigneePhone)}</tns:PhoneNumber1>
               <tns:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || '')}</tns:PhoneNumber2>
-              <tns:CellPhone>${escapeXml(cc.CellPhone || '')}</tns:CellPhone>
+              <tns:CellPhone>${escapeXml(consigneePhone)}</tns:CellPhone>
               <tns:EmailAddress>${escapeXml(cc.EmailAddress || '')}</tns:EmailAddress>
               <tns:Type>${escapeXml(cc.Type || '')}</tns:Type>
             </tns:Contact>
@@ -338,163 +450,141 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
       phone_number_collection: { enabled: true },
       success_url: 'https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://axis-uv.com/cancel',
-      metadata: { quantity: String(quantity) }
+      metadata: { quantity: quantity.toString(), currency }
     };
 
-    if (req.body.customer_email) sessionParams.customer_email = req.body.customer_email;
-
     const session = await stripe.checkout.sessions.create(sessionParams);
-
     res.json({ id: session.id });
-
-  } catch (err) {
-    console.error('Create session error:', err && err.message ? err.message : err);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error('❌ Checkout session creation error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ----------------- Webhook: receive completed session and create Aramex shipment -----------------
+// ----------------- Webhook handler -----------------
 app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-  console.log('✅ Incoming Stripe webhook headers:', req.headers);
-  console.log('✅ Incoming Stripe webhook body length:', req.body.length);
-
+  const sig = req.headers['stripe-signature'];
   let event;
+
   try {
-    const sig = req.headers['stripe-signature'];
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('Webhook signature error:', err && err.message ? err.message : err);
-    return res.status(400).send(`Webhook Error: ${err && err.message ? err.message : 'invalid signature'}`);
+    console.error('❌ Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
-  console.log('✅ Stripe webhook verified:', event.type);
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+    console.log('✅ Payment completed for session:', session.id);
 
-    // retrieve full session (expand customer and line_items) to get full shipping info
-    let fullSession = null;
-    try {
-      fullSession = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items', 'customer'] });
-    } catch (err) {
-      console.warn('Could not retrieve full Stripe session (non-fatal):', err && err.message ? err.message : err);
-      fullSession = session; // fallback to the minimal session from the event
-    }
+    const quantity = parseInt(session.metadata?.quantity || '1', 10);
+    const currency = session.metadata?.currency || 'usd';
 
-    const customerEmail = (fullSession.customer_details && fullSession.customer_details.email) ? fullSession.customer_details.email : (fullSession.customer && fullSession.customer.email ? fullSession.customer.email : '');
-    const customerName = (fullSession.shipping && fullSession.shipping.name) ? fullSession.shipping.name : (fullSession.customer_details && fullSession.customer_details.name ? fullSession.customer_details.name : (fullSession.customer && fullSession.customer.name ? fullSession.customer.name : ''));
-    const phone = (fullSession.customer && fullSession.customer.phone) ||
-                  (fullSession.customer_details && fullSession.customer_details.phone) ||
-                  (fullSession.shipping && fullSession.shipping.phone) ||
-                  session.customer || '';
+    // Extract customer info
+    const customerEmail = session.customer_details?.email;
+    const customerName = session.customer_details?.name;
+    const customerPhone = session.customer_details?.phone;
+    const shippingAddress = session.shipping_details?.address;
 
-    const quantity = (fullSession && fullSession.line_items && fullSession.line_items.data && fullSession.line_items.data[0] && fullSession.line_items.data[0].quantity) ? fullSession.line_items.data[0].quantity : (session.quantity || parseInt((fullSession.metadata && fullSession.metadata.quantity) || '1', 10));
+    console.log('→ Customer:', customerName, customerEmail);
+    console.log('→ Shipping to:', shippingAddress);
+    console.log('→ Quantity:', quantity);
 
-    const totalWeight = parseFloat((quantity * WEIGHT_PER_PIECE).toFixed(2));
-    // declared value kept for records (not used for customs calculation per your request)
-    const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE; // 200 AED per piece
-    // customs value per your rule: 250 AED per piece, multiplied by quantity
+    // Calculate weights and values
+    const totalWeight = quantity * WEIGHT_PER_PIECE;
+    const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE;
     const totalCustomsValue = quantity * CUSTOMS_VALUE_PER_PIECE;
 
-    const shipping = (fullSession && fullSession.shipping) ? fullSession.shipping : (fullSession && fullSession.customer_details && fullSession.customer_details.address ? { address: fullSession.customer_details.address, name: fullSession.customer_details.name } : null);
-
-    const consigneeAddress = {
-      Line1: (shipping && shipping.address && (shipping.address.line1 || shipping.address.address_line1)) ? (shipping.address.line1 || shipping.address.address_line1) : '',
-      Line2: (shipping && shipping.address && (shipping.address.line2 || shipping.address.address_line2)) ? (shipping.address.line2 || shipping.address.address_line2) : '',
-      Line3: '',
-      City: (shipping && shipping.address && (shipping.address.city || shipping.address.locality)) ? (shipping.address.city || shipping.address.locality) : '',
-      StateOrProvinceCode: (shipping && shipping.address && (shipping.address.state || shipping.address.region)) ? (shipping.address.state || shipping.address.region) : '',
-      PostCode: (shipping && shipping.address && (shipping.address.postal_code || shipping.address.postcode)) ? (shipping.address.postal_code || shipping.address.postcode) : '',
-      CountryCode: (shipping && shipping.address && shipping.address.country) ? shipping.address.country : ''
-    };
-
-    const consigneeContact = {
-      PersonName: (shipping && shipping.name) ? shipping.name : customerName || '',
-      CompanyName: (shipping && shipping.name) ? shipping.name : customerName || '',
-      PhoneNumber1: phone || '',
-      PhoneNumber2: '',
-      CellPhone: phone || '',
-      EmailAddress: customerEmail || '',
-      Type: ''
-    };
-
-    const shipperAddress = {
-      Line1: process.env.SHIPPER_LINE1 || '',
-      Line2: process.env.SHIPPER_LINE2 || '',
-      Line3: process.env.SHIPPER_LINE3 || '',
-      City: process.env.SHIPPER_CITY || '',
-      StateOrProvinceCode: process.env.SHIPPER_STATE || '',
-      PostCode: process.env.SHIPPER_POSTCODE || '',
-      CountryCode: process.env.SHIPPER_COUNTRY_CODE || '',
-      ResidenceType: process.env.SHIPPER_RESIDENCE_TYPE || 'Business'
-    };
-
-    const shipperContact = {
-      PersonName: process.env.SHIPPER_NAME || '',
-      CompanyName: process.env.SHIPPER_NAME || '',
-      PhoneNumber1: process.env.SHIPPER_PHONE || '',
-      PhoneNumber2: '',
-      CellPhone: process.env.SHIPPER_PHONE || '',
-      EmailAddress: process.env.SHIPPER_EMAIL || process.env.MAIL_FROM || '',
-      Type: ''
-    };
-
-    // Build shipment object and set CustomsValueAmount based on quantity * CUSTOMS_VALUE_PER_PIECE
-    // Also set ProductType and DescriptionOfGoods to the string you requested
-    const productTypeString = 'Parts Machines and Electronics UV inspectiondevice AXIS Model UVRA100 B';
-    const descriptionString = 'Parts Machines and Electronics UV inspectiondevice AXIS Model UVRA100 B';
-
-    const shipmentObj = {
-      Reference1: session.id || '',
-      Shipper: { Reference1: process.env.SHIPPER_REFERENCE || '', PartyAddress: shipperAddress, Contact: shipperContact },
-      Consignee: { Reference1: '', PartyAddress: consigneeAddress, Contact: consigneeContact },
-      Details: {
-        ShippingDateTime: new Date().toISOString(),
-        ActualWeight: { Value: totalWeight, Unit: "KG" },
-        ChargeableWeight: { Value: totalWeight, Unit: "KG" },
-        NumberOfPieces: quantity,
-        DescriptionOfGoods: descriptionString,
-        GoodsOriginCountry: process.env.SHIPPER_COUNTRY_CODE || '',
-        // customs value set per your rule (CurrencyCode before Value)
-        CustomsValueAmount: { Value: totalCustomsValue, CurrencyCode: "AED" },
-        ProductGroup: "EXP",
-        ProductType: productTypeString,
-        PaymentType: "P"
-      }
-    };
-
-    // Prepare Aramex client info
-    const clientInfo = {
-      UserName: process.env.ARAMEX_USER || '',
-      Password: process.env.ARAMEX_PASSWORD || '',
-      Version: process.env.ARAMEX_VERSION || 'v2',
-      AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || '',
-      AccountPin: process.env.ARAMEX_ACCOUNT_PIN || '',
-      AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || '',
-      AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY || '',
-      Source: DEFAULT_SOURCE
-    };
-
+    // Aramex shipment creation
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
 
     try {
-      // Guard: ensure essential Aramex account fields present
-      if (!clientInfo.AccountNumber || !clientInfo.AccountEntity || !clientInfo.AccountPin) {
-        const missing = [
-          !clientInfo.AccountNumber && 'ARAMEX_ACCOUNT_NUMBER',
-          !clientInfo.AccountEntity && 'ARAMEX_ACCOUNT_ENTITY',
-          !clientInfo.AccountPin && 'ARAMEX_ACCOUNT_PIN'
-        ].filter(Boolean);
-        const msg = `Missing Aramex account config: ${missing.join(', ')}`;
-        console.error('❌', msg);
-        aramexError = msg;
-        throw new Error(msg);
-      }
+      const clientInfo = {
+        UserName: process.env.ARAMEX_USER,
+        Password: process.env.ARAMEX_PASSWORD,
+        Version: process.env.ARAMEX_VERSION || 'v2',
+        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+        AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+        AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+        Source: DEFAULT_SOURCE
+      };
 
-      console.log('→ Creating Aramex shipment for order:', session.id);
-      console.log('→ Shipment details:', JSON.stringify(maskForLog({
+      // Shipper address from environment variables
+      const shipperAddress = {
+        Line1: process.env.SHIPPER_LINE1,
+        Line2: '',
+        Line3: '',
+        City: process.env.SHIPPER_CITY,
+        StateOrProvinceCode: '',
+        PostCode: process.env.SHIPPER_POSTCODE,
+        CountryCode: process.env.SHIPPER_COUNTRY_CODE
+      };
+
+      const shipperContact = {
+        PersonName: process.env.SHIPPER_NAME,
+        CompanyName: 'AXIS AUTO. TECHNICAL TESTING',
+        PhoneNumber1: process.env.SHIPPER_PHONE,
+        PhoneNumber2: '',
+        CellPhone: process.env.SHIPPER_PHONE,
+        EmailAddress: process.env.MAIL_FROM,
+        Type: 'Shipper'
+      };
+
+      // Consignee address from Stripe
+      const consigneeAddress = {
+        Line1: shippingAddress?.line1 || '',
+        Line2: shippingAddress?.line2 || '',
+        Line3: '',
+        City: shippingAddress?.city || '',
+        StateOrProvinceCode: shippingAddress?.state || '',
+        PostCode: shippingAddress?.postal_code || '',
+        CountryCode: shippingAddress?.country || ''
+      };
+
+      const consigneeContact = {
+        PersonName: customerName || '',
+        CompanyName: '',
+        PhoneNumber1: customerPhone || '',
+        PhoneNumber2: '',
+        CellPhone: customerPhone || '',
+        EmailAddress: customerEmail || '',
+        Type: 'Consignee'
+      };
+
+      // Determine product type based on destination
+      const isInternational = consigneeAddress.CountryCode !== 'AE';
+      const productTypeString = isInternational ? 'EPX' : 'CDS';
+
+      const shipmentObj = {
+        Reference1: session.id,
+        Shipper: {
+          Reference1: 'AXIS AUTO. TECHNICAL TESTING',
+          PartyAddress: shipperAddress,
+          Contact: shipperContact
+        },
+        Consignee: {
+          Reference1: customerName || 'Customer',
+          PartyAddress: consigneeAddress,
+          Contact: consigneeContact
+        },
+        Details: {
+          ActualWeight: { Unit: 'KG', Value: totalWeight },
+          ChargeableWeight: { Unit: 'KG', Value: totalWeight },
+          DescriptionOfGoods: 'UV Car Inspection Device',
+          GoodsOriginCountry: 'AE',
+          NumberOfPieces: quantity,
+          ProductGroup: isInternational ? 'EXP' : 'DOM',
+          ProductType: productTypeString,
+          PaymentType: 'P',
+          CustomsValueAmount: { CurrencyCode: 'AED', Value: totalCustomsValue },
+          ShippingDateTime: new Date().toISOString()
+        }
+      };
+
+      console.log('→ Creating Aramex shipment with details:', JSON.stringify(maskForLog({
         quantity,
         weight: totalWeight,
         declaredValue: totalDeclaredValue,
@@ -678,3 +768,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log('🔧 Environment check:', missingEnvs.length ? `Missing: ${missingEnvs.join(', ')}` : 'All required env vars present');
 });
+
