@@ -318,6 +318,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   // Prepare customs value fallback (ensure numeric non-empty)
   const customsValue = d.CustomsValueAmount && (d.CustomsValueAmount.Value != null && d.CustomsValueAmount.Value !== "") ? d.CustomsValueAmount.Value : "";
 
+  // Consignee contact fallbacks to ensure Aramex required fields are present
+  const ccPersonName = (cc.PersonName || cc.EmailAddress || shipment.Consignee.Reference1 || "Customer").toString();
+  const ccCompanyName = (cc.CompanyName || ccPersonName || "Individual").toString();
+  const ccPhone = (cc.PhoneNumber1 || cc.CellPhone || consigneePhone || "").toString();
+  const ccEmail = (cc.EmailAddress || "").toString();
+
   console.log("→ Address validation results:", {
     shipperCity,
     consigneeCity,
@@ -394,12 +400,12 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:CountryCode>${escapeXml(consigneeCountryCode)}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
-              <tns:PersonName>${escapeXml(cc.PersonName || cc.EmailAddress || "Customer")}</tns:PersonName> <!-- Prioritize name, then email, then fallback -->
-              <tns:CompanyName>${escapeXml(cc.CompanyName || "")}</tns:CompanyName>
-              <tns:PhoneNumber1>${escapeXml(consigneePhone)}</tns:PhoneNumber1>
+              <tns:PersonName>${escapeXml(ccPersonName)}</tns:PersonName>
+              <tns:CompanyName>${escapeXml(ccCompanyName)}</tns:CompanyName>
+              <tns:PhoneNumber1>${escapeXml(ccPhone)}</tns:PhoneNumber1>
               <tns:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || "")}</tns:PhoneNumber2>
-              <tns:CellPhone>${escapeXml(consigneePhone)}</tns:CellPhone>
-              <tns:EmailAddress>${escapeXml(cc.EmailAddress || "")}</tns:EmailAddress>
+              <tns:CellPhone>${escapeXml(ccPhone)}</tns:CellPhone>
+              <tns:EmailAddress>${escapeXml(ccEmail)}</tns:EmailAddress>
               <tns:Type>${escapeXml(cc.Type || "")}</tns:Type>
             </tns:Contact>
           </tns:Consignee>
@@ -647,7 +653,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         try {
           const msg = {
             to: customerEmail,
-            from: process.MAIL_FROM,
+            from: process.env.MAIL_FROM,
             subject: "Order Confirmation - Additional Information Required",
             text: `Thank you for your order!\n\nWe need some additional information to process your shipment:\n\n${validationErrors.map(err => "- " + err).join("\n")}\n\nPlease reply to this email with the missing information so we can process your shipment.\n\nOrder Details:\n- Quantity: ${quantity}\n- Order ID: ${session.id}\n\nBest regards,\nAxis UV Team`,
           };
@@ -715,13 +721,17 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         CountryCode: shippingAddress.country.toUpperCase(),
       };
 
+      // Ensure we always have a non-empty name/company for Aramex
+      const safeConsigneeName = (finalCustomerName || customerEmail || "Customer").toString().trim();
+      const consigneeCompany = (safeConsigneeName && safeConsigneeName.length > 0) ? safeConsigneeName : "Individual";
+
       const consigneeContact = {
-        PersonName: finalCustomerName, // Use the prioritized name
-        CompanyName: "",
-        PhoneNumber1: customerPhone,
+        PersonName: safeConsigneeName,            // اسم المستلم (مطلوب)
+        CompanyName: consigneeCompany,            // تعويض CompanyName لأن Aramex يطالبه
+        PhoneNumber1: customerPhone || "",        // مطلوب عادة
         PhoneNumber2: "",
-        CellPhone: customerPhone,
-        EmailAddress: customerEmail,
+        CellPhone: customerPhone || "",
+        EmailAddress: customerEmail || "",
         Type: "Consignee",
       };
 
@@ -769,6 +779,14 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         consigneePhone: customerPhone,
         consigneeEmail: customerEmail,
       })));
+
+      // Log the exact contact sent to Aramex (masked)
+      console.log("→ Aramex Consignee Contact being sent:", maskForLog({
+        PersonName: consigneeContact.PersonName,
+        CompanyName: consigneeContact.CompanyName,
+        PhoneNumber1: consigneeContact.PhoneNumber1,
+        EmailAddress: consigneeContact.EmailAddress,
+      }));
 
       const xml = buildShipmentCreationXml({
         clientInfo,
@@ -925,4 +943,3 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log("🔧 Environment check:", missingEnvs.length ? `Missing: ${missingEnvs.join(", ")}` : "All required env vars present");
 });
-
