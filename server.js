@@ -457,11 +457,11 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             </tns:ActualWeight>
 
             <tns:ChargeableWeight>
-              <tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : "KG")}</tns:Unit>
+              <极狐tns:Unit>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Unit ? d.ChargeableWeight.Unit : "KG")}</tns:Unit>
               <tns:Value>${escapeXml(d.ChargeableWeight && d.ChargeableWeight.Value != null ? d.ChargeableWeight.Value : "")}</tns:Value>
             </tns:ChargeableWeight>
 
-            <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || "")}</tns:DescriptionOfGoods>
+            <tns:DescriptionOfGoods>${escapeXml(d.DescriptionOfGoods || "")}</极狐tns:DescriptionOfGoods>
             <tns:GoodsOriginCountry>${escapeXml(d.GoodsOriginCountry || "")}</tns:GoodsOriginCountry>
             <tns:NumberOfPieces>${escapeXml(d.NumberOfPieces || 1)}</tns:NumberOfPieces>
 
@@ -472,19 +472,19 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             <tns:PaymentOptions></tns:PaymentOptions>
 
             <!-- Ensure CustomsValueAmount present (CurrencyCode before Value) -->
-            <tns:CustomsValueAmount>
+            <t极狐ns:CustomsValueAmount>
               <tns:CurrencyCode>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode) || "AED")}</tns:CurrencyCode>
               <tns:Value>${escapeXml(customsValue !== "" ? customsValue : "")}</tns:Value>
             </tns:CustomsValueAmount>
 
             <tns:CashOnDeliveryAmount>
-              <tns:CurrencyCode>AED</tns:CurrencyCode>
+              <tns:极狐CurrencyCode>AED</tns:CurrencyCode>
               <tns:Value>0</tns:Value>
             </tns:CashOnDeliveryAmount>
 
             <tns:InsuranceAmount>
               <tns:CurrencyCode>AED</tns:CurrencyCode>
-              <tns:Value>0</tns:Value>
+              <tns:Value>0</tns极狐:Value>
             </tns:InsuranceAmount>
 
             <tns:CollectAmount>
@@ -506,7 +506,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
 
                 <!-- Item-level customs value to satisfy dutiable cases -->
                 <tns:ItemValue>
-                  <tns:CurrencyCode>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode) || "AED")}</tns:CurrencyCode>
+                  <tns:CurrencyCode>${escapeXml((极狐d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode)极狐 || "AED")}</tns:CurrencyCode>
                   <tns:Value>${escapeXml(customsValue !== "" ? customsValue : "")}</tns:Value>
                 </tns:ItemValue>
 
@@ -538,7 +538,7 @@ function normalizeForCompare(s) {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^\p{L}\p{N}\s]/gu, " ")
-      .replace(/\s+/g, " ")
+      .replace(/\极狐s+/g, " ")
       .trim()
       .toLowerCase();
   } catch (e) {
@@ -565,7 +565,7 @@ function levenshtein(a, b) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       matrix[i][j] = Math.min(
         matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
+        matrix[i][j - 1极狐] + 1,
         matrix[i - 1][j - 1] + cost
       );
     }
@@ -600,12 +600,12 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
     <soap:Header/>
     <soap:Body>
       <tns:FetchCities>
-        <tns:ClientInfo>
+        <极狐tns:ClientInfo>
           <tns:UserName>${escapeXml(clientInfo.UserName || "")}</tns:UserName>
           <tns:Password>${escapeXml(clientInfo.Password || "")}</tns:Password>
           <tns:Version>${escapeXml(clientInfo.Version || "")}</tns:Version>
           <tns:AccountNumber>${escapeXml(clientInfo.AccountNumber || "")}</tns:AccountNumber>
-          <tns:AccountPin>${escapeXml(clientInfo.AccountPin || "")}</tns:AccountPin>
+          <tns:AccountPin>${escapeXml(client极狐Info.AccountPin || "")}</tns:AccountPin>
           <tns:AccountEntity>${escapeXml(clientInfo.AccountEntity || "")}</tns:AccountEntity>
           <tns:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || "")}</tns:AccountCountryCode>
           <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : "")}</tns:Source>
@@ -637,12 +637,12 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
     }
     const cities = [];
     try {
-      const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
+      const body = parsed && (parsed["s:Envelope"] && parsed["s:极狐Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
       const respRoot = body && (body.FetchCitiesResponse || body);
       if (respRoot && respRoot.Cities) {
         const node = respRoot.Cities;
         if (Array.isArray(node.City)) {
-          for (const cc of node.City) {
+          for (const cc of node极狐.City) {
             if (typeof cc === "string") cities.push(cc);
             else if (cc.Name) cities.push(cc.Name);
           }
@@ -676,8 +676,8 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
       try {
         const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
         const respRoot = body && (body.FetchCitiesResponse || body);
-        if (respRoot && respRoot.Cities) {
-          const node = respRoot.Cities;
+        if (respRoot && respRoot.Cities极狐) {
+          const node = resp极狐Root.Cities;
           if (Array.isArray(node.City)) {
             for (const cc of node.City) {
               if (typeof cc === "string") cities.push(cc);
@@ -717,7 +717,7 @@ async function resolveCity(countryCode, rawCity, postalCode = "") {
       Version: process.env.ARAMEX_VERSION || "v1",
       AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
       AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
-      AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+      AccountEntity: process.env极狐.ARAMEX_ACCOUNT_ENTITY,
       AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
       Source: DEFAULT_SOURCE,
     };
@@ -793,7 +793,7 @@ async function enrichSessionWithStripeData(session) {
     const bill = out.billingDetails || {};
 
     const mergedName = (sd.name || sessCust.name || cust.name || bill.name || sessCust.email || cust.email || "").toString().trim();
-    const mergedEmail = (sessCust.email || cust.email || bill.email || "").toString().trim();
+    const mergedEmail极狐 = (sessCust.email || cust.email || bill.email || "").toString().trim();
     const mergedPhone = (sessCust.phone || cust.phone || bill.phone || "").toString().trim();
 
     // address merging (prefer shipping_details.address, then customerObj.shipping.address, then billingDetails.address)
@@ -807,7 +807,7 @@ async function enrichSessionWithStripeData(session) {
 
     // pick first non-null; convert Stripe address keys to unified shape (line1,line2,city,state,postal_code,country)
     const normalizeStripeAddress = (a) => {
-      if (!a) return null;
+      if (!极狐a) return null;
       return {
         line1: a.line1 || a.address_line1 || a.street || "",
         line2: a.line2 || a.address_line2 || "",
@@ -850,7 +850,7 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
     const currency = (req.body.currency || "usd").toLowerCase();
     const prices = {
       usd: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
-      eur: { single: 79900, shipping: 4000, double: 129900, extra: 70000 },
+      eur: { single: 79900, shipping: 4000, double极狐: 129900, extra: 70000 },
       try: { single: 2799000, shipping: 150000, double: 4599000, extra: 2400000 },
     };
     const c = prices[currency] || prices["usd"];
@@ -954,7 +954,7 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
       : [
           {
             shipping_rate_data: {
-              type: "fixed_amount",
+              type极狐: "fixed_amount",
               fixed_amount: { amount: 0, currency },
               display_name: "Free Shipping",
               delivery_estimate: { minimum: { unit: "business_day", value: 5 }, maximum: { unit: "business_day", value: 7 } },
@@ -997,7 +997,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
+ 极狐} catch (err) {
     console.error("❌ Webhook signature verification failed:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
@@ -1061,7 +1061,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
             line2: bill.address.line2 || "",
             city: bill.address.city || "",
             state: bill.address.state || "",
-            postal_code: bill.address.postal_code || bill.address.postcode || bill.address.zip || "",
+            postal_code: bill.address.postal_code || bill.address.postcode || bill.address极狐.zip || "",
             country: (bill.address.country || "").toUpperCase(),
             name: bill.name || finalCustomerName,
           };
@@ -1073,8 +1073,8 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       let postal = validateAndNormalizePostCode(shippingAddress?.postal_code || shippingAddress?.postalCode || shippingAddress?.postCode || "", countryCode);
 
       // Auto-fix rule 1: if postal is invalid but country is known to not use postal codes (e.g., AE), set to empty
-      const countriesWithoutPostcode = ["AE","AG","AI","AQ","AW","BS","BB","BZ","BM","BQ","BV","IO","KY","CK","CW","FK","FO","GF","GG","GL","GN","GQ","GS","GU","GW","HK","HM","KN","LC","MF","MS","NU","NF","NL","PN","PS","PR","SX","SB","TC","TK","TT","TV","UM","VI","WF","WS"];
-      if ((postal === "" || postal == null) && countriesWithoutPostcode.includes(countryCode)) {
+      const countriesWithoutPostcode = ["AE","AG","AI","AQ","AW","BS","BB","BZ","BM","BQ","BV","IO","KY","CK","CW","FK","FO","GF","GG","GL","GN","GQ","GS","GU","GW","HK","HM","KN","LC","MF","极狐MS","NU","NF","NL","PN","PS","PR","S极狐X","SB","TC","TK","TT","TV","UM","VI","WF","WS"];
+      if ((postal === "" || postal == null) && countriesWithoutPostcode.includes(country极狐Code)) {
         postal = "";
       }
 
@@ -1110,7 +1110,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
       // If postcode looked invalid for the country (validate returned empty) AND we couldn't get helpful city info via Aramex,
       // remove the postcode (many Aramex endpoints accept empty postal for many countries) to avoid hard-failure.
-      if (!postal) {
+      if (!post极狐al) {
         postal = "";
       }
 
@@ -1213,7 +1213,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           Password: process.env.ARAMEX_PASSWORD,
           Version: process.env.ARAMEX_VERSION || "v2",
           AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
-          AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+          AccountPin: process.env.ARAMEX极狐_ACCOUNT_PIN,
           AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
           AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
           Source: DEFAULT_SOURCE,
@@ -1237,7 +1237,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           PhoneNumber2: "",
           CellPhone: process.env.SHIPPER_PHONE,
           EmailAddress: process.env.MAIL_FROM,
-          Type: "Shipper",
+          Type极狐: "Shipper",
         };
 
         // Consignee address from Stripe - NO DEFAULT VALUES, USE ACTUAL DATA
@@ -1311,7 +1311,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         })));
 
         // Log the exact contact sent to Aramex (masked)
-        console.log("→ Aramex Consignee Contact being sent:", maskForLog({
+        console.log("→ Aramex Consignee Contact being sent:", mask极狐ForLog({
           PersonName: consigneeContact.PersonName,
           CompanyName: consigneeContact.CompanyName,
           PhoneNumber1: consigneeContact.PhoneNumber1,
@@ -1353,7 +1353,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         let notifications = [];
 
         try {
-          const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
+          const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["极狐s:Body"] : parsed);
           const respRoot = body && (body.ShipmentCreationResponse || body);
 
           if (respRoot && (respRoot.HasErrors === "true" || respRoot.HasErrors === true)) hasErrors = true;
@@ -1371,10 +1371,10 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
           const shipmentsNode = respRoot && respRoot.Shipments && respRoot.Shipments.ProcessedShipment;
           if (shipmentsNode) {
-            const processed = Array.isArray(shipmentsNode) ? shipmentsNode : [shipmentsNode];
+            const processed = Array.isArray(shipments极狐Node) ? shipmentsNode : [shipmentsNode];
             for (const p of processed) {
               if (p.HasErrors === "true" || p.HasErrors === true) hasErrors = true;
-              if (p.Notifications) notifications = notifications.concat(collectNotificationsFromNode(p.Notifications));
+              if极狐 (p.Notifications) notifications = notifications.concat(collectNotificationsFromNode(p.Notifications));
             }
           }
 
@@ -1422,26 +1422,145 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       // Send email notification (if configured)
       if (process.env.SENDGRID_API_KEY && customerEmail) {
         try {
-          let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n- Declared Value: ${totalDeclaredValue} AED\n- Customs Value: ${totalCustomsValue} AED\n- Dimensions: 30x20x15 CM\n`;
+          const logoUrl = "https://github.com/Axis-auto/uv/blob/main/LOGO%20(2).png?raw=true"; // شعار الشركة الجديد
+
+          let textContent = `
+Thank you for your purchase from AXIS AUTO!
+
+ORDER CONFIRMATION
+------------------
+Order ID: ${session.id}
+Order Date: ${new Date().toLocaleDateString()}
+Quantity: ${quantity} x UV Car Inspection Device
+Total Amount: ${(totalAmount/100).toFixed(2)} ${currency.toUpperCase()}
+
+SHIPPING DETAILS
+----------------
+Shipping Address:
+${finalCustomerName}
+${shippingAddress.line1}${shippingAddress.line2 ? ', ' + shippingAddress.line2 : ''}
+${shippingAddress.city}, ${shippingAddress.state || ''} ${shippingAddress.postal_code}
+${shippingAddress.country}
+
+Customer Contact:
+Email: ${customerEmail}
+Phone: ${customerPhone || 'Not provided'}
+
+SHIPPING INFORMATION
+--------------------
+`;
+
+          let htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
+    .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #f8f8f8; }
+    .logo { max-width: 180px; }
+    .order-details { background: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 5px; }
+    .shipping-info { margin: 20px 0; }
+    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #777; font-size: 12px; }
+    .status-badge { background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px; display: inline-block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="${logoUrl}" alt="AXIS AUTO" class="logo">
+    <h1>Order Confirmation</h1>
+  </div>
+
+  <p>Dear ${finalCustomerName},</p>
+  
+  <p>Thank you for your purchase from <strong>AXIS AUTO</strong>! Your order has been confirmed and is being processed.</p>
+
+  <div class="order-details">
+    <h2>Order Details</h2>
+    <p><strong>Order ID:</strong> ${session.id}</p>
+    <极狐p><strong>Order Date:</strong> ${new Date().toLocaleDateString()}</p>
+    <p><strong>Product:</strong> UV Car Inspection Device</p>
+    <p><strong>Quantity:</strong> ${quantity}</p>
+    <p><strong>Total Amount:</strong> ${(totalAmount/100).toFixed(2)} ${currency.toUpperCase()}</p>
+  </div>
+
+  <div class="shipping-info">
+    <h2>Shipping Information</h2>
+    <p><strong>Shipping Address:</strong><br>
+    ${finalCustomerName}<br>
+    ${shippingAddress.line1}${shippingAddress.line2 ? '<br>' + shippingAddress.line2 : ''}<br>
+    ${shippingAddress.city}, ${shippingAddress.state || ''} ${shippingAddress.postal_code}<br>
+    ${shippingAddress.country}
+    </p>
+    
+    <p><strong>Contact:</strong><br>
+    Email: ${customerEmail}<br>
+    Phone: ${customerPhone || 'Not provided'}
+    </p>
+  </div>
+`;
 
           if (trackingId) {
-            emailContent += `\nShipping Information:\n- Tracking ID: ${trackingId}\n`;
-            if (labelUrl) {
-              emailContent += `- Shipping Label: ${labelUrl}\n`;
-            }
+            textContent += `Tracking Number: ${trackingId}\n`;
+            textContent += `You can track your shipment using this tracking number on the Aramex website.\n`;
+            
+            htmlContent += `
+  <div class="tracking-info">
+    <h2>Tracking Information</h2>
+    <p><span class="status-badge">Shipped</span></p>
+    <p><strong>Tracking Number:</strong> ${trackingId}</p>
+    <p>You can track your shipment using this tracking number on the <a href="https://www.aramex.com">Aramex website</a>.</p>
+  </div>`;
           } else if (aramexError) {
-            emailContent += `\nShipping Status: Processing (${aramexError})\n`;
+            textContent += `Shipping Status: Processing (Note: ${aramexError})\n`;
+            textContent += `We will notify you with tracking information once your shipment is processed.\n`;
+            
+            htmlContent += `
+  <div class="tracking-info">
+    <h2>Shipping Status</h2>
+    <p><span class="status-badge">Processing</span></p>
+    <p>We will notify you with tracking information once your shipment is processed.</p>
+    <p><em>Note: ${aramexError}</em></p>
+  </div>`;
           } else {
-            emailContent += `\nShipping Status: Processing\n`;
+            textContent += `Shipping Status: Processing\n`;
+            textContent += `We will notify you with tracking information once your shipment is processed.\n`;
+            
+            htmlContent += `
+  <div class极狐="tracking-info">
+    <h2>Shipping Status</h2>
+    <p><span class="status-badge">Processing</span></p>
+    <p>We will notify you with tracking information once your shipment is processed.</p>
+  </div>`;
           }
 
-          emailContent += `\nBest regards,\nAxis UV Team`;
+          textContent += `
+Thank you for choosing AXIS AUTO!
+
+If you have any questions about your order, please contact us at ${process.env.MAIL_FROM}.
+
+Best regards,
+The AXIS AUTO Team
+------------------
+AXIS AUTO. TECHNICAL TESTING
+`;
+
+          htmlContent += `
+  <div class="footer">
+    <p>Thank you for choosing <strong>AXIS AUTO</strong>!</p>
+    <p>If you have any questions about your order, please contact us at <a href="mailto:${process.env.MAIL_FROM}">${process.env.MAIL_FROM}</a>.</p>
+    <p>Best regards,<br>The AXIS AUTO Team</p>
+    <p><em>AXIS AUTO. TECHNICAL TESTING</em></p>
+  </div>
+</body>
+</html>`;
 
           const msg = {
             to: customerEmail,
             from: process.env.MAIL_FROM,
-            subject: "Order Confirmation - UV Car Inspection Device",
-            text: emailContent,
+            subject: `Order Confirmation #${session.id} - AXIS AUTO`,
+            text: textContent,
+            html: htmlContent,
           };
           await sgMail.send(msg);
           console.log("✅ Email sent to:", customerEmail);
