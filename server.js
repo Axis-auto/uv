@@ -1,3 +1,6 @@
+// server.js (complete, updated with enrichSessionWithStripeData and robust webhook handling)
+// Full file — do not truncate
+
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
@@ -936,6 +939,34 @@ async function enrichSessionWithStripeData(session) {
     return { session, customerObj: null, paymentIntentObj: null, billingDetails: null, mergedShipping: null, mergedContact: null };
   }
 }
+
+// ----------------- NEW ENDPOINT: Get cities for auto-complete -----------------
+app.post("/get-cities", bodyParser.json(), async (req, res) => {
+  const { countryCode, prefix = "", postalCode = "" } = req.body;
+
+  if (!countryCode) {
+    return res.status(400).json({ error: "countryCode is required" });
+  }
+
+  const clientInfo = {
+    UserName: process.env.ARAMEX_USER,
+    Password: process.env.ARAMEX_PASSWORD,
+    Version: process.env.ARAMEX_VERSION || "v1",
+    AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
+    AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
+    AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
+    AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY,
+    Source: DEFAULT_SOURCE,
+  };
+
+  try {
+    const cities = await fetchAramexCities({ clientInfo, countryCode, prefix, postalCode });
+    res.json(cities || []);
+  } catch (error) {
+    console.error("Error fetching cities:", error);
+    res.status(500).json({ error: "Failed to fetch cities" });
+  }
+});
 
 // ----------------- Checkout creation with STRICT VALIDATION -----------------
 app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
