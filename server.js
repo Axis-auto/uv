@@ -1,14 +1,3 @@
-[file name]: image.png
-[file content begin]
-AXIS AUTO
-
-Order Confirmation
-
-XIS AUTO! Your order has been confirmed and is being processed.
-
-
-[file content end]
-
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
