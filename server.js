@@ -1,3 +1,14 @@
+[file name]: image.png
+[file content begin]
+AXIS AUTO
+
+Order Confirmation
+
+XIS AUTO! Your order has been confirmed and is being processed.
+
+
+[file content end]
+
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
@@ -1422,7 +1433,8 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       // Send email notification (if configured)
       if (process.env.SENDGRID_API_KEY && customerEmail) {
         try {
-          const logoUrl = "https://github.com/Axis-auto/uv/blob/main/LOGO%20(2).png?raw=true"; // شعار الشركة الجديد
+          // FIX: استخدم الرابط المباشر للصورة بدلاً من رابط GitHub
+          const logoUrl = "https://raw.githubusercontent.com/Axis-auto/uv/main/LOGO%20(2).png";
 
           // Recalculate totalAmount and define currency for email (fix for undefined error)
           const currency = (session.metadata?.currency || "usd").toLowerCase();
