@@ -394,7 +394,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:CountryCode>${escapeXml(consigneeCountryCode)}</tns:CountryCode>
             </tns:PartyAddress>
             <tns:Contact>
-              <tns:PersonName>${escapeXml(cc.PersonName || "Customer")}</tns:PersonName> <!-- Re-added fallback for Aramex requirement -->
+              <tns:PersonName>${escapeXml(cc.PersonName || cc.EmailAddress || "Customer")}</tns:PersonName> <!-- Prioritize name, then email, then fallback -->
               <tns:CompanyName>${escapeXml(cc.CompanyName || "")}</tns:CompanyName>
               <tns:PhoneNumber1>${escapeXml(consigneePhone)}</tns:PhoneNumber1>
               <tns:PhoneNumber2>${escapeXml(cc.PhoneNumber2 || "")}</tns:PhoneNumber2>
@@ -627,8 +627,8 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     const shippingAddress = extractShippingAddress(session);
     const customerNameFromShipping = shippingAddress?.name; // Get name from shipping address if available
 
-    // Prioritize name from shipping address, then customer details, then fallback
-    const finalCustomerName = customerNameFromShipping || customerNameFromDetails || "Customer";
+    // Prioritize name from shipping address, then customer details, then fallback to email, then generic
+    const finalCustomerName = customerNameFromShipping || customerNameFromDetails || customerEmail || "Customer";
 
     console.log("→ Customer:", finalCustomerName, customerEmail);
     console.log("→ Phone:", customerPhone);
@@ -647,7 +647,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         try {
           const msg = {
             to: customerEmail,
-            from: process.env.MAIL_FROM,
+            from: process.MAIL_FROM,
             subject: "Order Confirmation - Additional Information Required",
             text: `Thank you for your order!\n\nWe need some additional information to process your shipment:\n\n${validationErrors.map(err => "- " + err).join("\n")}\n\nPlease reply to this email with the missing information so we can process your shipment.\n\nOrder Details:\n- Quantity: ${quantity}\n- Order ID: ${session.id}\n\nBest regards,\nAxis UV Team`,
           };
@@ -925,3 +925,4 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log("🔧 Environment check:", missingEnvs.length ? `Missing: ${missingEnvs.join(", ")}` : "All required env vars present");
 });
+
