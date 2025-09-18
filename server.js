@@ -1,4 +1,3 @@
-// server.js (final revised)
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
@@ -39,13 +38,8 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "");
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Aramex endpoint (use base URL without ?wsdl)
-const ARAMEX_WSDL_URL =
-  process.env.ARAMEX_WSDL_URL ||
-  "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
-const ARAMEX_ENDPOINT =
-  ARAMEX_WSDL_URL.indexOf("?") !== -1
-    ? ARAMEX_WSDL_URL.split("?")[0]
-    : ARAMEX_WSDL_URL;
+const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
+const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf("?") !== -1 ? ARAMEX_WSDL_URL.split("?")[0] : ARAMEX_WSDL_URL;
 
 // constants
 const WEIGHT_PER_PIECE = 1.63; // kg per piece
@@ -56,29 +50,29 @@ const DEFAULT_REPORT_ID = parseInt(process.env.ARAMEX_REPORT_ID || "9729", 10);
 
 // Full allowed countries for Stripe shipping collection
 const allowedCountries = [
-  "AC","AD","AE","AF","AG","AI","AL","AM","AO","AQ","AR","AT","AU","AW","AX","AZ",
-  "BA","BB","BD","BE","BF","BG","BH","BI","BJ","BL","BM","BN","BO","BQ","BR","BS","BT","BV","BW","BY","BZ",
-  "CA","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CV","CW","CY","CZ",
-  "DE","DJ","DK","DM","DO","DZ",
-  "EC","EE","EG","EH","ER","ES","ET",
-  "FI","FJ","FK","FO","FR",
-  "GA","GB","GD","GE","GF","GG","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY",
-  "HK","HN","HR","HT","HU",
-  "ID","IE","IL","IM","IN","IO","IQ","IS","IT",
-  "JE","JM","JO","JP",
-  "KE","KG","KH","KI","KM","KN","KR","KW","KY","KZ",
-  "LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY",
-  "MA","MC","MD","ME","MF","MG","MK","ML","MM","MN","MO","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ",
-  "NA","NC","NE","NG","NI","NL","NO","NP","NR","NU","NZ",
-  "OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PY",
-  "QA","RE","RO","RS","RU","RW",
-  "SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SV","SX","SZ",
-  "TA","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TR","TT","TV","TW","TZ",
-  "UA","UG","US","UY","UZ",
-  "VA","VC","VE","VG","VN","VU",
-  "WF","WS","XK",
-  "YE","YT",
-  "ZA","ZM","ZW","ZZ",
+  "AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AT", "AU", "AW", "AX", "AZ",
+  "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
+  "CA", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CV", "CW", "CY", "CZ",
+  "DE", "DJ", "DK", "DM", "DO", "DZ",
+  "EC", "EE", "EG", "EH", "ER", "ES", "ET",
+  "FI", "FJ", "FK", "FO", "FR",
+  "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY",
+  "HK", "HN", "HR", "HT", "HU",
+  "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IS", "IT",
+  "JE", "JM", "JO", "JP",
+  "KE", "KG", "KH", "KI", "KM", "KN", "KR", "KW", "KY", "KZ",
+  "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
+  "MA", "MC", "MD", "ME", "MF", "MG", "MK", "ML", "MM", "MN", "MO", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+  "NA", "NC", "NE", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
+  "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PY",
+  "QA", "RE", "RO", "RS", "RU", "RW",
+  "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SZ",
+  "TA", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+  "UA", "UG", "US", "UY", "UZ",
+  "VA", "VC", "VE", "VG", "VN", "VU",
+  "WF", "WS", "XK",
+  "YE", "YT",
+  "ZA", "ZM", "ZW", "ZZ",
 ];
 function allowedCountriesForStripe(list) {
   return list.map((c) => (typeof c === "string" ? c.toUpperCase() : c));
@@ -92,7 +86,7 @@ function escapeXml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replace(/\'/g, "&apos;");
 }
 
 function maskForLog(obj) {
@@ -101,13 +95,7 @@ function maskForLog(obj) {
       JSON.stringify(obj, (k, v) => {
         if (!k) return v;
         const lk = k.toLowerCase();
-        if (
-          lk.includes("password") ||
-          lk.includes("pin") ||
-          lk.includes("secret") ||
-          lk.includes("apikey")
-        )
-          return "***";
+        if (lk.includes("password") || lk.includes("pin") || lk.includes("secret") || lk.includes("apikey")) return "***";
         return v;
       })
     );
@@ -149,32 +137,43 @@ function validateAndNormalizePostCode(postCode, countryCode) {
 
   const normalized = postCode.toString().trim();
 
+  // Country-specific postal code validation and normalization
   switch (countryCode?.toUpperCase()) {
-    case "US": {
+    case "US":
+      // US ZIP codes: 5 digits or 5+4 format
       const usMatch = normalized.match(/^(\d{5})(-?\d{4})?$/);
       return usMatch ? usMatch[1] + (usMatch[2] ? usMatch[2].replace("-", "") : "") : normalized;
-    }
-    case "CA": {
+
+    case "CA":
+      // Canadian postal codes: A1A 1A1 format
       const caMatch = normalized.toUpperCase().match(/^([A-Z]\d[A-Z])\s*(\d[A-Z]\d)$/);
       return caMatch ? `${caMatch[1]} ${caMatch[2]}` : normalized;
-    }
+
     case "GB":
+      // UK postal codes: various formats
       return normalized.toUpperCase();
+
     case "AE":
+      // UAE doesn't use postal codes, return empty string
       return "";
-    case "DE": {
+
+    case "DE":
+      // German postal codes: 5 digits
       const deMatch = normalized.match(/^\d{5}$/);
       return deMatch ? normalized : "";
-    }
-    case "FR": {
+
+    case "FR":
+      // French postal codes: 5 digits
       const frMatch = normalized.match(/^\d{5}$/);
       return frMatch ? normalized : "";
-    }
-    case "TR": {
+
+    case "TR":
+      // Turkish postal codes: 5 digits
       const trMatch = normalized.match(/^\d{5}$/);
       return trMatch ? normalized : "";
-    }
+
     default:
+      // For other countries, return as-is but ensure it's not too long
       return normalized.length > 10 ? normalized.substring(0, 10) : normalized;
   }
 }
@@ -182,22 +181,33 @@ function validateAndNormalizePostCode(postCode, countryCode) {
 function validatePhoneNumber(phone, countryCode) {
   if (!phone) return "";
 
+  // Remove all non-digit characters except +
   let cleaned = phone.replace(/[^\d+]/g, "");
 
+  // If it starts with +, keep it, otherwise add country code if needed
   if (!cleaned.startsWith("+")) {
+    // Add common country codes
     switch (countryCode?.toUpperCase()) {
       case "AE":
-        if (!cleaned.startsWith("971")) cleaned = "971" + cleaned;
+        if (!cleaned.startsWith("971")) {
+          cleaned = "971" + cleaned;
+        }
         break;
       case "US":
       case "CA":
-        if (!cleaned.startsWith("1")) cleaned = "1" + cleaned;
+        if (!cleaned.startsWith("1")) {
+          cleaned = "1" + cleaned;
+        }
         break;
       case "GB":
-        if (!cleaned.startsWith("44")) cleaned = "44" + cleaned;
+        if (!cleaned.startsWith("44")) {
+          cleaned = "44" + cleaned;
+        }
         break;
       case "TR":
-        if (!cleaned.startsWith("90")) cleaned = "90" + cleaned;
+        if (!cleaned.startsWith("90")) {
+          cleaned = "90" + cleaned;
+        }
         break;
     }
     cleaned = "+" + cleaned;
@@ -206,19 +216,25 @@ function validatePhoneNumber(phone, countryCode) {
   return cleaned;
 }
 
-// Extract shipping address from session
+// Extract shipping address from session - FIXED VERSION
 function extractShippingAddress(session) {
   console.log("→ Extracting shipping address from session...");
 
+  // Try multiple possible locations for shipping address
   let shippingAddress = null;
 
+  // Method 1: Check shipping_details.address (if available)
   if (session.shipping_details && session.shipping_details.address) {
     console.log("→ Found shipping address in shipping_details.address");
     shippingAddress = session.shipping_details.address;
-  } else if (session.shipping && session.shipping.address) {
+  }
+  // Method 2: Check shipping.address (alternative location)
+  else if (session.shipping && session.shipping.address) {
     console.log("→ Found shipping address in shipping.address");
     shippingAddress = session.shipping.address;
-  } else if (session.customer_details && session.customer_details.address) {
+  }
+  // Method 3: Check customer_details.address (fallback)
+  else if (session.customer_details && session.customer_details.address) {
     console.log("→ Found address in customer_details.address (using as shipping address)");
     shippingAddress = session.customer_details.address;
   }
@@ -235,22 +251,26 @@ function extractShippingAddress(session) {
 // Validate required fields for Aramex shipment
 function validateRequiredFields(session, shippingAddress) {
   const errors = [];
-
+  
+  // Check customer name (prioritize shipping address name, then customer details name)
   const customerName = shippingAddress?.name || session.customer_details?.name;
   if (!customerName || customerName.trim() === "") {
     errors.push("Customer name is required but not provided by Stripe");
   }
-
+  
+  // Check customer email
   const customerEmail = session.customer_details?.email;
   if (!customerEmail || customerEmail.trim() === "") {
     errors.push("Customer email is required but not provided by Stripe");
   }
-
+  
+  // Check customer phone
   const customerPhone = session.customer_details?.phone;
   if (!customerPhone || customerPhone.trim() === "") {
     errors.push("Customer phone is required but not provided by Stripe");
   }
-
+  
+  // Check shipping address
   if (!shippingAddress) {
     errors.push("Shipping address is required but not provided by Stripe");
   } else {
@@ -264,11 +284,11 @@ function validateRequiredFields(session, shippingAddress) {
       errors.push("Shipping country is required but not provided");
     }
   }
-
+  
   return errors;
 }
 
-// Build Aramex ShipmentCreation XML
+// Build Aramex ShipmentCreation XML - WITH STRICT VALIDATION
 function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, shipment }) {
   const sa = shipment.Shipper.PartyAddress || {};
   const sc = shipment.Shipper.Contact || {};
@@ -276,26 +296,29 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   const cc = shipment.Consignee.Contact || {};
   const d = shipment.Details || {};
 
-  const length = 30;
-  const width = 20;
-  const height = 15;
+  // Standard box dimensions for UV device
+  const length = 30; // cm
+  const width = 20; // cm
+  const height = 15; // cm
 
-  const shipperCity = normalizeCity(sa.City, sa.CountryCode) || "Dubai";
+  // Normalize and validate addresses
+  const shipperCity = normalizeCity(sa.City, sa.CountryCode) || "Dubai"; // Default to Dubai if empty
   const consigneeCity = normalizeCity(ca.City, ca.CountryCode);
   const shipperPostCode = validateAndNormalizePostCode(sa.PostCode, sa.CountryCode);
   const consigneePostCode = validateAndNormalizePostCode(ca.PostCode, ca.CountryCode);
 
+  // Validate and normalize phone numbers
   const shipperPhone = validatePhoneNumber(sc.PhoneNumber1 || sc.CellPhone, sa.CountryCode);
   const consigneePhone = validatePhoneNumber(cc.PhoneNumber1 || cc.CellPhone, ca.CountryCode);
 
-  const consigneeCountryCode = ca.CountryCode || "US";
-  const shipperCountryCode = sa.CountryCode || "AE";
+  // Ensure country code is not empty
+  const consigneeCountryCode = ca.CountryCode || "US"; // Default to US if empty
+  const shipperCountryCode = sa.CountryCode || "AE"; // Default to AE for shipper
 
-  const customsValue =
-    d.CustomsValueAmount && (d.CustomsValueAmount.Value != null && d.CustomsValueAmount.Value !== "")
-      ? d.CustomsValueAmount.Value
-      : "";
+  // Prepare customs value fallback (ensure numeric non-empty)
+  const customsValue = d.CustomsValueAmount && (d.CustomsValueAmount.Value != null && d.CustomsValueAmount.Value !== "") ? d.CustomsValueAmount.Value : "";
 
+  // Consignee contact fallbacks to ensure Aramex required fields are present
   const ccPersonName = (cc.PersonName || cc.EmailAddress || shipment.Consignee.Reference1 || "Customer").toString();
   const ccCompanyName = (cc.CompanyName || ccPersonName || "Individual").toString();
   const ccPhone = (cc.PhoneNumber1 || cc.CellPhone || consigneePhone || "").toString();
@@ -335,7 +358,10 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
       <tns:Shipments>
         <tns:Shipment>
           <tns:Reference1>${escapeXml(shipment.Reference1 || "")}</tns:Reference1>
+          <tns:Reference2></tns:Reference2>
+          <tns:Reference3></tns:Reference3>
 
+          <!-- Shipper: include account info here as well (Aramex expects it inside Shipper) -->
           <tns:Shipper>
             <tns:Reference1>${escapeXml(shipment.Shipper.Reference1 || "")}</tns:Reference1>
             <tns:AccountNumber>${escapeXml(clientInfo.AccountNumber || "")}</tns:AccountNumber>
@@ -408,6 +434,9 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
 
           <tns:ShippingDateTime>${escapeXml(d.ShippingDateTime || new Date().toISOString())}</tns:ShippingDateTime>
           <tns:Comments>${escapeXml(d.DescriptionOfGoods || "")}</tns:Comments>
+          <tns:PickupLocation></tns:PickupLocation>
+          <tns:OperationsInstructions></tns:OperationsInstructions>
+          <tns:AccountingInstrcutions></tns:AccountingInstrcutions>
 
           <tns:Details>
             <tns:Dimensions>
@@ -435,6 +464,9 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             <tns:ProductType>${escapeXml(d.ProductType || "")}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || "")}</tns:PaymentType>
 
+            <tns:PaymentOptions></tns:PaymentOptions>
+
+            <!-- Ensure CustomsValueAmount present (CurrencyCode before Value) -->
             <tns:CustomsValueAmount>
               <tns:CurrencyCode>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode) || "AED")}</tns:CurrencyCode>
               <tns:Value>${escapeXml(customsValue !== "" ? customsValue : "")}</tns:Value>
@@ -455,6 +487,8 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
               <tns:Value>0</tns:Value>
             </tns:CollectAmount>
 
+            <tns:Services></tns:Services>
+
             <tns:Items>
               <tns:ShipmentItem>
                 <tns:PackageType>Box</tns:PackageType>
@@ -464,10 +498,14 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
                   <tns:Value>${escapeXml(d.ActualWeight && d.ActualWeight.Value != null ? d.ActualWeight.Value : "")}</tns:Value>
                 </tns:Weight>
                 <tns:Comments>${escapeXml(d.DescriptionOfGoods || "")}</tns:Comments>
+
+                <!-- Item-level customs value to satisfy dutiable cases -->
                 <tns:ItemValue>
                   <tns:CurrencyCode>${escapeXml((d.CustomsValueAmount && d.CustomsValueAmount.CurrencyCode) || "AED")}</tns:CurrencyCode>
                   <tns:Value>${escapeXml(customsValue !== "" ? customsValue : "")}</tns:Value>
                 </tns:ItemValue>
+
+                <tns:Reference></tns:Reference>
               </tns:ShipmentItem>
             </tns:Items>
 
@@ -485,7 +523,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   return xml;
 }
 
-// ----------------- Checkout creation -----------------
+// ----------------- Checkout creation with STRICT VALIDATION -----------------
 app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   try {
     const quantity = Math.max(1, parseInt(req.body.quantity || 1, 10));
@@ -543,14 +581,17 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
           quantity,
         },
       ],
-      // Make shipping address collection mandatory
-      shipping_address_collection: {
-        allowed_countries: allowedCountriesForStripe(allowedCountries),
+      // STRICT VALIDATION: Make shipping address collection mandatory
+      shipping_address_collection: { 
+        allowed_countries: allowedCountriesForStripe(allowedCountries)
       },
       shipping_options,
+      // STRICT VALIDATION: Make phone number collection mandatory
       phone_number_collection: { enabled: true },
-      customer_creation: "always",
-      billing_address_collection: "required",
+      // STRICT VALIDATION: Always create customer to ensure we get customer details
+      customer_creation: 'always',
+      // STRICT VALIDATION: Collect billing address to ensure we have complete customer info
+      billing_address_collection: 'required',
       success_url: "https://axis-uv.com/success?session_id={CHECKOUT_SESSION_ID}",
       cancel_url: "https://axis-uv.com/cancel",
       metadata: { quantity: quantity.toString(), currency },
@@ -564,7 +605,7 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
   }
 });
 
-// ----------------- Webhook handler -----------------
+// ----------------- Webhook handler with STRICT VALIDATION -----------------
 app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
@@ -583,13 +624,16 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     const quantity = parseInt(session.metadata?.quantity || "1", 10);
     const currency = session.metadata?.currency || "usd";
 
+    // Extract customer info and shipping address from the session
     const customerEmail = session.customer_details?.email;
     const customerNameFromDetails = session.customer_details?.name;
     const customerPhone = session.customer_details?.phone;
 
+    // Extract shipping address using the improved function
     const shippingAddress = extractShippingAddress(session);
-    const customerNameFromShipping = shippingAddress?.name;
+    const customerNameFromShipping = shippingAddress?.name; // Get name from shipping address if available
 
+    // Prioritize name from shipping address, then customer details, then fallback to email, then generic
     const finalCustomerName = customerNameFromShipping || customerNameFromDetails || customerEmail || "Customer";
 
     console.log("→ Customer:", finalCustomerName, customerEmail);
@@ -597,99 +641,38 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     console.log("→ Shipping to:", JSON.stringify(shippingAddress, null, 2));
     console.log("→ Quantity:", quantity);
 
+    // STRICT VALIDATION: Check all required fields
     const validationErrors = validateRequiredFields(session, shippingAddress);
-
+    
     if (validationErrors.length > 0) {
       console.error("❌ Required fields validation failed:");
-      validationErrors.forEach((error) => console.error("  - " + error));
-
+      validationErrors.forEach(error => console.error("  - " + error));
+      
       // Send email to customer requesting missing information
       if (process.env.SENDGRID_API_KEY && customerEmail) {
         try {
-          const destCountry =
-            (shippingAddress && shippingAddress.country && String(shippingAddress.country).toUpperCase()) ||
-            (session.customer_details && session.customer_details.address && String(session.customer_details.address.country).toUpperCase()) ||
-            "";
-          const shipperCountry = String(process.env.SHIPPER_COUNTRY_CODE || "AE").toUpperCase();
-          const routeType = destCountry && destCountry !== shipperCountry ? "international" : "domestic routing";
-
-          const missingListText = validationErrors.map((err) => "- " + err).join("\n");
-          const missingListHtml = validationErrors.map((err) => `<li>${escapeXml(err)}</li>`).join("\n");
-
-          const subject = `Action Required: Additional information needed to ship your order (${session.id})`;
-
-          const textBody = [
-            `Dear ${finalCustomerName},`,
-            "",
-            "Thank you for your order with Axis UV. We are ready to process and ship your purchase, but we are missing some required information to complete the booking with our carrier. Please provide the missing information listed below so we can proceed:",
-            "",
-            missingListText,
-            "",
-            "Order summary:",
-            `- Order ID: ${session.id}`,
-            `- Quantity: ${quantity}`,
-            `- Destination Country: ${destCountry || "(not provided)"}`,
-            `- Routing: ${routeType}`,
-            "",
-            "How to provide the missing information:",
-            `1) Reply directly to this email with the requested details.`,
-            `2) Or contact our support at ${process.env.MAIL_FROM || "support@axis-uv.com"} and mention your Order ID.`,
-            "",
-            "We will process your shipment as soon as we receive the missing information.",
-            "",
-            "Best regards,",
-            "Axis UV Team",
-          ].join("\n");
-
-          const htmlBody = `
-            <div style="font-family: Arial, Helvetica, sans-serif; font-size:14px; color:#222;">
-              <p>Dear ${escapeXml(finalCustomerName)},</p>
-              <p>Thank you for your order with <strong>Axis UV</strong>. We are ready to process and ship your purchase, but we need a few additional details to complete the booking with our carrier.</p>
-
-              <h3>Missing information</h3>
-              <ul>
-                ${missingListHtml}
-              </ul>
-
-              <h3>Order summary</h3>
-              <table cellpadding="4" cellspacing="0" style="border-collapse:collapse;">
-                <tr><td><strong>Order ID:</strong></td><td>${escapeXml(session.id || "")}</td></tr>
-                <tr><td><strong>Quantity:</strong></td><td>${quantity}</td></tr>
-                <tr><td><strong>Destination:</strong></td><td>${escapeXml(destCountry || "(not provided)")}</td></tr>
-                <tr><td><strong>Routing:</strong></td><td>${escapeXml(routeType)}</td></tr>
-              </table>
-
-              <p>Please reply to this email with the missing information, or contact our support at <a href="mailto:${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}">${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}</a> and mention your Order ID.</p>
-
-              <p>We will process your shipment as soon as we receive the requested details.</p>
-
-              <p>Kind regards,<br/><strong>Axis UV Team</strong></p>
-            </div>
-          `;
-
           const msg = {
             to: customerEmail,
             from: process.env.MAIL_FROM,
-            subject,
-            text: textBody,
-            html: htmlBody,
+            subject: "Order Confirmation - Additional Information Required",
+            text: `Thank you for your order!\n\nWe need some additional information to process your shipment:\n\n${validationErrors.map(err => "- " + err).join("\n")}\n\nPlease reply to this email with the missing information so we can process your shipment.\n\nOrder Details:\n- Quantity: ${quantity}\n- Order ID: ${session.id}\n\nBest regards,\nAxis UV Team`,
           };
-
           await sgMail.send(msg);
           console.log("✅ Email sent requesting missing information");
         } catch (emailErr) {
           console.error("❌ Email sending failed:", emailErr);
         }
       }
-
+      
       return res.status(200).send("OK - Missing required information");
     }
 
-    // Passed validation -> create Aramex shipment
+    // Calculate weights and values
     const totalWeight = quantity * WEIGHT_PER_PIECE;
     const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE;
     const totalCustomsValue = quantity * CUSTOMS_VALUE_PER_PIECE;
 
+    // Aramex shipment creation
     let trackingId = null;
     let labelUrl = null;
     let aramexError = null;
@@ -706,6 +689,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         Source: DEFAULT_SOURCE,
       };
 
+      // Shipper address from environment variables
       const shipperAddress = {
         Line1: process.env.SHIPPER_LINE1,
         Line2: "",
@@ -726,6 +710,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         Type: "Shipper",
       };
 
+      // Consignee address from Stripe - NO DEFAULT VALUES, USE ACTUAL DATA
       const consigneeAddress = {
         Line1: shippingAddress.line1,
         Line2: shippingAddress.line2 || "",
@@ -736,20 +721,22 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         CountryCode: shippingAddress.country.toUpperCase(),
       };
 
+      // Ensure we always have a non-empty name/company for Aramex
       const safeConsigneeName = (finalCustomerName || customerEmail || "Customer").toString().trim();
-      const consigneeCompany = safeConsigneeName && safeConsigneeName.length > 0 ? safeConsigneeName : "Individual";
+      const consigneeCompany = (safeConsigneeName && safeConsigneeName.length > 0) ? safeConsigneeName : "Individual";
 
       const consigneeContact = {
-        PersonName: safeConsigneeName,
-        CompanyName: consigneeCompany,
-        PhoneNumber1: customerPhone || "",
+        PersonName: safeConsigneeName,            // اسم المستلم (مطلوب)
+        CompanyName: consigneeCompany,            // تعويض CompanyName لأن Aramex يطالبه
+        PhoneNumber1: customerPhone || "",        // مطلوب عادة
         PhoneNumber2: "",
         CellPhone: customerPhone || "",
         EmailAddress: customerEmail || "",
         Type: "Consignee",
       };
 
-      const isInternational = consigneeAddress.CountryCode !== (process.env.SHIPPER_COUNTRY_CODE || "AE");
+      // Determine product type based on destination
+      const isInternational = consigneeAddress.CountryCode !== "AE";
       const productTypeString = isInternational ? "EPX" : "CDS";
 
       const shipmentObj = {
@@ -778,35 +765,28 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         },
       };
 
-      console.log(
-        "→ Creating Aramex shipment with validated details:",
-        JSON.stringify(
-          maskForLog({
-            quantity,
-            weight: totalWeight,
-            declaredValue: totalDeclaredValue,
-            customsValue: totalCustomsValue,
-            destination: consigneeAddress.CountryCode,
-            account: clientInfo.AccountNumber,
-            productType: productTypeString,
-            dimensions: "30x20x15 CM",
-            consigneeAddress,
-            consigneeName: finalCustomerName,
-            consigneePhone: customerPhone,
-            consigneeEmail: customerEmail,
-          })
-        )
-      );
+      console.log("→ Creating Aramex shipment with validated details:", JSON.stringify(maskForLog({
+        quantity,
+        weight: totalWeight,
+        declaredValue: totalDeclaredValue,
+        customsValue: totalCustomsValue,
+        destination: consigneeAddress.CountryCode,
+        account: clientInfo.AccountNumber,
+        productType: productTypeString,
+        dimensions: "30x20x15 CM",
+        consigneeAddress: consigneeAddress,
+        consigneeName: finalCustomerName,
+        consigneePhone: customerPhone,
+        consigneeEmail: customerEmail,
+      })));
 
-      console.log(
-        "→ Aramex Consignee Contact being sent:",
-        maskForLog({
-          PersonName: consigneeContact.PersonName,
-          CompanyName: consigneeContact.CompanyName,
-          PhoneNumber1: consigneeContact.PhoneNumber1,
-          EmailAddress: consigneeContact.EmailAddress,
-        })
-      );
+      // Log the exact contact sent to Aramex (masked)
+      console.log("→ Aramex Consignee Contact being sent:", maskForLog({
+        PersonName: consigneeContact.PersonName,
+        CompanyName: consigneeContact.CompanyName,
+        PhoneNumber1: consigneeContact.PhoneNumber1,
+        EmailAddress: consigneeContact.EmailAddress,
+      }));
 
       const xml = buildShipmentCreationXml({
         clientInfo,
@@ -815,24 +795,20 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         shipment: shipmentObj,
       });
 
-      const safeXml = xml
-        .replace(/(<tns:Password>).*?(<\/tns:Password>)/g, "$1***$2")
-        .replace(/(<tns:AccountPin>).*?(<\/tns:AccountPin>)/g, "$1***$2");
+      // sanitized XML preview for logs (hide password/pin)
+      const safeXml = xml.replace(/(<tns:Password>).*?(<\/tns:Password>)/g, "$1***$2").replace(/(<tns:AccountPin>).*?(<\/tns:AccountPin>)/g, "$1***$2");
       console.log("→ XML length:", xml.length, "characters");
       console.log("→ XML preview (sanitized):", safeXml.substring(0, 1600));
 
       const headers = {
         "Content-Type": "text/xml; charset=utf-8",
-        SOAPAction: "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments",
+        "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments",
       };
 
       const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
 
       if (resp && resp.data) {
-        console.log(
-          "⤷ Aramex raw response (snippet):",
-          typeof resp.data === "string" ? resp.data.substring(0, 2000) : JSON.stringify(resp.data).substring(0, 2000)
-        );
+        console.log("⤷ Aramex raw response (snippet):", (typeof resp.data === "string" ? resp.data.substring(0, 2000) : JSON.stringify(resp.data).substring(0, 2000)));
       }
 
       let parsed = null;
@@ -842,6 +818,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         console.warn("Could not parse Aramex response XML:", e && e.message ? e.message : e);
       }
 
+      // Collect errors/notifications from multiple possible locations
       let hasErrors = false;
       let notifications = [];
 
@@ -870,19 +847,18 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
             if (p.Notifications) notifications = notifications.concat(collectNotificationsFromNode(p.Notifications));
           }
         }
+
       } catch (e) {
         console.warn("Could not parse error info:", e && e.message ? e.message : e);
       }
 
       if (hasErrors || notifications.length > 0) {
         console.error("❌ Aramex returned errors:", notifications);
-        aramexError = notifications
-          .map((n) => {
-            const code = n.Code || n.code || "";
-            const msg = n.Message || n.message || (typeof n === "string" ? n : JSON.stringify(n));
-            return code ? `${code}: ${msg}` : msg;
-          })
-          .join("; ");
+        aramexError = notifications.map((n) => {
+          const code = n.Code || n.code || "";
+          const msg = n.Message || n.message || (typeof n === "string" ? n : JSON.stringify(n));
+          return code ? `${code}: ${msg}` : msg;
+        }).join("; ");
       } else {
         try {
           const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
@@ -904,96 +880,40 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           console.warn("Could not extract shipment info:", e && e.message ? e.message : e);
         }
       }
+
     } catch (err) {
       console.error("❌ Aramex API error:", err && err.message ? err.message : err);
       if (err.response && err.response.data) {
         console.error("❌ Aramex response data:", err.response.data);
       }
+      // aramexError may have been set earlier
       aramexError = aramexError || (err && err.message ? err.message : "Unknown Aramex API error");
     }
 
     // Send email notification (if configured)
     if (process.env.SENDGRID_API_KEY && customerEmail) {
       try {
-        const destCountry =
-          (shippingAddress && shippingAddress.country && String(shippingAddress.country).toUpperCase()) ||
-          (session.customer_details && session.customer_details.address && String(session.customer_details.address.country).toUpperCase()) ||
-          "";
-        const shipperCountry = String(process.env.SHIPPER_COUNTRY_CODE || "AE").toUpperCase();
-        const routeType = destCountry && destCountry !== shipperCountry ? "international" : "domestic routing";
-
-        const textBodyLines = [];
-        textBodyLines.push(`Dear ${finalCustomerName},`);
-        textBodyLines.push("");
-        textBodyLines.push("Thank you for your purchase from Axis UV. Your order has been received and is being processed. Below are the details of your order and shipment:");
-        textBodyLines.push("");
-        textBodyLines.push("Order details:");
-        textBodyLines.push(`- Order ID: ${session.id}`);
-        textBodyLines.push(`- Quantity: ${quantity}`);
-        textBodyLines.push(`- Total weight: ${totalWeight} KG`);
-        textBodyLines.push(`- Declared value: ${totalDeclaredValue} AED`);
-        textBodyLines.push(`- Customs value: ${totalCustomsValue} AED`);
-        textBodyLines.push(`- Dimensions: 30x20x15 CM`);
-        textBodyLines.push("");
+        let emailContent = `Thank you for your order!\n\nOrder Details:\n- Quantity: ${quantity}\n- Total Weight: ${totalWeight} KG\n- Declared Value: ${totalDeclaredValue} AED\n- Customs Value: ${totalCustomsValue} AED\n- Dimensions: 30x20x15 CM\n`;
 
         if (trackingId) {
-          textBodyLines.push("Shipping information:");
-          textBodyLines.push(`- Tracking ID: ${trackingId}`);
-          if (labelUrl) textBodyLines.push(`- Shipping label: ${labelUrl}`);
+          emailContent += `\nShipping Information:\n- Tracking ID: ${trackingId}\n`;
+          if (labelUrl) {
+            emailContent += `- Shipping Label: ${labelUrl}\n`;
+          }
         } else if (aramexError) {
-          textBodyLines.push(`Shipping status: Processing (${aramexError})`);
+          emailContent += `\nShipping Status: Processing (${aramexError})\n`;
         } else {
-          textBodyLines.push("Shipping status: Processing");
+          emailContent += `\nShipping Status: Processing\n`;
         }
 
-        textBodyLines.push("");
-        textBodyLines.push(`Routing: ${routeType}`);
-        textBodyLines.push("");
-        textBodyLines.push("If you have any questions, please reply to this email or contact our support team.");
-        textBodyLines.push("");
-        textBodyLines.push("Kind regards,");
-        textBodyLines.push("Axis UV Team");
-
-        const textBody = textBodyLines.join("\n");
-
-        const htmlBody = `
-          <div style="font-family: Arial, Helvetica, sans-serif; color:#222; font-size:14px;">
-            <p>Dear ${escapeXml(finalCustomerName)},</p>
-            <p>Thank you for your purchase from <strong>Axis UV</strong>. Your order has been received and is being processed. Below are the details of your order and shipment.</p>
-
-            <h3>Order details</h3>
-            <table cellpadding="4" cellspacing="0" style="border-collapse:collapse;">
-              <tr><td><strong>Order ID:</strong></td><td>${escapeXml(session.id || "")}</td></tr>
-              <tr><td><strong>Quantity:</strong></td><td>${quantity}</td></tr>
-              <tr><td><strong>Total weight:</strong></td><td>${totalWeight} KG</td></tr>
-              <tr><td><strong>Declared value:</strong></td><td>${totalDeclaredValue} AED</td></tr>
-              <tr><td><strong>Customs value:</strong></td><td>${totalCustomsValue} AED</td></tr>
-              <tr><td><strong>Dimensions:</strong></td><td>30x20x15 CM</td></tr>
-            </table>
-
-            <h3>Shipping information</h3>
-            <ul>
-              ${trackingId ? `<li><strong>Tracking ID:</strong> ${escapeXml(trackingId)}</li>` : ""}
-              ${labelUrl ? `<li><strong>Shipping label:</strong> <a href="${escapeXml(labelUrl)}">Download label</a></li>` : ""}
-              ${aramexError && !trackingId ? `<li><strong>Status:</strong> Processing (${escapeXml(aramexError)})</li>` : ""}
-              ${!aramexError && !trackingId ? `<li><strong>Status:</strong> Processing</li>` : ""}
-              <li><strong>Routing:</strong> ${escapeXml(routeType)}</li>
-            </ul>
-
-            <p>If you have any questions or need assistance, please reply to this email or contact our support at <a href="mailto:${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}">${escapeXml(process.env.MAIL_FROM || "support@axis-uv.com")}</a>.</p>
-
-            <p>Best regards,<br/><strong>Axis UV Team</strong></p>
-          </div>
-        `;
+        emailContent += `\nBest regards,\nAxis UV Team`;
 
         const msg = {
           to: customerEmail,
           from: process.env.MAIL_FROM,
-          subject: `Order Confirmation - ${escapeXml(session.id || "")}`,
-          text: textBody,
-          html: htmlBody,
+          subject: "Order Confirmation - UV Car Inspection Device",
+          text: emailContent,
         };
-
         await sgMail.send(msg);
         console.log("✅ Email sent to:", customerEmail);
       } catch (emailErr) {
@@ -1021,8 +941,5 @@ app.get("/health", (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(
-    "🔧 Environment check:",
-    missingEnvs.length ? `Missing: ${missingEnvs.join(", ")}` : "All required env vars present"
-  );
+  console.log("🔧 Environment check:", missingEnvs.length ? `Missing: ${missingEnvs.join(", ")}` : "All required env vars present");
 });
