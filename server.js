@@ -38,13 +38,13 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "");
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Aramex endpoint (use base URL without ?wsdl)
-const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
+const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
 const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf("?") !== -1 ? ARAMEX_WSDL_URL.split("?")[0] : ARAMEX_WSDL_URL;
 
 // Location API endpoint (new) - can be overridden by env
 const ARAMEX_LOCATION_ENDPOINT =
   process.env.ARAMEX_LOCATION_ENDPOINT ||
-  "https://ws.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
+  "https://ws.dev.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
 
 // constants
 const WEIGHT_PER_PIECE = 2.0; // kg per piece (تم التعديل من 1.63 إلى 2.0)
@@ -627,7 +627,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
   };
 
   try {
-    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 15000 });
+    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 60000 });
     if (!resp || !resp.data) throw new Error("Empty response");
     let parsed = null;
     try {
@@ -664,7 +664,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
     return cities.length ? Array.from(new Set(cities)) : null;
   } catch (err) {
     try {
-      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 15000 });
+      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 60000 });
       if (!resp || !resp.data) throw new Error("Empty response");
       let parsed = null;
       try {
@@ -774,7 +774,7 @@ async function enrichSessionWithStripeData(session) {
     // 2) retrieve payment intent to get billing_details (charges -> billing_details)
     if (session.payment_intent) {
       try {
-        out.paymentIntentObj = await stripe.paymentIntents.retrieve(session.payment_intent, { expand: ["charges.data.payment_method"] });
+        out.paymentIntentObj = await stripe.paymentIntents.retrieve(session.payment_intent, { expand: ["charges.data"] });
         // billing details prefer charges[0].billing_details
         if (out.paymentIntentObj && out.paymentIntentObj.charges && out.paymentIntentObj.charges.data && out.paymentIntentObj.charges.data.length > 0) {
           const charge = out.paymentIntentObj.charges.data[0];
@@ -1240,7 +1240,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           Type: "Shipper",
         };
 
-        // Consignee address from Stripe - NO DEFAULT VALUES, USE ACTUAL DATA
+        // Resolve consignee address from Stripe - NO DEFAULT VALUES, USE ACTUAL DATA
         const consigneeAddress = {
           Line1: shippingAddress.line1,
           Line2: shippingAddress.line2 || "",
@@ -1265,7 +1265,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           Type: "Consignee",
         };
 
-        // Determine product type based on destination
+        // Resolve product type based on destination
         const isInternational = consigneeAddress.CountryCode !== "AE";
         // تم التعديل من EPX إلى PPX للشحن الدولي
         const productTypeString = isInternational ? "PPX" : "CDS";
@@ -1336,7 +1336,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments",
         };
 
-        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
+        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 60000 });
 
         if (resp && resp.data) {
           console.log("⤷ Aramex raw response (snippet):", (typeof resp.data === "string" ? resp.data.substring(0, 2000) : JSON.stringify(resp.data).substring(0, 2000)));
