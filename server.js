@@ -38,13 +38,13 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "");
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Aramex endpoint (use base URL without ?wsdl)
-const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
+const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/shippingapi.v2/shipping/service_1_0.svc?wsdl";
 const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf("?") !== -1 ? ARAMEX_WSDL_URL.split("?")[0] : ARAMEX_WSDL_URL;
 
 // Location API endpoint (new) - can be overridden by env
 const ARAMEX_LOCATION_ENDPOINT =
   process.env.ARAMEX_LOCATION_ENDPOINT ||
-  "https://ws.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
+  "https://ws.aramex.net/shippingapi.v2/location/service_1_0.svc";
 
 // constants
 const WEIGHT_PER_PIECE = 2; // kg per piece
@@ -339,10 +339,10 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
   });
 
   const xml = `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1.0/">
   <soap:Header/>
   <soap:Body>
-    <tns:ShipmentCreationRequest>
+    <tns:CreateShipments>
       <tns:ClientInfo>
         <tns:UserName>${escapeXml(clientInfo.UserName || "")}</tns:UserName>
         <tns:Password>${escapeXml(clientInfo.Password || "")}</tns:Password>
@@ -521,7 +521,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
         <tns:ReportID>${escapeXml(labelReportId)}</tns:ReportID>
         <tns:ReportType>URL</tns:ReportType>
       </tns:LabelInfo>
-    </tns:ShipmentCreationRequest>
+    </tns:CreateShipments>
   </soap:Body>
 </soap:Envelope>`;
 
@@ -596,7 +596,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
   if (!countryCode) return null;
 
   const xml = `<?xml version="1.0" encoding="utf-8"?>
-  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1/">
+  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1.0/">
     <soap:Header/>
     <soap:Body>
       <tns:FetchCities>
@@ -611,15 +611,15 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
           <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : "")}</tns:Source>
         </tns:ClientInfo>
         <tns:CountryCode>${escapeXml(countryCode)}</tns:CountryCode>
-        <tns:City>${escapeXml(prefix || "")}</tns:City>
-        <tns:ZipCode>${escapeXml(postalCode || "")}</tns:ZipCode>
+        <tns:NamePrefix>${escapeXml(prefix || "")}</tns:NamePrefix>
+        <tns:StateCode>${escapeXml("")}</tns:StateCode>
       </tns:FetchCities>
     </soap:Body>
   </soap:Envelope>`;
 
   const headersWithSoapAction = {
     "Content-Type": "text/xml; charset=utf-8",
-    "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/FetchCities",
+    "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1.0/Service_1_0/FetchCities",
   };
 
   const headersNoSoapAction = {
@@ -627,7 +627,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
   };
 
   try {
-    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 15000 });
+    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 60000 });
     if (!resp || !resp.data) throw new Error("Empty response");
     let parsed = null;
     try {
@@ -641,21 +641,18 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
       const respRoot = body && (body.FetchCitiesResponse || body);
       if (respRoot && respRoot.Cities) {
         const node = respRoot.Cities;
-        if (Array.isArray(node.City)) {
-          for (const cc of node.City) {
-            if (typeof cc === "string") cities.push(cc);
-            else if (cc.Name) cities.push(cc.Name);
+        if (Array.isArray(node.string)) {
+          for (const cc of node.string) {
+            cities.push(cc);
           }
-        } else if (node.City) {
-          const cc = node.City;
-          if (typeof cc === "string") cities.push(cc);
-          else if (cc.Name) cities.push(cc.Name);
+        } else if (node.string) {
+          cities.push(node.string);
         }
       }
     } catch (e) {}
     if (cities.length === 0) {
       const raw = typeof resp.data === "string" ? resp.data : JSON.stringify(resp.data);
-      const regex = /<Name>([^<]{2,60})<\/Name>/gi;
+      const regex = /<string>([^<]{2,60})<\/string>/gi;
       let m;
       while ((m = regex.exec(raw)) !== null) {
         cities.push(m[1]);
@@ -664,7 +661,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
     return cities.length ? Array.from(new Set(cities)) : null;
   } catch (err) {
     try {
-      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 15000 });
+      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 60000 });
       if (!resp || !resp.data) throw new Error("Empty response");
       let parsed = null;
       try {
@@ -678,21 +675,18 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
         const respRoot = body && (body.FetchCitiesResponse || body);
         if (respRoot && respRoot.Cities) {
           const node = respRoot.Cities;
-          if (Array.isArray(node.City)) {
-            for (const cc of node.City) {
-              if (typeof cc === "string") cities.push(cc);
-              else if (cc.Name) cities.push(cc.Name);
+          if (Array.isArray(node.string)) {
+            for (const cc of node.string) {
+              cities.push(cc);
             }
-          } else if (node.City) {
-            const cc = node.City;
-            if (typeof cc === "string") cities.push(cc);
-            else if (cc.Name) cities.push(cc.Name);
+          } else if (node.string) {
+            cities.push(node.string);
           }
         }
       } catch (e) {}
       if (cities.length === 0) {
         const raw = typeof resp.data === "string" ? resp.data : JSON.stringify(resp.data);
-        const regex = /<Name>([^<]{2,60})<\/Name>/gi;
+        const regex = /<string>([^<]{2,60})<\/string>/gi;
         let m;
         while ((m = regex.exec(raw)) !== null) {
           cities.push(m[1]);
@@ -714,7 +708,7 @@ async function resolveCity(countryCode, rawCity, postalCode = "") {
     const clientInfo = {
       UserName: process.env.ARAMEX_USER,
       Password: process.env.ARAMEX_PASSWORD,
-      Version: process.env.ARAMEX_VERSION || "v1",
+      Version: process.env.ARAMEX_VERSION || "v1.0",
       AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
       AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
       AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
@@ -774,7 +768,7 @@ async function enrichSessionWithStripeData(session) {
     // 2) retrieve payment intent to get billing_details (charges -> billing_details)
     if (session.payment_intent) {
       try {
-        out.paymentIntentObj = await stripe.paymentIntents.retrieve(session.payment_intent, { expand: ["charges.data.payment_method"] });
+        out.paymentIntentObj = await stripe.paymentIntents.retrieve(session.payment_intent, { expand: ["charges"] });
         // billing details prefer charges[0].billing_details
         if (out.paymentIntentObj && out.paymentIntentObj.charges && out.paymentIntentObj.charges.data && out.paymentIntentObj.charges.data.length > 0) {
           const charge = out.paymentIntentObj.charges.data[0];
@@ -1092,7 +1086,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           const clientInfo = {
             UserName: process.env.ARAMEX_USER,
             Password: process.env.ARAMEX_PASSWORD,
-            Version: process.env.ARAMEX_VERSION || "v1",
+            Version: process.env.ARAMEX_VERSION || "v1.0",
             AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
             AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
             AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
@@ -1211,7 +1205,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         const clientInfo = {
           UserName: process.env.ARAMEX_USER,
           Password: process.env.ARAMEX_PASSWORD,
-          Version: process.env.ARAMEX_VERSION || "v2",
+          Version: process.env.ARAMEX_VERSION || "v1.0",
           AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
           AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
           AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
@@ -1332,10 +1326,10 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
         const headers = {
           "Content-Type": "text/xml; charset=utf-8",
-          "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments",
+          "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1.0/Service_1_0/CreateShipments",
         };
 
-        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
+        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 60000 });
 
         if (resp && resp.data) {
           console.log("⤷ Aramex raw response (snippet):", (typeof resp.data === "string" ? resp.data.substring(0, 2000) : JSON.stringify(resp.data).substring(0, 2000)));
@@ -1354,7 +1348,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
         try {
           const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
-          const respRoot = body && (body.ShipmentCreationResponse || body);
+          const respRoot = body && (body.CreateShipmentsResponse || body);
 
           if (respRoot && (respRoot.HasErrors === "true" || respRoot.HasErrors === true)) hasErrors = true;
 
@@ -1392,7 +1386,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         } else {
           try {
             const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
-            const respRoot = body && (body.ShipmentCreationResponse || body);
+            const respRoot = body && (body.CreateShipmentsResponse || body);
             const shipments = respRoot && respRoot.Shipments && respRoot.Shipments.ProcessedShipment ? respRoot.Shipments.ProcessedShipment : null;
 
             if (shipments) {
