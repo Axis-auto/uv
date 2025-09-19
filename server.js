@@ -600,7 +600,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
   const json = {
     ClientInfo: clientInfo,
     CountryCode: countryCode,
-    NameStartsWith: prefix, // Assuming NameStartsWith based on common API patterns; adjust if needed
+    City: prefix,
     ZipCode: postalCode
   };
 
@@ -610,7 +610,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
   };
 
   try {
-    const resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, json, { headers, timeout: 60000 }); // Increased timeout
+    const resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, json, { headers, timeout: 120000 }); // Increased timeout
     if (!resp || !resp.data) throw new Error("Empty response");
 
     let cities = [];
@@ -628,6 +628,10 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
     return cities.length ? Array.from(new Set(cities)) : null;
   } catch (err) {
     console.warn("Aramex Location API fetch failed:", (err && err.message) || err);
+    if (err.response) {
+      console.warn("Response status:", err.response.status);
+      console.warn("Response data:", err.response.data);
+    }
     return null;
   }
 }
@@ -1256,7 +1260,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           "Accept": "application/json"
         };
 
-        const resp = await axios.post(ARAMEX_ENDPOINT, jsonPayload, { headers, timeout: 60000 }); // Increased timeout
+        const resp = await axios.post(ARAMEX_ENDPOINT, jsonPayload, { headers, timeout: 120000 }); // Increased timeout to 2 minutes
 
         if (resp && resp.data) {
           console.log("⤷ Aramex raw response (snippet):", JSON.stringify(resp.data).substring(0, 2000));
