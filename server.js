@@ -40,6 +40,67 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 // Aramex endpoint (use base URL without ?wsdl)
 const ARAMEX_WSDL_URL = process.env.ARAMEX_WSDL_URL || "https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl";
 const ARAMEX_ENDPOINT = ARAMEX_WSDL_URL.indexOf("?") !== -1 ? ARAMEX_WSDL_URL.split("?")[0] : ARAMEX_WSDL_URL;
+// ---- Resilient Aramex HTTP helpers (keep-alive, retries, backoff) ----
+const https = require("https");
+const http = require("http");
+
+// axios instances tuned for Aramex endpoints
+const aramexAxios = axios.create({
+  httpsAgent: new https.Agent({ keepAlive: true, maxSockets: 10 }),
+  timeout: 60000, // 60s default for shipment creation
+});
+const locationAxios = axios.create({
+  httpAgent: new http.Agent({ keepAlive: true, maxSockets: 6 }),
+  timeout: 20000, // 20s for location API
+});
+
+async function postToAramexWithRetries(xml, headers, maxAttempts = 3) {
+  let attempt = 0;
+  let lastErr = null;
+  const baseDelay = 500; // ms
+  while (++attempt <= maxAttempts) {
+    try {
+      const resp = await aramexAxios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 60000 });
+      return resp;
+    } catch (err) {
+      lastErr = err;
+      const status = err && err.response && err.response.status;
+      const isRetryable =
+        err.code === "ECONNABORTED" ||
+        err.code === "ECONNRESET" ||
+        err.code === "ENOTFOUND" ||
+        err.code === "ETIMEDOUT" ||
+        (status && status >= 500 && status < 600);
+      console.warn(`Aramex POST attempt ${attempt} failed: ${err && err.message ? err.message : err}. retryable=${!!isRetryable}`);
+      if (!isRetryable || attempt === maxAttempts) break;
+      const delay = Math.round(baseDelay * Math.pow(3, attempt - 1) * (0.8 + Math.random() * 0.4));
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  throw lastErr || new Error("Aramex POST failed (unknown)");
+}
+
+async function postLocationWithRetries(xml, headers, maxAttempts = 2) {
+  let attempt = 0;
+  let lastErr = null;
+  const baseDelay = 300;
+  while (++attempt <= maxAttempts) {
+    try {
+      const resp = await locationAxios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers, timeout: 20000 });
+      return resp;
+    } catch (err) {
+      lastErr = err;
+      const status = err && err.response && err.response.status;
+      const isRetryable = err.code === "ECONNABORTED" || err.code === "ENOTFOUND" || (status && status >= 500 && status < 600);
+      console.warn(`Aramex Location attempt ${attempt} failed: ${err && err.message ? err.message : err}. retryable=${!!isRetryable}`);
+      if (!isRetryable || attempt === maxAttempts) break;
+      const delay = Math.round(baseDelay * attempt * (0.9 + Math.random() * 0.2));
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  throw lastErr || new Error("Aramex Location POST failed (unknown)");
+}
+
 
 // Location API endpoint (new) - can be overridden by env
 const ARAMEX_LOCATION_ENDPOINT =
@@ -627,7 +688,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
   };
 
   try {
-    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 15000 });
+    let resp = await postLocationWithRetries(xml, headersWithSoapAction, 2);
     if (!resp || !resp.data) throw new Error("Empty response");
     let parsed = null;
     try {
@@ -664,7 +725,7 @@ async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalC
     return cities.length ? Array.from(new Set(cities)) : null;
   } catch (err) {
     try {
-      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 15000 });
+      let resp = await postLocationWithRetries(xml, headersNoSoapAction, 2);
       if (!resp || !resp.data) throw new Error("Empty response");
       let parsed = null;
       try {
@@ -1336,7 +1397,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1/Service_1_0/CreateShipments",
         };
 
-        const resp = await axios.post(ARAMEX_ENDPOINT, xml, { headers, timeout: 30000 });
+        const resp = await postToAramexWithRetries(xml, headers, 3);
 
         if (resp && resp.data) {
           console.log("⤷ Aramex raw response (snippet):", (typeof resp.data === "string" ? resp.data.substring(0, 2000) : JSON.stringify(resp.data).substring(0, 2000)));
