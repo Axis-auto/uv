@@ -47,7 +47,7 @@ const ARAMEX_LOCATION_ENDPOINT =
   "https://ws.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
 
 // constants
-const WEIGHT_PER_PIECE = 1.63; // kg per piece
+const WEIGHT_PER_PIECE = 2.0; // kg per piece (تم التعديل من 1.63 إلى 2.0)
 const DECLARED_VALUE_PER_PIECE = 200; // AED per piece
 const CUSTOMS_VALUE_PER_PIECE = 250; // AED per piece for customs
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || "24", 10);
@@ -469,7 +469,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             <tns:ProductType>${escapeXml(d.ProductType || "")}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || "")}</tns:PaymentType>
 
-            <tns:PaymentOptions></tns:PaymentOptions>
+            <tns:PaymentOptions>ACCOUNT</tns:PaymentOptions> <!-- تم التعديل من Prepaid Stock إلى ACCOUNT -->
 
             <!-- Ensure CustomsValueAmount present (CurrencyCode before Value) -->
             <tns:CustomsValueAmount>
@@ -1267,7 +1267,8 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
         // Determine product type based on destination
         const isInternational = consigneeAddress.CountryCode !== "AE";
-        const productTypeString = isInternational ? "EPX" : "CDS";
+        // تم التعديل من EPX إلى PPX للشحن الدولي
+        const productTypeString = isInternational ? "PPX" : "CDS";
 
         const shipmentObj = {
           Reference1: session.id,
@@ -1283,12 +1284,12 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           },
           Details: {
             ActualWeight: { Unit: "KG", Value: totalWeight },
-            ChargeableWeight: { Unit: "KG", Value: totalWeight },
+            ChargeableWeight: { Unit: "KG", Value: totalWeight }, // Actual and Chargeable weight are now the same
             DescriptionOfGoods: "UV Car Inspection Device",
             GoodsOriginCountry: "AE",
             NumberOfPieces: quantity,
             ProductGroup: isInternational ? "EXP" : "DOM",
-            ProductType: productTypeString,
+            ProductType: productTypeString, // تم التعديل هنا
             PaymentType: "P",
             CustomsValueAmount: { CurrencyCode: "AED", Value: totalCustomsValue },
             ShippingDateTime: new Date().toISOString(),
@@ -1545,6 +1546,17 @@ SHIPPING INFORMATION
     <h2>Shipping Status</h2>
     <p><span class="status-badge">Processing</span></p>
     <p>We will notify you with tracking information once your shipment is processed.</p>
+  </div>`;
+          }
+
+          // Add shipping label link if available
+          if (labelUrl) {
+            textContent += `Shipping Label: ${labelUrl}\n`;
+            
+            htmlContent += `
+  <div class="shipping-label">
+    <h2>Shipping Label</h2>
+    <p>Click <a href="${labelUrl}" target="_blank">here</a> to view and download your shipping label.</p>
   </div>`;
           }
 
