@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="google-site-verification" content="TcCCFwhwYg_PtnMNX-tUHu9xlrXKA_9XjxTDylHYB38" />
-  <title>جهاز فحص السيارات | اكتشف الإصلاحات المخفية خلال ثوانٍ</title>
-  <meta name="description" content="صفحة لاندنج بيج عربية لبيع جهاز فحص السيارات: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
+  <title>جهاز كشف التعديلات على السيارات بالأشعة فوق البنفسجية</title>
+  <meta name="description" content="صفحة لاندنج بيج عربية لبيع جهاز كشف التعديلات على السيارات بالأشعة فوق البنفسجية: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
   <meta name="color-scheme" content="light dark" />
   <meta http-equiv="Cache-Control" content="max-age=31536000">
   
@@ -511,7 +511,7 @@
     <section class="hero">
       <div class="container wrap">
         <div>
-          <h1 data-translate="hero.title">اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ</h1>
+          <h1 data-translate="hero.title">جهاز كاشف بالأشعة فوق البنفسجية</h1>
           <p class="lead" data-translate="hero.description">جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.</p>
           <div class="badges">
             <div class="badge" data-translate="hero.badge1">طيف UV-A 400–405 nm</div>
@@ -1108,23 +1108,40 @@
   {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": "جهاز فحص السيارات (UVRA 100 B)",
+    "name": "جهاز كشف التعديلات على السيارات بالأشعة فوق البنفسجية (UVRA 100 B)",
     "description": "مصباح يدوي بالأشعة فوق البنفسجية لفحص دهان السيارة وكشف التسريبات مع صبغة UV. بطارية 8400mAh، طيف UV-A 400–405nm، إشعاع حتى 6000 µW/cm².",
     "brand": {"@type":"Brand","name":"Axis Auto"},
     "offers": {
       "@type":"Offer",
       "priceCurrency":"USD",
       "availability":"https://schema.org/InStock",
-      "priceSpecification": {
-        "@type": "UnitPriceSpecification",
-        "priceCurrency": "USD",
-        "referenceQuantity": {
-          "@type": "QuantitativeValue",
-          "value": "1",
-          "unitCode": "H87"
-        }
+      "price": "799",
+      "priceValidUntil": "2025-12-31",
+      "url": "https://axis-uv.com/",
+      "seller": {
+        "@type": "Organization",
+        "name": "Axis Auto"
       }
-    }
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "reviewCount": "150"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": "مؤسسة تقييم سيارات"
+        },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "كشف لنا مواضع رش قديمة خلال دقائق. اختصر وقت الفحص كثيرًا."
+      }
+    ]
   }
   </script>
 
@@ -1159,7 +1176,7 @@
         'nav.order': 'اطلب الآن',
        
         // البطل
-        'hero.title': 'اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ',
+        'hero.title': 'جهاز كاشف بالأشعة فوق البنفسجية',
         'hero.description': 'جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.',
         'hero.badge1': 'طيف UV-A 400–405 nm',
         'hero.badge2': 'إشعاع حتى 6000 µW/cm²',
@@ -1416,7 +1433,7 @@
         'nav.order': 'Order Now',
        
         // Hero
-        'hero.title': 'Discover Hidden Car Repairs and Paint in Seconds',
+        'hero.title': 'UV Detector Device',
         'hero.description': 'A powerful, portable device for inspecting car body, paint, AC leakswith UV dye, and hidden repair traces. Ideal for car dealerships, inspectors, and individual buyers.',
         'hero.badge1': 'UV-A Spectrum 400–405 nm',
         'hero.badge2': 'Radiation up to 6000 µW/cm²',
@@ -1813,6 +1830,7 @@
 
     
     async function uploadImageToImgBB(file) {
+      const apiKey = '1404ac190ec18b119b80e9f2e3955731';
       const apiKey = '1404ac190ec18b119b80e9f2e3955731';
       const formData = new FormData();
       formData.append('image', file);
