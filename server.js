@@ -469,7 +469,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             <tns:ProductType>${escapeXml(d.ProductType || "")}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || "")}</tns:PaymentType>
 
-            <tns:PaymentOptions>ACCOUNT</tns:PaymentOptions> <!-- تم التعديل من Prepaid Stock إلى ACCOUNT -->
+            <tns:PaymentOptions>ACCT</tns:PaymentOptions> <!-- تم التعديل من Prepaid Stock إلى ACCOUNT -->
 
             <!-- Ensure CustomsValueAmount present (CurrencyCode before Value) -->
             <tns:CustomsValueAmount>
