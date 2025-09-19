@@ -47,7 +47,7 @@ const ARAMEX_LOCATION_ENDPOINT =
   "https://ws.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
 
 // constants
-const WEIGHT_PER_PIECE = 2.0; // kg per piece
+const WEIGHT_PER_PIECE = 2.0; // kg per piece (تم التعديل من 1.63 إلى 2.0)
 const DECLARED_VALUE_PER_PIECE = 200; // AED per piece
 const CUSTOMS_VALUE_PER_PIECE = 250; // AED per piece for customs
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || "24", 10);
@@ -219,6 +219,38 @@ function validatePhoneNumber(phone, countryCode) {
   }
 
   return cleaned;
+}
+
+// Extract shipping address from session - FIXED VERSION
+function extractShippingAddress(session) {
+  console.log("→ Extracting shipping address from session...");
+
+  // Try multiple possible locations for shipping address
+  let shippingAddress = null;
+
+  // Method 1: Check shipping_details.address (if available)
+  if (session.shipping_details && session.shipping_details.address) {
+    console.log("→ Found shipping address in shipping_details.address");
+    shippingAddress = session.shipping_details.address;
+  }
+  // Method 2: Check shipping.address (alternative location)
+  else if (session.shipping && session.shipping.address) {
+    console.log("→ Found shipping address in shipping.address");
+    shippingAddress = session.shipping.address;
+  }
+  // Method 3: Check customer_details.address (fallback)
+  else if (session.customer_details && session.customer_details.address) {
+    console.log("→ Found address in customer_details.address (using as shipping address)");
+    shippingAddress = session.customer_details.address;
+  }
+
+  if (shippingAddress) {
+    console.log("→ Extracted shipping address:", JSON.stringify(shippingAddress, null, 2));
+    return shippingAddress;
+  }
+
+  console.log("→ No shipping address found in any location");
+  return null;
 }
 
 // Validate required fields for Aramex shipment
@@ -437,7 +469,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             <tns:ProductType>${escapeXml(d.ProductType || "")}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || "")}</tns:PaymentType>
 
-            <tns:PaymentOptions>ACCT</tns:PaymentOptions>
+            <tns:PaymentOptions>ACCT</tns:PaymentOptions> <!-- تم التعديل من Prepaid Stock إلى ACCOUNT -->
 
             <!-- Ensure CustomsValueAmount present (CurrencyCode before Value) -->
             <tns:CustomsValueAmount>
@@ -828,6 +860,9 @@ app.post("/create-checkout-session", bodyParser.json(), async (req, res) => {
     else if (quantity === 2) totalAmount = c.double;
     else totalAmount = c.double + (quantity - 2) * c.extra;
 
+    // unitAmount removed as single-source-of-truth because of rounding issues;
+    // we'll construct line_items so that sum(line.amount * qty) === totalAmount exactly.
+
     // Image URLs provided by user
     const imageSingle = "https://github.com/Axis-auto/uv/blob/main/one-piece_1%20(1).jpg?raw=true";
     const imageMulti = "https://github.com/Axis-auto/uv/blob/main/tow-pieces%20(1).jpg?raw=true";
@@ -1098,6 +1133,23 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           }
         }
 
+        // Attempt 2: If phone missing, fill from merged contact
+        if (validationErrors.some(e => /Customer phone/i.test(e))) {
+          // if we have merged contact phone, ensure it's used in the final contact for Aramex (later)
+          // else leave it to final email fallback
+        }
+
+        // Attempt 3: If postal invalid, we've set it to empty above; re-run validations
+        // Attempt 4: If city invalid (empty), try to set to fallback normalized city
+        if (!shippingAddress.city || shippingAddress.city.trim() === "") {
+          // fallback: attempt to build from address lines (e.g., "Istanbul" inside line2 etc.)
+          const possible = (shippingAddress.line1 || "") + " " + (shippingAddress.line2 || "");
+          if (possible && possible.length > 3) {
+            const tokens = possible.split(/\s+/);
+            shippingAddress.city = tokens[tokens.length - 1];
+          }
+        }
+
         // Re-run validation after attempted fixes
         const reValidationErrors = validateRequiredFields(session, shippingAddress);
         if (reValidationErrors.length > 0) {
@@ -1133,9 +1185,11 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
       // Calculate weights and values
       const quantity = parseInt(session.metadata?.quantity || "1", 10);
       const totalWeight = quantity * WEIGHT_PER_PIECE;
+      const totalDeclaredValue = quantity * DECLARED_VALUE_PER_PIECE;
       const totalCustomsValue = quantity * CUSTOMS_VALUE_PER_PIECE;
 
       // Resolve / normalize city BEFORE creating the Aramex shipment (we already attempted resolve, but do it again defensively)
+      // <-- IMPORTANT FIX: do NOT redeclare normalizedCity (we declared it above). Use assignment only.
       normalizedCity = shippingAddress?.city || "";
       const country = (shippingAddress?.country || "").toUpperCase();
       const postalAgain = validateAndNormalizePostCode(shippingAddress?.postal_code || shippingAddress?.postalCode || shippingAddress?.postCode || "", country);
@@ -1245,6 +1299,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         console.log("→ Creating Aramex shipment with validated details:", JSON.stringify(maskForLog({
           quantity,
           weight: totalWeight,
+          declaredValue: totalDeclaredValue,
           customsValue: totalCustomsValue,
           destination: consigneeAddress.CountryCode,
           account: clientInfo.AccountNumber,
@@ -1450,7 +1505,7 @@ SHIPPING INFORMATION
     ${finalCustomerName}<br>
     ${shippingAddress.line1}${shippingAddress.line2 ? '<br>' + shippingAddress.line2 : ''}<br>
     ${shippingAddress.city}, ${shippingAddress.state || ''} ${shippingAddress.postal_code}<br>
-    ${shppingAddress.country}
+    ${shippingAddress.country}
     </p>
     
     <p><strong>Contact:</strong><br>
