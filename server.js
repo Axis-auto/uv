@@ -44,7 +44,7 @@ const ARAMEX_ENDPOINT = (ARAMEX_WSDL_URL.indexOf("?") !== -1 ? ARAMEX_WSDL_URL.s
 // Location API endpoint (new) - can be overridden by env - updated to dev
 const ARAMEX_LOCATION_ENDPOINT =
   process.env.ARAMEX_LOCATION_ENDPOINT ||
-  "https://ws.dev.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc/json/FetchCities";
+  "https://ws.dev.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
 
 // constants
 const WEIGHT_PER_PIECE = 1.63; // kg per piece
@@ -597,42 +597,108 @@ function bestFuzzyMatch(input, candidates, maxDistance = 3) {
 async function fetchAramexCities({ clientInfo, countryCode, prefix = "", postalCode = "" }) {
   if (!countryCode) return null;
 
-  const json = {
-    ClientInfo: clientInfo,
-    CountryCode: countryCode,
-    City: prefix,
-    ZipCode: postalCode
+  const xml = `<?xml version="1.0" encoding="utf-8"?>
+  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://ws.aramex.net/ShippingAPI/v1.0">
+    <soap:Header/>
+    <soap:Body>
+      <tns:FetchCities>
+        <tns:ClientInfo>
+          <tns:UserName>${escapeXml(clientInfo.UserName || "")}</tns:UserName>
+          <tns:Password>${escapeXml(clientInfo.Password || "")}</tns:Password>
+          <tns:Version>${escapeXml(clientInfo.Version || "")}</tns:Version>
+          <tns:AccountNumber>${escapeXml(clientInfo.AccountNumber || "")}</tns:AccountNumber>
+          <tns:AccountPin>${escapeXml(clientInfo.AccountPin || "")}</tns:AccountPin>
+          <tns:AccountEntity>${escapeXml(clientInfo.AccountEntity || "")}</tns:AccountEntity>
+          <tns:AccountCountryCode>${escapeXml(clientInfo.AccountCountryCode || "")}</tns:AccountCountryCode>
+          <tns:Source>${escapeXml(clientInfo.Source != null ? clientInfo.Source : "")}</tns:Source>
+        </tns:ClientInfo>
+        <tns:CountryCode>${escapeXml(countryCode)}</tns:CountryCode>
+        <tns:City>${escapeXml(prefix || "")}</tns:City>
+        <tns:ZipCode>${escapeXml(postalCode || "")}</tns:ZipCode>
+      </tns:FetchCities>
+    </soap:Body>
+  </soap:Envelope>`;
+
+  const headersWithSoapAction = {
+    "Content-Type": "text/xml; charset=utf-8",
+    "SOAPAction": "http://ws.aramex.net/ShippingAPI/v1.0/Service_1_0/FetchCities",
   };
 
-  const headers = {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
+  const headersNoSoapAction = {
+    "Content-Type": "text/xml; charset=utf-8",
   };
 
   try {
-    const resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, json, { headers, timeout: 120000 }); // Increased timeout
+    let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersWithSoapAction, timeout: 180000 });
     if (!resp || !resp.data) throw new Error("Empty response");
-
-    let cities = [];
+    let parsed = null;
     try {
-      const respRoot = resp.data;
-      if (respRoot && respRoot.Cities && respRoot.Cities.string) {
-        cities = Array.isArray(respRoot.Cities.string) ? respRoot.Cities.string : [respRoot.Cities.string];
+      parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
+    } catch (e) {
+      parsed = null;
+    }
+    const cities = [];
+    try {
+      const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
+      const respRoot = body && (body.FetchCitiesResponse || body);
+      if (respRoot && respRoot.Cities) {
+        const node = respRoot.Cities;
+        if (Array.isArray(node.string)) {
+          cities.push(...node.string);
+        } else if (node.string) {
+          cities.push(node.string);
+        }
       }
     } catch (e) {}
-
     if (cities.length === 0) {
-      console.warn("No cities found in response");
+      const raw = typeof resp.data === "string" ? resp.data : JSON.stringify(resp.data);
+      const regex = /<string>([^<]{2,60})<\/string>/gi;
+      let m;
+      while ((m = regex.exec(raw)) !== null) {
+        cities.push(m[1]);
+      }
     }
-
     return cities.length ? Array.from(new Set(cities)) : null;
   } catch (err) {
-    console.warn("Aramex Location API fetch failed:", (err && err.message) || err);
-    if (err.response) {
-      console.warn("Response status:", err.response.status);
-      console.warn("Response data:", err.response.data);
+    try {
+      let resp = await axios.post(ARAMEX_LOCATION_ENDPOINT, xml, { headers: headersNoSoapAction, timeout: 180000 });
+      if (!resp || !resp.data) throw new Error("Empty response");
+      let parsed = null;
+      try {
+        parsed = await parseStringPromise(resp.data, { explicitArray: false, ignoreAttrs: true, trim: true });
+      } catch (e) {
+        parsed = null;
+      }
+      const cities = [];
+      try {
+        const body = parsed && (parsed["s:Envelope"] && parsed["s:Envelope"]["s:Body"] ? parsed["s:Envelope"]["s:Body"] : parsed);
+        const respRoot = body && (body.FetchCitiesResponse || body);
+        if (respRoot && respRoot.Cities) {
+          const node = respRoot.Cities;
+          if (Array.isArray(node.string)) {
+            cities.push(...node.string);
+          } else if (node.string) {
+            cities.push(node.string);
+          }
+        }
+      } catch (e) {}
+      if (cities.length === 0) {
+        const raw = typeof resp.data === "string" ? resp.data : JSON.stringify(resp.data);
+        const regex = /<string>([^<]{2,60})<\/string>/gi;
+        let m;
+        while ((m = regex.exec(raw)) !== null) {
+          cities.push(m[1]);
+        }
+      }
+      return cities.length ? Array.from(new Set(cities)) : null;
+    } catch (err2) {
+      console.warn("Aramex Location API fetch failed:", (err2 && err2.message) || err.message || err2);
+      if (err2.response) {
+        console.warn("Response status:", err2.response.status);
+        console.warn("Response data:", err2.response.data);
+      }
+      return null;
     }
-    return null;
   }
 }
 
@@ -644,7 +710,7 @@ async function resolveCity(countryCode, rawCity, postalCode = "") {
     const clientInfo = {
       UserName: process.env.ARAMEX_USER,
       Password: process.env.ARAMEX_PASSWORD,
-      Version: process.env.ARAMEX_VERSION || "v1",
+      Version: "v1.0",
       AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
       AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
       AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
@@ -1015,7 +1081,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           const clientInfo = {
             UserName: process.env.ARAMEX_USER,
             Password: process.env.ARAMEX_PASSWORD,
-            Version: process.env.ARAMEX_VERSION || "v1",
+            Version: "v1.0",
             AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
             AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
             AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
@@ -1134,7 +1200,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
         const clientInfo = {
           UserName: process.env.ARAMEX_USER,
           Password: process.env.ARAMEX_PASSWORD,
-          Version: process.env.ARAMEX_VERSION || "v2",
+          Version: "v1.0",
           AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER,
           AccountPin: process.env.ARAMEX_ACCOUNT_PIN,
           AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY,
@@ -1260,11 +1326,11 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
           "Accept": "application/json"
         };
 
-        const resp = await axios.post(ARAMEX_ENDPOINT, jsonPayload, { headers, timeout: 120000 }); // Increased timeout to 2 minutes
+        let resp = await axios.post(ARAMEX_ENDPOINT, jsonPayload, { headers, timeout: 180000 }); // Increased timeout to 3 minutes
 
-        if (resp && resp.data) {
-          console.log("⤷ Aramex raw response (snippet):", JSON.stringify(resp.data).substring(0, 2000));
-        }
+        if (!resp || !resp.data) throw new Error("Empty response");
+
+        console.log("⤷ Aramex raw response (snippet):", JSON.stringify(resp.data).substring(0, 2000));
 
         // Collect errors/notifications from JSON response
         let hasErrors = false;
