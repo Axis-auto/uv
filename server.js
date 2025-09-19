@@ -47,7 +47,7 @@ const ARAMEX_LOCATION_ENDPOINT =
   "https://ws.aramex.net/ShippingAPI.V2/Location/Service_1_0.svc";
 
 // constants
-const WEIGHT_PER_PIECE = 1.63; // kg per piece
+const WEIGHT_PER_PIECE = 2; // kg per piece
 const DECLARED_VALUE_PER_PIECE = 200; // AED per piece
 const CUSTOMS_VALUE_PER_PIECE = 250; // AED per piece for customs
 const DEFAULT_SOURCE = parseInt(process.env.ARAMEX_SOURCE || "24", 10);
@@ -469,7 +469,7 @@ function buildShipmentCreationXml({ clientInfo, transactionRef, labelReportId, s
             <tns:ProductType>${escapeXml(d.ProductType || "")}</tns:ProductType>
             <tns:PaymentType>${escapeXml(d.PaymentType || "")}</tns:PaymentType>
 
-            <tns:PaymentOptions></tns:PaymentOptions>
+            <tns:PaymentOptions>ACCT</tns:PaymentOptions>
 
             <!-- Ensure CustomsValueAmount present (CurrencyCode before Value) -->
             <tns:CustomsValueAmount>
@@ -1267,7 +1267,7 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 
         // Determine product type based on destination
         const isInternational = consigneeAddress.CountryCode !== "AE";
-        const productTypeString = isInternational ? "EPX" : "CDS";
+        const productTypeString = isInternational ? "PPX" : "CDS";
 
         const shipmentObj = {
           Reference1: session.id,
@@ -1517,6 +1517,7 @@ SHIPPING INFORMATION
           if (trackingId) {
             textContent += `Tracking Number: ${trackingId}\n`;
             textContent += `You can track your shipment using this tracking number on the Aramex website.\n`;
+            textContent += `Click here for Shipping Label: ${labelUrl}\n`;
             
             htmlContent += `
   <div class="tracking-info">
@@ -1524,6 +1525,7 @@ SHIPPING INFORMATION
     <p><span class="status-badge">Shipped</span></p>
     <p><strong>Tracking Number:</strong> ${trackingId}</p>
     <p>You can track your shipment using this tracking number on the <a href="https://www.aramex.com">Aramex website</a>.</p>
+    <p><a href="${labelUrl}">Click here</a> to view your shipping label.</p>
   </div>`;
           } else if (aramexError) {
             textContent += `Shipping Status: Processing (Note: ${aramexError})\n`;
