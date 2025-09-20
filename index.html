@@ -1833,6 +1833,10 @@
 
     
     async function handleStripeCheckout() {
+      if (cartQuantity === 0) {
+        showAlert(translations[currentLang]['cart.empty'], 'error');
+        return;
+      }
       try {
         const quantity = cartQuantity; 
 
