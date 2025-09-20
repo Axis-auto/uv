@@ -511,7 +511,7 @@
     <section class="hero">
       <div class="container wrap">
         <div>
-          <h1 data-translate="hero.title">اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ مع جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto</h1>
+          <h1>اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ مع جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto</h1>
           <p class="lead" data-translate="hero.description">جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.</p>
           <div class="badges">
             <div class="badge" data-translate="hero.badge1">طيف UV-A 400–405 nm</div>
@@ -1104,34 +1104,7 @@
   </a>
 
   
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "جهاز فحص السيارات (UVRA 100 B)",
-    "description": "مصباح يدوي بالأشعة فوق البنفسجية لفحص دهان السيارة وكشف التسريبات مع صبغة UV. بطارية 3000mAh، طيف UV-A 400–405nm، إشعاع حتى 9000 µW/cm².",
-    "brand": {"@type":"Brand","name":"Axis Auto"},
-    "sku": "UVRA-100B",
-    "offers": {
-      "@type": "Offer",
-      "url": "https://axis-uv.com/",
-      "price": "799",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "priceValidUntil": "2026-12-31",
-      "priceSpecification": {
-        "@type": "UnitPriceSpecification",
-        "price": "799",
-        "priceCurrency": "USD",
-        "referenceQuantity": {
-          "@type": "QuantitativeValue",
-          "value": 1,
-          "unitCode": "H87"
-        }
-      }
-    }
-  }
-  </script>
+  
 
   <script>
     const API_BASE = "https://uv-rk1s.onrender.com";
@@ -2171,5 +2144,190 @@
       return `https://wa.me/${p}?text=${t}`;
     }
   </script>
+
+<script id="product-ld-json" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "",
+  "description": "",
+  "brand": {"@type":"Brand","name":""},
+  "sku": "",
+  "offers": {
+    "@type": "Offer",
+    "url": "",
+    "price": "",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock",
+    "priceValidUntil": ""
+  }
+}
+</script>
+
+<script>
+(function(){
+  // Helper: try to get text from selector
+  function getText(selector){
+    var el = document.querySelector(selector);
+    return el ? el.textContent.trim() : null;
+  }
+
+  // 1) Collect product visible data (do not change visible content)
+  var productName = getText('meta[property="og:title"]') || getText('meta[name="title"]') || getText('title') || getText('h1') || "";
+  var description = getText('meta[name="description"]') || getText('meta[property="og:description"]') || getText('p.product-description') || "";
+  var brand = (function(){
+    var b = document.querySelector('[data-brand]') || document.querySelector('.brand') || null;
+    return b ? b.getAttribute('data-brand') || b.textContent.trim() : "";
+  })();
+  var sku = (function(){ var el = document.querySelector('[data-sku]'); return el ? el.getAttribute('data-sku') : ""; })();
+  var pageUrl = window.location.href;
+
+  // 2) Determine price dynamically:
+  // Priority:
+  // - element with id "product-price" having data-price or textContent
+  // - selected .offer-option element (radio/select) with data-price
+  // - window.PRODUCT_PRICE global if set
+  function parsePrice(str){
+    if(!str) return "";
+    // remove currency symbols/commas, keep dot
+    var s = str.replace(/[^\d.,]/g, '');
+    s = s.replace(/,/g, '.');
+    var m = s.match(/(\d+(\.\d+)?)/);
+    return m ? m[0] : "";
+  }
+
+  var price = "";
+  var priceValidUntil = "";
+
+  var priceEl = document.getElementById('product-price');
+  if(priceEl){
+    price = priceEl.getAttribute('data-price') || priceEl.textContent || "";
+    price = parsePrice(price);
+    priceValidUntil = priceEl.getAttribute('data-price-valid-until') || "";
+  }
+
+  if(!price){
+    // look for selected offer option (radio/option) with data-price
+    var selectedOffer = document.querySelector('.offer-option[data-price].selected, .offer-option[data-price]:checked');
+    if(!selectedOffer){
+      // maybe a select
+      var sel = document.querySelector('select.offer-select');
+      if(sel && sel.options[sel.selectedIndex]){
+        selectedOffer = sel.options[sel.selectedIndex];
+      }
+    }
+    if(selectedOffer){
+      price = selectedOffer.getAttribute('data-price') || selectedOffer.value || "";
+      price = parsePrice(price);
+      priceValidUntil = selectedOffer.getAttribute('data-price-valid-until') || "";
+    }
+  }
+
+  if(!price && window.PRODUCT_PRICE){
+    price = parsePrice(window.PRODUCT_PRICE);
+  }
+
+  // 3) Aggregate rating (read from #aggregate-rating data attributes or from window variables)
+  var aggregateRating = null;
+  var arEl = document.getElementById('aggregate-rating');
+  if(arEl){
+    var rv = arEl.getAttribute('data-rating-value');
+    var rc = arEl.getAttribute('data-review-count');
+    if(rv && rc){
+      aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": String(rv),
+        "reviewCount": Number(rc)
+      };
+    }
+  } else if(window.PRODUCT_RATING && window.PRODUCT_REVIEW_COUNT){
+    aggregateRating = {
+      "@type": "AggregateRating",
+      "ratingValue": String(window.PRODUCT_RATING),
+      "reviewCount": Number(window.PRODUCT_REVIEW_COUNT)
+    };
+  }
+
+  // Build JSON-LD object
+  var ld = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": productName || document.title || "",
+    "description": description || "",
+    "brand": {"@type":"Brand","name": brand || ""},
+    "sku": sku || "",
+    "offers": {
+      "@type": "Offer",
+      "url": pageUrl,
+      "price": price || "",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "priceValidUntil": priceValidUntil || ""
+    }
+  };
+
+  if(aggregateRating){
+    ld.aggregateRating = aggregateRating;
+  }
+
+  // Update the script tag content
+  var script = document.getElementById('product-ld-json');
+  if(script){
+    script.textContent = JSON.stringify(ld, null, 2);
+  } else {
+    // fallback: create script
+    var s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.textContent = JSON.stringify(ld, null, 2);
+    document.head.appendChild(s);
+  }
+
+  // Listen for changes on offer-select or offer-option clicks to update LD dynamically
+  document.addEventListener('change', function(e){
+    if(e.target && (e.target.matches('select.offer-select') || e.target.matches('input[type="radio"].offer-option'))){
+      // small debounce
+      setTimeout(function(){ if(typeof window.updateProductLD === 'function') window.updateProductLD(); else location.reload(); }, 100);
+    }
+  }, true);
+
+  // Provide a global function to force update without reload
+  window.updateProductLD = function(){
+    try{
+      // re-run this IIFE-ish logic by dispatching a custom event
+      var evt = new Event('product-ld-update');
+      document.dispatchEvent(evt);
+    }catch(e){ console.error(e); }
+  };
+
+  // React to custom event by recalculating price and updating JSON-LD
+  document.addEventListener('product-ld-update', function(){
+    try{
+      // simple approach: recalc price from #product-price or selected option
+      var newPrice = "";
+      var pe = document.getElementById('product-price');
+      if(pe) newPrice = pe.getAttribute('data-price') || pe.textContent;
+      if(!newPrice){
+        var selOffer = document.querySelector('.offer-option[data-price].selected, .offer-option[data-price]:checked');
+        if(!selOffer){
+          var sel = document.querySelector('select.offer-select');
+          if(sel && sel.options[sel.selectedIndex]) selOffer = sel.options[sel.selectedIndex];
+        }
+        if(selOffer) newPrice = selOffer.getAttribute('data-price') || selOffer.value;
+      }
+      if(!newPrice && window.PRODUCT_PRICE) newPrice = window.PRODUCT_PRICE;
+      newPrice = parsePrice(newPrice);
+      if(newPrice && script){
+        try{
+          var obj = JSON.parse(script.textContent || '{}');
+          obj.offers.price = newPrice;
+          script.textContent = JSON.stringify(obj, null, 2);
+        }catch(e){}
+      }
+    }catch(e){console.error(e);}
+  }, false);
+
+})();
+</script>
+
 </body>
 </html>
