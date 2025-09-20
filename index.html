@@ -1546,7 +1546,7 @@
         'faq.q2': 'Does it detect under protective layers (PPF)?',
         'faq.a2': 'Yes - the device is designed to show material and paint differences even under PPF or protective wraps.',
         'faq.q3': 'Does it measure paint thickness digitally?',
-        'faq.a3': 'No - this is an optical device for visual detection and distinction. A separate thickness gauge is needed for digital measurement.',
+        'faq.a3': 'No - this is an optical device for visual detection and distinction. A separate thickness gauge is needed for digital measurement. A separate thickness gauge is needed for digital measurement.',
         'faq.q4': 'What is the warranty period?',
         'faq.a4': '12-month warranty certificate.',
         'faq.q5': 'How do I complete payment via bank transfer?',
@@ -2123,6 +2123,10 @@
 
     
     function proceedToCheckout() {
+      if (cartQuantity === 0) {
+        showAlert(translations[currentLang]['cart.empty'], 'error');
+        return;
+      }
       closeCartModal();
       document.querySelector('#order').scrollIntoView({ behavior: 'smooth' });
     }
@@ -2192,7 +2196,7 @@
   var sku = (function(){ var el = document.querySelector('[data-sku]'); return el ? el.getAttribute('data-sku') : ""; })();
   var pageUrl = window.location.href;
 
-  // 2) Determine product price dynamically:
+  // 2) Determine price dynamically:
   // Priority:
   // - element with id "product-price" having data-price or textContent
   // - selected .offer-option element (radio/select) with data-price
