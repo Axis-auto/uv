@@ -511,7 +511,7 @@
     <section class="hero">
       <div class="container wrap">
         <div>
-          <h1>اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ مع جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto</h1>
+          <h1 data-translate="hero.title">اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ مع جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto</h1>
           <p class="lead" data-translate="hero.description">جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.</p>
           <div class="badges">
             <div class="badge" data-translate="hero.badge1">طيف UV-A 400–405 nm</div>
@@ -1130,6 +1130,9 @@
     
     const translations = {
       ar: {
+        // Page meta
+        'page.title': 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ',
+        'page.description': 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب.',
         // التنقل
         'nav.features': 'المميزات',
         'nav.pricing': 'السعر',
@@ -1137,7 +1140,7 @@
         'nav.order': 'اطلب الآن',
        
         // البطل
-        'hero.title': 'اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ',
+        'hero.title': 'اكتشف الإصلاحات والدهان المخفي في السيارة خلال ثوانٍ مع جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto',
         'hero.description': 'جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.',
         'hero.badge1': 'طيف UV-A 400–405 nm',
         'hero.badge2': 'إشعاع حتى 9000 µW/cm²',
@@ -1387,6 +1390,9 @@
         'cart.total': 'الإجمالي'
       },
       en: {
+        // Page meta
+        'page.title': 'Axis Auto UV Car Inspection Device | Discover Hidden Repairs in Seconds',
+        'page.description': 'Axis Auto UV Car Inspection Device: Detects spray marks, hidden repairs, and AC leaks. Quick order form via WhatsApp.',
         // Navigation
         'nav.features': 'Features',
         'nav.pricing': 'Pricing',
@@ -1701,6 +1707,10 @@
      
       
       localStorage.setItem('preferredLanguage', lang);
+
+      // Update meta title and description
+      document.title = translations[lang]['page.title'];
+      document.querySelector('meta[name="description"]').setAttribute('content', translations[lang]['page.description']);
     }
 
     
@@ -2182,7 +2192,7 @@
   var sku = (function(){ var el = document.querySelector('[data-sku]'); return el ? el.getAttribute('data-sku') : ""; })();
   var pageUrl = window.location.href;
 
-  // 2) Determine price dynamically:
+  // 2) Determine product price dynamically:
   // Priority:
   // - element with id "product-price" having data-price or textContent
   // - selected .offer-option element (radio/select) with data-price
