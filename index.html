@@ -508,7 +508,7 @@
 
   <header>
     <div class="container inner">
-      <div class="logo">
+      <div class="logo" data-brand="Axis Auto">
         <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" width="40" height="40" />
         <span>Axis Auto</span>
       </div>
@@ -666,7 +666,7 @@
     <!-- SPECS / BOX SECTION -->
     <section>
       <div class="container grid cols-2">
-        <div class="card card-hover">
+        <div class="card card-hover" data-sku="UVRA100B">
           <h2 data-translate="specs.title">المواصفات الفنية</h2>
           <table class="table">
             <tr><th data-translate="specs.model">الاسم التجاري / الموديل</th><td>UVRA 100 B</td></tr>
@@ -720,6 +720,7 @@
           <div class="card card-hover"><strong data-translate="testimonials.test2.name">سالم — مشتري فرد</strong><div class="muted" data-translate="testimonials.test2.text">ساعدني أتأكد من سيارة مستعملة قبل الشراء. استثمار ممتاز.</div></div>
           <div class="card card-hover"><strong data-translate="testimonials.test3.name">ورشة تلميع</strong><div class="muted" data-translate="testimonials.test3.text">نستخدمه بعد كل عملية تلميع للتأكد من عدم بقاء هولوجرامات.</div></div>
         </div>
+        <div id="aggregate-rating" data-rating-value="4.8" data-review-count="50" style="display: none;"></div>
       </div>
     </section>
 
@@ -729,10 +730,10 @@
         <h2 data-translate="pricing.title">العروض والأسعار</h2>
         <p class="muted" data-translate="pricing.subtitle">اختر العرض المناسب لك واستفد من خصومات الكميات</p>
         <div class="pricing-options">
-          <div class="pricing-card card-hover">
+          <div class="pricing-card card-hover offer-option selected" data-price="799" data-price-valid-until="2025-12-31">
             <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp" alt="جهاز واحد" loading="lazy" width="300" height="200" />
             <h3 data-translate="pricing.option1.title">جهاز واحد</h3>
-            <div class="price"><span class="numbers-fix">799</span> $</div>
+            <div class="price" id="product-price" data-price="799" data-price-valid-until="2025-12-31"><span class="numbers-fix">799</span> $</div>
             <ul>
               <li data-translate="pricing.option1.item1">جهاز كامل</li>
               <li data-translate="pricing.option1.item2">بطارية ليثيوم <span class="numbers-fix">3000</span> mAh</li>
@@ -743,7 +744,7 @@
             <button class="btn modern-btn" onclick="addToCart(1)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
           </div>
          
-          <div class="pricing-card featured card-hover" data-bestseller="الأفضل مبيعاً">
+          <div class="pricing-card featured card-hover offer-option" data-bestseller="الأفضل مبيعاً" data-price="1299" data-price-valid-until="2025-12-31">
             <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp" alt="جهازين" loading="lazy" width="300" height="200" />
             <h3 data-translate="pricing.option2.title">جهازين</h3>
             <div class="price"><span class="numbers-fix">1299</span> $</div>
@@ -2178,7 +2179,7 @@
     }
 
     
-    function closePrivacyModal() {
+    function closePrivacyPolicy() {
       document.getElementById('privacyModal').style.display = 'none';
     }
 
@@ -2290,6 +2291,7 @@
     "@context": "https://schema.org",
     "@type": "Product",
     "name": productName || document.title || "",
+    "image": document.querySelector('meta[property="og:image"]').content || "https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp",
     "description": description || "",
     "brand": {"@type":"Brand","name": brand || ""},
     "sku": sku || "",
