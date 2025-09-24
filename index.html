@@ -11,12 +11,9 @@
   <meta http-equiv="Cache-Control" content="max-age=31536000">
   
   <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs">
-  <link rel="preconnect" href="https://js.stripe.com">
   <link rel="preconnect" href="https://raw.githubusercontent.com">
   <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="preload" as="script" href="https://js.stripe.com/v3/">
   
-  <script src="https://js.stripe.com/v3/" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
   
@@ -775,7 +772,7 @@
             </div>
           </div>
           <div id="stripe-details" class="payment-details active">
-            <p data-translate="payment.stripeDesc">سيتم توجيهك إلى صفحة دفع آمنة لدى Stripe لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.</p>
+            <p data-translate="payment.stripeDesc">سيتم توجيهك إلى صفحة دفع آمنة لدى 2Checkout لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.</p>
           </div>
           <div id="swift-details" class="payment-details">
             <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0; direction: ltr; text-align: left;">
@@ -840,8 +837,8 @@
           <details><summary data-translate="faq.q7">كيف يمكنني إرجاع المنتج؟</summary>
             <div class="muted" data-translate="faq.a7">اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، أقوم باسترداد المبلغ خلال 5-7 أيام عمل.</div>
           </details>
-          <details><summary data-translate="faq.q8">هل الدفع عبر Stripe آمن؟</summary>
-            <div class="muted" data-translate="faq.a8">نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.</div>
+          <details><summary data-translate="faq.q8">هل الدفع عبر 2Checkout آمن؟</summary>
+            <div class="muted" data-translate="faq.a8">نعم، 2Checkout هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم 2Checkout الآمنة.</div>
           </details>
         </div>
       </div>
@@ -924,7 +921,7 @@
           </form>
 
           <div id="stripePayment" style="display: none;">
-            <div class="form-note" data-translate="order.stripeNote">سيتم توجيهك إلى صفحة الدفع الآمنة لدى Stripe لإتمام عملية الدفع.</div>
+            <div class="form-note" data-translate="order.stripeNote">سيتم توجيهك إلى صفحة الدفع الآمنة لدى 2Checkout لإتمام عملية الدفع.</div>
           </div>
           <div id="swiftDetails" style="display: none;">
             <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0; direction: ltr; text-align: left;">
@@ -936,7 +933,7 @@
             <div class="form-note" data-translate="order.swiftNote">بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.</div>
           </div>
 
-          <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handleStripeCheckout()">أتمم عملية الدفع</button>
+          <button class="btn modern-btn" type="button" id="submitBtn" style="width: 100%; padding: 12px; font-size: 16px;" onclick="handle2CheckoutCheckout()">أتمم عملية الدفع</button>
           <div id="paymentIcons" style="display: flex; justify-content: center; gap: 20px; margin-top: 10px;">
             <div style="display: flex; flex-direction: column; align-items: center;">
               <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/visa.svg" alt="Visa" style="height: 30px;">
@@ -992,13 +989,13 @@
           <p data-translate="privacy.introText">نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية والإرجاع هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.</p>
          
           <h4 data-translate="privacy.dataTitle">البيانات التي نجمعها</h4>
-          <p data-translate="privacy.dataText">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم Stripe لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
+          <p data-translate="privacy.dataText">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم 2Checkout لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
          
           <h4 data-translate="privacy.usageTitle">كيف نستخدم بياناتك</h4>
           <p data-translate="privacy.usageText">نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).</p>
          
           <h4 data-translate="privacy.sharingTitle">مشاركة البيانات</h4>
-          <p data-translate="privacy.sharingText">نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</p>
+          <p data-translate="privacy.sharingText">نشارك معلوماتك مع مقدمي خدمات الدفع (2Checkout) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</p>
          
           <h4 data-translate="privacy.protectionTitle">حماية البيانات</h4>
           <p data-translate="privacy.protectionText">نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
@@ -1021,7 +1018,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
             </svg>
-            <span data-translate="privacy.stripeText">مدفوعات آمنة عبر Stripe - استرداد فوري</span>
+            <span data-translate="privacy.stripeText">مدفوعات آمنة عبر 2Checkout - استرداد فوري</span>
           </div>
          
           <h4 data-translate="privacy.changesTitle">التغييرات على السياسة</h4>
@@ -1141,7 +1138,7 @@
 
     
     let currentLang = 'ar';
-    let stripe = null;
+    let twoCheckout = null;
     let cartQuantity = 0;
 
     
@@ -1292,7 +1289,7 @@
         'payment.subtitle': 'نحن نقدم طريقتين للدفع:',
         'payment.stripe': 'بطاقة ائتمان/خصم',
         'payment.swift': 'حوالة بنكية (SWIFT)',
-        'payment.stripeDesc': 'سيتم توجيهك إلى صفحة دفع آمنة لدى Stripe لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.',
+        'payment.stripeDesc': 'سيتم توجيهك إلى صفحة دفع آمنة لدى 2Checkout لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.',
         'payment.acceptedCards': 'البطاقات المقبولة:',
         'payment.completePayment': 'أتمم عملية الدفع',
         'payment.swiftNote': 'بعد إتمام التحويل، يرجى تحميل صورة إيصال الدفع أدناه.',
@@ -1325,8 +1322,8 @@
         'faq.a6': 'بعد تأكيد الدفع، يتم الشحن خلال 24-48 ساعة ويصل المنتج خلال 3-7 أيام عمل حسب الوجهة.',
         'faq.q7': 'كيف يمكنني إرجاع المنتج؟',
         'faq.a7': 'اتصل بنا عبر الواتساب خلال 14 يوم من الاستلام، وسنزودك بتعليمات الإرجاع. عند استلام المنتج بحالته الأصلية، أقوم باسترداد المبلغ خلال 5-7 أيام عمل.',
-        'faq.q8': 'هل الدفع عبر Stripe آمن؟',
-        'faq.a8': 'نعم، Stripe هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم Stripe الآمنة.',
+        'faq.q8': 'هل الدفع عبر 2Checkout آمن؟',
+        'faq.a8': 'نعم، 2Checkout هي منصة دفع آمنة ومعتمدة عالمياً. نحن لا نخزن أي بيانات بطاقات ائتمان على خوادمنا، وجميع عمليات الدفع تتم عبر خوادم 2Checkout الآمنة.',
        
         // الطلب
         'order.title': 'اطلبه الآن',
@@ -1374,11 +1371,11 @@
         'privacy.introTitle': 'مقدمة',
         'privacy.introText': 'نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية والإرجاع هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.',
         'privacy.dataTitle': 'البيانات التي نجمعها',
-        'privacy.dataText': 'عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم Stripe لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.',
+        'privacy.dataText': 'عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم 2Checkout لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.',
         'privacy.usageTitle': 'كيف نستخدم بياناتك',
         'privacy.usageText': 'نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).',
         'privacy.sharingTitle': 'مشاركة البيانات',
-        'privacy.sharingText': 'نشارك معلوماتك مع مقدمي خدمات الدفع (Stripe) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.',
+        'privacy.sharingText': 'نشارك معلوماتك مع مقدمي خدمات الدفع (2Checkout) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.',
         'privacy.protectionTitle': 'حماية البيانات',
         'privacy.protectionText': 'نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.',
         'privacy.returnTitle': 'سياسة الإرجاع والاسترداد',
@@ -1390,7 +1387,7 @@
         'privacy.condition4': 'أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام',
         'privacy.refundTitle': 'عملية الاسترداد:',
         'privacy.refundText': 'عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال 5-7 أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال 1-2 دورات فوترة.',
-        'privacy.stripeText': 'مدفوعات آمنة عبر Stripe - استرداد فوري',
+        'privacy.stripeText': 'مدفوعات آمنة عبر 2Checkout - استرداد فوري',
         'privacy.changesTitle': 'التغييرات على السياسة',
         'privacy.changesText': 'قد نقوم بتحديث سياسة الخصوصية والإرجاع هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.',
         'privacy.contactTitle': 'اتصل بنا',
@@ -1550,7 +1547,7 @@
         'payment.subtitle': 'We offer two payment methods:',
         'payment.stripe': 'Credit/Debit Card',
         'payment.swift': 'Bank Transfer (SWIFT)',
-        'payment.stripeDesc': 'You will be redirected to Stripe\'s secure payment page to complete the payment process. All your card data is protected and globally accredited.',
+        'payment.stripeDesc': 'You will be redirected to 2Checkout\'s secure payment page to complete the payment process. All your card data is protected and globally accredited.',
         'payment.acceptedCards': 'Accepted Cards:',
         'payment.completePayment': 'Complete Payment',
         'payment.swiftNote': 'After completing the transfer, please upload a copy of the payment receipt below.',
@@ -1583,8 +1580,8 @@
         'faq.a6': 'After payment confirmation, shipping takes 24-48 hours and the product arrives within 3-7 business days depending on destination.',
         'faq.q7': 'How can I return the product?',
         'faq.a7': 'Contact us via WhatsApp within 14 days of receipt, and we will provide you with return instructions. When we receive the product in its original condition, we will refund the amount within 5-7 business days.',
-        'faq.q8': 'Is payment via Stripe secure?',
-        'faq.a8': 'Yes, Stripe is a secure and globally accredited payment platform. We do not store any credit card data on our servers, and all payments are processed through Stripe\'s secure servers.',
+        'faq.q8': 'Is payment via 2Checkout secure?',
+        'faq.a8': 'Yes, 2Checkout is a secure and globally accredited payment platform. We do not store any credit card data on our servers, and all payments are processed through 2Checkout\'s secure servers.',
        
         // Order
         'order.title': 'Order Now',
@@ -1634,11 +1631,11 @@
         'privacy.introTitle': 'Introduction',
         'privacy.introText': 'At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This Privacy and Return Policy explains how we collect, use, and protect your information when you use our website and services.',
         'privacy.dataTitle': 'Data We Collect',
-        'privacy.dataText': 'When completing a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use Stripe to process payments and do not store credit card details on our servers.',
+        'privacy.dataText': 'When completing a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use 2Checkout to process payments and do not store credit card details on our servers.',
         'privacy.usageTitle': 'How We Use Your Data',
         'privacy.usageText': 'We use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).',
         'privacy.sharingTitle': 'Data Sharing',
-        'privacy.sharingText': 'We share your information with payment providers (Stripe) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.',
+        'privacy.sharingText': 'We share your information with payment providers (2Checkout) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.',
         'privacy.protectionTitle': 'Data Protection',
         'privacy.protectionText': 'We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.',
         'privacy.returnTitle': 'Return and Refund Policy',
@@ -1650,7 +1647,7 @@
         'privacy.condition4': 'The product must not have been damaged due to misuse',
         'privacy.refundTitle': 'Refund Process:',
         'privacy.refundText': 'When the product is returned according to the mentioned conditions, the paid amount will be refunded using the original payment method within 5-7 business days. For card payments, the amount will appear in your statement within 1-2 billing cycles.',
-        'privacy.stripeText': 'Secure payments via Stripe - Instant refund',
+        'privacy.stripeText': 'Secure payments via 2Checkout - Instant refund',
         'privacy.changesTitle': 'Policy Changes',
         'privacy.changesText': 'We may update this Privacy and Return Policy from time to time. Any changes will be posted on this page and we will notify you by email if the changes are substantial.',
         'privacy.contactTitle': 'Contact Us',
@@ -1685,11 +1682,6 @@
       loadCart();
       updateCartSummary();
     });
-
-    
-    function initStripe() {
-      stripe = Stripe('pk_live_51S0LPVC5jJB1UkBOWccyO0bHYdVUoItvhwLzKXndZNgYhQ07JvDUdK8RiioecWiEicWdYpJXifNx8ZGIHd3taR0o00AOKYIUej'); 
-    }
 
     
     function initPage() {
@@ -1781,7 +1773,7 @@
       const submitBtn = document.getElementById('submitBtn');
       if (method === 'stripe') {
         submitBtn.textContent = translations[currentLang]['payment.completePayment'];
-        submitBtn.setAttribute('onclick', 'handleStripeCheckout()');
+        submitBtn.setAttribute('onclick', 'handle2CheckoutCheckout()');
       } else {
         submitBtn.textContent = translations[currentLang]['order.submit'];
         submitBtn.setAttribute('onclick', 'handleSwiftPayment()');
@@ -1860,7 +1852,7 @@
     }
 
     
-    async function handleStripeCheckout() {
+    async function handle2CheckoutCheckout() {
       if (cartQuantity === 0) {
         showAlert(translations[currentLang]['cart.empty'], 'error');
         return;
@@ -1880,15 +1872,13 @@
           alert('تعذّر إنشاء جلسة الدفع. افتح Console للمزيد من التفاصيل.');
           return;
         }
-        if (!data.id) {
-          console.error('No session id', data);
-          alert('تعذّر استلام Session ID من الخادم.');
+        if (!data.url) {
+          console.error('No session url', data);
+          alert('تعذّر استلام Session URL من الخادم.');
           return;
         }
 
-        const stripe = Stripe('pk_live_51S0LPVC5jJB1UkBOWccyO0bHYdVUoItvhwLzKXndZNgYhQ07JvDUdK8RiioecWiEicWdYpJXifNx8ZGIHd3taR0o00AOKYIUej');
-        const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
-        if (error) alert(error.message);
+        window.location.href = data.url;
       } catch (err) {
         console.error(err);
         alert('حدث خطأ أثناء محاولة إنشاء جلسة الدفع.');
@@ -1981,7 +1971,7 @@
       msg += `${currentLang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}: ${calculateSubtotal()} $%0A`;
       msg += `${currentLang === 'ar' ? 'الشحن' : 'Shipping'}: ${calculateShipping()} $%0A`;
       msg += `${currentLang === 'ar' ? 'الإجمالي الكلي' : 'Grand Total'}: ${calculateGrandTotal()} $%0A`;
-      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (Stripe)' : 'Credit Card (Stripe)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
+      msg += `${currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}: ${paymentMethod === 'stripe' ? (currentLang === 'ar' ? 'بطاقة ائتمان (2Checkout)' : 'Credit Card (2Checkout)') : (currentLang === 'ar' ? 'حوالة بنكية (SWIFT)' : 'Bank Transfer (SWIFT)')}%0A%0A`;
      
       if (imageUrl) {
         msg += `${currentLang === 'ar' ? 'إيصال الدفع' : 'Payment Receipt'}: ${imageUrl}%0A%0A`;
