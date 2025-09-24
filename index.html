@@ -214,6 +214,8 @@
     .payment-method .payment-icon { font-size: 32px; margin-bottom: 8px; }
     .payment-details { display: none; margin-top: 12px; padding: 12px; border: 1px solid #e2e8f0; border-radius: var(--radius); background-color: #f8fafc; }
     .payment-details.active { display: block; }
+    .payment-method.coming-soon { position: relative; }
+    .payment-method.coming-soon::before { content: attr(data-coming-soon); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--warn); color: white; padding: 3px 10px; border-radius: 16px; font-size: 11px; font-weight: bold; }
    
     .file-upload { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
     .file-upload label { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: #f8fafc; border: 1px dashed #93c5fd; border-radius: 8px; cursor: pointer; }
@@ -762,19 +764,19 @@
           <p data-translate="payment.subtitle">نحن نقدم طريقتين للدفع:</p>
          
           <div class="payment-methods">
-            <div class="payment-method selected" onclick="selectPaymentMethod('stripe')">
-              <div class="payment-icon">💳</div>
-              <div data-translate="payment.stripe">بطاقة ائتمان/خصم</div>
-            </div>
-            <div class="payment-method" onclick="selectPaymentMethod('swift')">
+            <div class="payment-method selected" onclick="selectPaymentMethod('swift')">
               <div class="payment-icon">🏦</div>
               <div data-translate="payment.swift">حوالة بنكية (SWIFT)</div>
             </div>
+            <div class="payment-method coming-soon" onclick="selectPaymentMethod('stripe')" data-coming-soon="يتوفر قريبا">
+              <div class="payment-icon">💳</div>
+              <div data-translate="payment.stripe">بطاقة ائتمان</div>
+            </div>
           </div>
-          <div id="stripe-details" class="payment-details active">
+          <div id="stripe-details" class="payment-details">
             <p data-translate="payment.stripeDesc">سيتم توجيهك إلى صفحة دفع آمنة لدى 2Checkout لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.</p>
           </div>
-          <div id="swift-details" class="payment-details">
+          <div id="swift-details" class="payment-details active">
             <div class="card" style="background: #fff; font-family: monospace; padding: 10px; margin: 8px 0; direction: ltr; text-align: left;">
               <strong>Account No:</strong> AE960500000000019423466<br>
               <strong>Swift Code:</strong> ABDIAEADXXX<br>
@@ -881,8 +883,8 @@
             <div class="form-group">
               <label class="form-label" data-translate="order.paymentMethod">طريقة الدفع</label>
               <select id="paymentMethod" class="form-select" onchange="togglePaymentDetails()">
-                <option value="stripe" data-translate="order.paymentStripe">الدفع بالبطاقة</option>
                 <option value="swift" data-translate="order.paymentSwift">حوالة بنكية (SWIFT)</option>
+                <option value="stripe" data-translate="order.paymentStripe">الدفع بالبطاقة</option>
               </select>
             </div>
            
@@ -1287,7 +1289,7 @@
         // الدفع
         'payment.title': 'طرق الدفع والشحن',
         'payment.subtitle': 'نحن نقدم طريقتين للدفع:',
-        'payment.stripe': 'بطاقة ائتمان/خصم',
+        'payment.stripe': 'بطاقة ائتمان',
         'payment.swift': 'حوالة بنكية (SWIFT)',
         'payment.stripeDesc': 'سيتم توجيهك إلى صفحة دفع آمنة لدى 2Checkout لإتمام عملية الدفع. جميع بيانات بطاقتك محمية ومعتمدة عالمياً.',
         'payment.acceptedCards': 'البطاقات المقبولة:',
@@ -1545,7 +1547,7 @@
         // Payment
         'payment.title': 'Payment and Shipping Methods',
         'payment.subtitle': 'We offer two payment methods:',
-        'payment.stripe': 'Credit/Debit Card',
+        'payment.stripe': 'Credit Card',
         'payment.swift': 'Bank Transfer (SWIFT)',
         'payment.stripeDesc': 'You will be redirected to 2Checkout\'s secure payment page to complete the payment process. All your card data is protected and globally accredited.',
         'payment.acceptedCards': 'Accepted Cards:',
@@ -1731,6 +1733,12 @@
       // Update meta title and description
       document.title = translations[lang]['page.title'];
       document.querySelector('meta[name="description"]').setAttribute('content', translations[lang]['page.description']);
+
+      // Update coming-soon badge
+      const comingSoonElement = document.querySelector('.payment-method.coming-soon');
+      if (comingSoonElement) {
+        comingSoonElement.setAttribute('data-coming-soon', lang === 'ar' ? 'يتوفر قريبا' : 'Coming Soon');
+      }
     }
 
     
@@ -1783,7 +1791,7 @@
     
     function selectPaymentMethod(method) {
       document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-      document.querySelector(`.payment-method:nth-child(${method === 'stripe' ? 1 : 2})`).classList.add('selected');
+      document.querySelector(`.payment-method[onclick="selectPaymentMethod('${method}')"]`).classList.add('selected');
       
       document.getElementById('paymentMethod').value = method;
       document.querySelectorAll('.payment-details').forEach(el => el.classList.remove('active'));
