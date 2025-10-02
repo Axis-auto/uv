@@ -406,22 +406,71 @@
     [dir="ltr"] .footer-contact-item { direction: ltr; }
    
     /* ==== header mobile overlap fix ==== */
-    header .inner { align-items: center; gap: 12px; }
-    header .logo { flex: 0 0 auto; }
-    header nav { flex: 1 1 auto; min-width: 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; overflow-x: visible; }
-    header nav a { flex: 0 0 auto; white-space: nowrap; }
-
-    /* allow horizontal scroll on very small screens without overlapping */
-    @media (max-width: 768px) {
-      header nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      header .logo span { display: none; } /* already set in file but keep for safety */
+    header .inner { 
+      align-items: center; 
+      gap: 12px; 
+      padding: 8px 0;
+    }
+    
+    header .logo { 
+      flex: 0 0 auto; 
+      min-width: 100px; /* تأكد من أن الشعار لا ينكمش كثيرًا */
+    }
+    
+    header nav { 
+      flex: 1 1 auto; 
+      min-width: 0; 
+      display: flex; 
+      justify-content: flex-end; 
+      align-items: center; 
+      gap: 8px; 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 4px 0;
+    }
+    
+    header nav::-webkit-scrollbar { display: none; }
+    
+    header nav a { 
+      flex: 0 0 auto; 
+      white-space: nowrap; 
+      font-size: 14px;
+      padding: 6px 10px;
     }
 
-    /* small tweak to ensure cart icon spacing on tiny screens */
-    @media (max-width: 480px) {
-      .cart-icon { margin-left: 6px; }
+    /* Cart Styles */
+    .cart-icon { 
+      position: relative; 
+      cursor: pointer; 
+      color: white; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
     }
-   
+    
+    .cart-icon .fa-shopping-cart { 
+      font-size: 18px; 
+    }
+    
+    .cart-count { 
+      position: absolute; 
+      top: -8px; 
+      right: -8px; 
+      background: red; 
+      color: white; 
+      border-radius: 50%; 
+      padding: 2px 6px; 
+      font-size: 10px; 
+      min-width: 16px; 
+      height: 16px;
+      text-align: center; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* Responsive styles */
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
@@ -433,10 +482,37 @@
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
       .logo span { font-size: 14px; display: none; } 
-      header .inner { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; } 
-      nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; } /* Added padding to nav */
+      
+      header .inner { 
+        flex-wrap: nowrap; 
+        justify-content: space-between; 
+        align-items: center; 
+        gap: 8px; 
+        padding: 6px 8px; 
+      } 
+      
+      nav { 
+        display: flex; 
+        align-items: center; 
+        gap: 6px; 
+        flex: 1; 
+        justify-content: flex-end; 
+        flex-wrap: nowrap; 
+        overflow-x: auto; 
+        padding: 0 4px; 
+        -webkit-overflow-scrolling: touch; 
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
+      } 
+      
       nav::-webkit-scrollbar { display: none; }
-      .btn.ghost { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
+      
+      .btn.ghost { 
+        padding: 6px 10px; 
+        font-size: 12px; 
+        white-space: nowrap; 
+      }
+      
       .hero h1, .hero .lead { text-align: center; }
       .badges, .cta-row { justify-content: center; }
       .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
@@ -447,20 +523,61 @@
       .icon, .step .num { margin: 0 auto; }
       .footer-bottom { flex-direction: column; text-align: center; }
       .footer-links { justify-content: center; }
-      .lang-switcher { padding: 4px 8px; font-size: 12px; gap: 4px; }
-      .cart-icon .fa-shopping-cart { font-size: 16px; }
-      .cart-count { font-size: 10px; min-width: 16px; padding: 1px 4px; top: -6px; right: -6px; }
-      .cart-icon { margin-left: 8px; } 
+      
+      /* تعديلات الهيدر للشاشات المتوسطة */
+      .lang-switcher { 
+        padding: 4px 8px; 
+        font-size: 12px; 
+        gap: 4px; 
+        min-width: 50px;
+      }
+      
+      .cart-icon .fa-shopping-cart { 
+        font-size: 16px; 
+      }
+      
+      .cart-count { 
+        font-size: 10px; 
+        min-width: 16px; 
+        padding: 1px 4px; 
+        top: -6px; 
+        right: -6px; 
+        height: 14px;
+      }
     }
    
     @media (max-width:640px) {
       .container { padding: 8px; }
-      header .inner { padding: 6px 0; gap: 4px; } 
-      .logo { font-size: 14px; gap: 6px; }
-      .logo img { height: 30px; }
-      .logo span { font-size: 12px; } 
-      .btn { padding: 8px 14px; font-size: 14px; white-space: nowrap; } 
-      .btn.ghost { padding: 4px 8px; font-size: 12px; } 
+      header .inner { 
+        padding: 6px 0; 
+        gap: 6px; 
+      } 
+      
+      .logo { 
+        font-size: 14px; 
+        gap: 6px; 
+        min-width: 80px;
+      }
+      
+      .logo img { 
+        height: 30px; 
+      }
+      
+      .logo span { 
+        font-size: 12px; 
+      } 
+      
+      .btn { 
+        padding: 8px 14px; 
+        font-size: 14px; 
+        white-space: nowrap; 
+      } 
+      
+      .btn.ghost { 
+        padding: 4px 8px; 
+        font-size: 12px; 
+      } 
+      
       .hero { padding: 12px 0; min-height: 80vh; }
       .hero h1 { font-size: 22px; }
       .hero .lead { font-size: 14px; }
@@ -473,31 +590,109 @@
       .pricing-card { padding: 10px; }
       .pricing-card .price { font-size: 24px; }
       .form-input, .form-select { padding: 10px; font-size: 14px; }
-      .lang-switcher { padding: 4px 8px; font-size: 12px; }
-      .floating-cta { padding: 8px 14px; font-size: 14px; }
+      
+      /* تعديلات الهيدر للشاشات الصغيرة */
+      .lang-switcher { 
+        padding: 4px 8px; 
+        font-size: 11px; 
+        min-width: 45px;
+      }
+      
+      .floating-cta { 
+        padding: 8px 14px; 
+        font-size: 14px; 
+      }
+      
+      header nav a {
+        font-size: 12px;
+        padding: 5px 8px;
+      }
+      
+      .cart-icon .fa-shopping-cart { 
+        font-size: 15px; 
+      }
+      
+      .cart-count { 
+        font-size: 9px; 
+        min-width: 14px; 
+        padding: 0px 3px; 
+        top: -5px; 
+        right: -5px; 
+        height: 12px;
+      }
     }
    
     @media (max-width:480px) {
-      .logo { font-size: 12px; }
-      .logo img { height: 25px; }
-      .logo span { font-size: 10px; } 
-      .btn { padding: 6px 12px; font-size: 12px; }
+      .logo { 
+        font-size: 12px; 
+        min-width: 70px;
+      }
+      
+      .logo img { 
+        height: 25px; 
+      }
+      
+      .logo span { 
+        font-size: 10px; 
+      } 
+      
+      .btn { 
+        padding: 6px 12px; 
+        font-size: 12px; 
+      }
+      
       .hero h1 { font-size: 20px; }
       .badge { font-size: 9px; }
       .kpis { grid-template-columns: 1fr; }
-      header .inner { gap: 4px; }
-      nav { gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
+      
+      header .inner { 
+        gap: 4px; 
+        padding: 4px 6px;
+      }
+      
+      nav { 
+        gap: 4px; 
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch; 
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
+      }
+      
       nav::-webkit-scrollbar { display: none; }
-      .btn.ghost { padding: 4px 8px; font-size: 10px; }
-      .lang-switcher { padding: 2px 4px; font-size: 10px; gap: 2px; }
-      .cart-icon .fa-shopping-cart { font-size: 14px; }
-      .cart-count { font-size: 8px; min-width: 14px; padding: 0px 3px; top: -4px; right: -4px; }
-      .cart-icon { margin-left: 4px; } /* Adjusted margin for small screens */
+      
+      .btn.ghost { 
+        padding: 4px 8px; 
+        font-size: 10px; 
+      }
+      
+      /* تعديلات الهيدر للشاشات الصغيرة جدًا */
+      .lang-switcher { 
+        padding: 3px 6px; 
+        font-size: 10px; 
+        gap: 2px; 
+        min-width: 40px;
+      }
+      
+      .cart-icon .fa-shopping-cart { 
+        font-size: 14px; 
+      }
+      
+      .cart-count { 
+        font-size: 8px; 
+        min-width: 12px; 
+        padding: 0px 2px; 
+        top: -4px; 
+        right: -4px; 
+        height: 10px;
+      }
+      
+      header nav a {
+        font-size: 10px;
+        padding: 4px 6px;
+      }
     }
-    /* Cart Styles */
-    .cart-icon { position: relative; cursor: pointer; color: white; }
-    .cart-icon .fa-shopping-cart { font-size: 20px; }
-    .cart-count { position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; min-width: 20px; text-align: center; }
+    
+    /* Cart Modal Styles */
     .cart-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
     .cart-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px; }
     .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -506,6 +701,7 @@
     .quantity-controls button { padding: 5px 10px; background: var(--brand); color: white; border: none; cursor: pointer; }
     .cart-total { margin-top: 20px; font-weight: bold; text-align: right; }
     .checkout-btn { display: block; width: 100%; margin-top: 20px; }
+    
     /* Cart Summary Styles */
     .cart-summary { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-bottom: 16px; }
     .cart-summary-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
