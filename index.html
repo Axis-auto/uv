@@ -148,6 +148,26 @@
       position: relative; z-index: 2; display: grid;
       grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; /* Increased gap - visual refactor - 2025-10-02 */
     }
+
+    .hero .wrap .text-content {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .hero .wrap .product-img-container {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .hero .wrap .kpis {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .hero .wrap .product-extra {
+      grid-column: 2;
+      grid-row: 2;
+    }
    
     .hero h1 { font-size: clamp(32px,5vw,48px); line-height: 1.2; margin: 8px 0 12px; color: white; font-weight: 700; text-shadow: 0 6px 20px rgba(0,0,0,0.45); /* Added text-shadow - visual refactor - 2025-10-02 */ }
     .hero .lead { color: #e2e8f0; font-size: clamp(16px,2vw,18px); text-shadow: 0 4px 12px rgba(0,0,0,0.3); /* Added text-shadow - visual refactor - 2025-10-02 */ }
@@ -408,10 +428,6 @@
     /* Responsive styles */
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
-      .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
-      .footer-content { grid-template-columns: 1fr; }
-      .hero .wrap > div:nth-child(1) { order: 2; }
-      .hero .wrap > div:nth-child(2) { order: 1; }
     }
    
     @media (max-width:768px) {
@@ -424,7 +440,7 @@
       .btn.ghost { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
       .hero h1, .hero .lead { text-align: center; }
       .badges, .cta-row { justify-content: center; }
-      .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+      .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
       .kpis { grid-template-columns: repeat(2,1fr); }
       .pricing-options, .shipping-timeline, .payment-methods { flex-direction: column; }
       .shipping-timeline::before { display: none; }
@@ -578,7 +594,7 @@
     <!-- HERO SECTION -->
     <section class="hero">
       <div class="container wrap">
-        <div>
+        <div class="text-content">
           <h1 data-translate="hero.title">اكتشف الإصلاحات والطلاء المخفي في السيارة خلال ثوانٍ مع جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto</h1>
           <p class="lead" data-translate="hero.description">جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين الأفراد.</p>
           <div class="badges">
@@ -591,17 +607,17 @@
             <button class="btn primary" onclick="addToCart(1)" data-translate="hero.orderNow">اطلب الآن</button> <!-- Applied .primary class - visual refactor - 2025-10-02 -->
             <a class="btn ghost" href="#how" data-translate="hero.howItWorks">كيف يعمل؟</a>
           </div>
-          <div class="kpis" style="margin-top:10px">
-            <div class="kpi"><div class="big"><span class="numbers-fix">+250</span></div><div class="muted" data-translate="hero.trustedClients">عميل موثوق</div></div>
-            <div class="kpi"><div class="big"><span class="numbers-fix">12</span></div><div class="muted" data-translate="hero.warranty">شهر ضمان</div></div>
-            <div class="kpi"><div class="big"><span class="numbers-fix">24/7</span></div><div class="muted" data-translate="hero.support">دعم عبر واتساب</div></div>
-            <div class="kpi"><div class="big"><span class="numbers-fix">3-7</span></div><div class="muted" data-translate="hero.delivery">أيام للتوصيل</div></div>
-          </div>
         </div>
-        <div class="card product-card mobile-optimized card-hover">
-          <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp')">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" width="400" height="300" />
-          </div>
+        <div class="product-img-container mobile-optimized card-hover image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp')">
+          <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" width="400" height="300" />
+        </div>
+        <div class="kpis" style="margin-top:10px">
+          <div class="kpi"><div class="big"><span class="numbers-fix">+250</span></div><div class="muted" data-translate="hero.trustedClients">عميل موثوق</div></div>
+          <div class="kpi"><div class="big"><span class="numbers-fix">12</span></div><div class="muted" data-translate="hero.warranty">شهر ضمان</div></div>
+          <div class="kpi"><div class="big"><span class="numbers-fix">24/7</span></div><div class="muted" data-translate="hero.support">دعم عبر واتساب</div></div>
+          <div class="kpi"><div class="big"><span class="numbers-fix">3-7</span></div><div class="muted" data-translate="hero.delivery">أيام للتوصيل</div></div>
+        </div>
+        <div class="product-extra">
           <ul class="muted product-desc" style="margin:0 0 8px 0; padding:0 12px;">
             <li data-translate="hero.feature1">يكشف الطلاء التجميلي والطبقات الإضافية واللمعان.</li>
             <li data-translate="hero.feature2">يظهر معالم الإصلاح تحت طبقات الحماية/PPF وحتى تحت اللف.</li>
@@ -1031,7 +1047,7 @@
           <p data-translate="privacy.introText">نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية والإرجاع هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.</p>
          
           <h4 data-translate="privacy.dataTitle">البيانات التي نجمعها</h4>
-          <p data-translate="privacy.dataText">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم 2Checkout لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
+          <p data-translate="privacy.dataText">عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم برنامج 2Checkout لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
          
           <h4 data-translate="privacy.usageTitle">كيف نستخدم بياناتك</h4>
           <p data-translate="privacy.usageText">نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).</p>
