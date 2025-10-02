@@ -48,11 +48,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
 
     :root {
       --brand: #2563eb; --brand-2: #3b82f6; --brand-light: #dbeafe;
+      --accent: #22c55e;
       --text: #0f172a; --muted: #475569; --bg: #f8fafc; --card: #ffffff;
       --ok: #16a34a; --warn: #f59e0b; --danger: #dc2626;
       --radius: 12px; --shadow: 0 5px 15px rgba(0,0,0,0.08);
@@ -63,7 +65,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
    
     html, body {
-      font-family: "Cairo", sans-serif;
+      font-family: "Cairo", "Roboto", sans-serif;
       color: var(--text); background: var(--bg); line-height: 1.5;
       font-weight: 400;
     }
@@ -121,18 +123,18 @@
    
     .hero .wrap {
       position: relative; z-index: 2; display: grid;
-      grid-template-columns: 1.1fr .9fr; gap: 16px; align-items: start;
+      grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;
     }
    
-    .hero h1 { font-size: clamp(24px,4vw,40px); line-height: 1.15; margin: 4px 0 8px; color: white; font-weight: 700; }
+    .hero h1 { font-size: clamp(32px,5vw,48px); line-height: 1.15; margin: 4px 0 8px; color: white; font-weight: 700; }
     .hero .lead { color: #e2e8f0; font-size: clamp(14px,2vw,16px); }
    
     .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-    .badge { font-size: 11px; border: 1px solid rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: white; }
+    .badge { font-size: 11px; border: 1px solid rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 8px; background: rgba(34,197,94,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #22c55e; }
    
     .cta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
    
-    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
     .product-card { display: grid; gap: 8px; }
    
     .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; }
@@ -142,12 +144,12 @@
     .image-container { position: relative; width: 100%; overflow: hidden; cursor: pointer; }
     .image-container:hover img { transform: scale(1.05); }
    
-    .grid { display: grid; gap: 10px; }
+    .grid { display: grid; gap: 20px; }
     .grid.cols-2 { grid-template-columns: repeat(2,1fr); }
     .grid.cols-3 { grid-template-columns: repeat(3,1fr); }
     .grid.cols-4 { grid-template-columns: repeat(4,1fr); }
    
-    section { padding: 14px 0; }
+    section { padding: 14px 0; animation: fadeIn 0.5s ease-in; }
     h2 { font-size: clamp(20px,2.8vw,26px); margin: 0 0 8px; font-weight: 700; }
     h3 { font-size: clamp(16px,2.2vw,20px); margin: 0 0 6px; font-weight: 700; }
     .muted { color: var(--muted); }
@@ -504,6 +506,11 @@
       .whatsapp-icon {
         margin-top: 13px;
       }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
   </style>
@@ -1768,9 +1775,6 @@
           }
         }
       });
-     
-      
-      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
     }
 
     
