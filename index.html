@@ -405,6 +405,23 @@
     [dir="ltr"] .car-theme-border { border-left: none; border-right: 4px solid var(--brand); }
     [dir="ltr"] .footer-contact-item { direction: ltr; }
    
+    /* ==== header mobile overlap fix ==== */
+    header .inner { align-items: center; gap: 12px; }
+    header .logo { flex: 0 0 auto; }
+    header nav { flex: 1 1 auto; min-width: 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; overflow: hidden; }
+    header nav a { flex: 0 0 auto; white-space: nowrap; }
+
+    /* allow horizontal scroll on very small screens without overlapping */
+    @media (max-width: 768px) {
+      header nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      header .logo span { display: none; } /* already set in file but keep for safety */
+    }
+
+    /* small tweak to ensure cart icon spacing on tiny screens */
+    @media (max-width: 480px) {
+      .cart-icon { margin-left: 6px; }
+    }
+   
     /* Responsive styles */
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
@@ -581,37 +598,38 @@
             <button class="btn primary" onclick="addToCart(1)" data-translate="hero.orderNow">اطلب الآن</button> <!-- Applied .primary class - visual refactor - 2025-10-02 -->
             <a class="btn ghost" href="#how" data-translate="hero.howItWorks">كيف يعمل؟</a>
           </div>
-          <div class="kpis" style="margin-top:10px">
-            <div class="kpi"><div class="big"><span class="numbers-fix">+250</span></div><div class="muted" data-translate="hero.trustedClients">عميل موثوق</div></div>
-            <div class="kpi"><div class="big"><span class="numbers-fix">12</span></div><div class="muted" data-translate="hero.warranty">شهر ضمان</div></div>
-            <div class="kpi"><div class="big"><span class="numbers-fix">24/7</span></div><div class="muted" data-translate="hero.support">دعم عبر واتساب</div></div>
-            <div class="kpi"><div class="big"><span class="numbers-fix">3-7</span></div><div class="muted" data-translate="hero.delivery">أيام للتوصيل</div></div>
-          </div>
         </div>
-        <div class="card product-card mobile-optimized card-hover">
-          <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp')">
-            <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" width="400" height="300" />
-          </div>
-          <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;">
-            <li data-translate="hero.feature1">يكشف الطلاء التجميلي والطبقات الإضافية واللمعان.</li>
-            <li data-translate="hero.feature2">يظهر معالم الإصلاح تحت طبقات الحماية/PPF وحتى تحت اللف.</li>
-            <li data-translate="hero.feature3">كاشف تسريبات التكييف مع صبغة UV (يدعم أصباغ UV الشائعة).</li>
-          </ul>
-          <div class="grid cols-2">
-            <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
-              <div class="muted" style="font-size:11px" data-translate="hero.frontBackView">منظر أمامي وخلفي</div>
-              <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true')">
-                <img src="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true" alt="منظر أمامي وخلفي للجهاز" loading="lazy" width="150" height="100" />
-              </div>
-            </div>
-            <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
-              <div class="muted" style="font-size:11px" data-translate="hero.sideView">منظر جانبي</div>
-              <div class="sub-image-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp')">
-                <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp" alt="منظر جانبي للجهاز" loading="lazy" width="150" height="100" />
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- START REPLACE: product-card -->
+<div class="card product-card mobile-optimized card-hover">
+  <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp')">
+    <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" width="400" height="300" />
+  </div>
+
+  <!-- KPIs moved directly below main image in the requested order -->
+  <div class="kpis" style="margin-top:10px">
+    <div class="kpi"><div class="big"><span class="numbers-fix">+250</span></div><div class="muted">عميل موثوق</div></div>
+    <div class="kpi"><div class="big"><span class="numbers-fix">12</span></div><div class="muted">شهر ضمان</div></div>
+    <div class="kpi"><div class="big"><span class="numbers-fix">24/7</span></div><div class="muted">دعم عبر واتساب</div></div>
+    <div class="kpi"><div class="big"><span class="numbers-fix">3-7</span></div><div class="muted">أيام للتوصيل</div></div>
+  </div>
+
+  <!-- Sub images (front/back and side) placed under KPIs -->
+  <div class="grid cols-2" style="margin-top:12px">
+    <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
+      <div class="muted" style="font-size:11px">منظر أمامي وخلفي</div>
+      <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true')">
+        <img src="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true" alt="منظر أمامي وخلفي للجهاز" loading="lazy" width="150" height="100" />
+      </div>
+    </div>
+    <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
+      <div class="muted" style="font-size:11px">منظر جانبي</div>
+      <div class="sub-image-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp')">
+        <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/side_1.webp" alt="منظر جانبي للجهاز" loading="lazy" width="150" height="100" />
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END REPLACE: product-card -->
       </div>
     </section>
 
@@ -1375,7 +1393,7 @@
         'order.privacy2': 'سياسة الخصوصية والإرجاع',
         'order.privacy3': ' وشروط الاستخدام',
         'order.whatsappTitle': 'سيتم إرسال طلبك مباشرة عبر واتساب',
-        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
+        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
         'order.submit': 'إرسال الطلب via WhatsApp',
         'order.namePlaceholder': 'مثال: أحمد خالد',
         'order.emailPlaceholder': 'مثال: example@domain.com',
@@ -2208,7 +2226,7 @@
       document.getElementById('privacyModal').style.display = 'none';
     }
 
-    
+   
     function waLink(phone, text) {
       const p = phone.replace(/[^0-9]/g, "");
       const t = encodeURIComponent(text);
