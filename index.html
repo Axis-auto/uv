@@ -163,7 +163,7 @@
     .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; background: #f8f8f8; /* Neutral background - visual refactor - 2025-10-02 */ }
     .product-img-container img, .sub-image-container img { width: 100%; height: auto; object-fit: contain; transition: transform 0.3s ease; }
     .product-img-container img { max-height: 400px; object-fit: cover; object-position: center; /* Unified sizing - visual refactor - 2025-10-02 */ }
-    .sub-image-container img { max-height: 150px; object-fit: cover; object-position: center; /* Unified sizing - visual refactor - 2025-10-02 */ }
+    .sub-image-container img { max-height: 150px; object-fit: contain; object-position: center; /* Unified sizing - visual refactor - 2025-10-02 */ }
     .image-container { position: relative; width: 100%; overflow: hidden; cursor: pointer; }
     .image-container:hover img { transform: scale(1.05); }
    
@@ -531,37 +531,7 @@
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Fix: allow nav to shrink and enable horizontal scroll on small screens */
-    header .inner { min-width: 0; align-items: center; }
-    header .inner .logo { flex: 0 0 auto; min-width: 0; }
-    header nav {
-      flex: 1 1 auto;
-      min-width: 0;                /* important to allow flex children to overflow properly */
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      padding-inline: 4px;         /* small padding to avoid clipping */
-    }
-    header nav::-webkit-scrollbar { display: none; }
-    header nav a, header nav .btn {
-      flex: 0 0 auto;
-      white-space: nowrap;
-      min-height: 44px;            /* ensure touch target */
-      display: inline-flex;
-      align-items: center;
-    }
-    /* Tighten spacing on very small screens to avoid clipping */
-    @media (max-width: 420px) {
-      .logo img { height: 28px; }
-      .logo span { display: none; } /* already present but ensure */
-      header nav { gap: 6px; padding-inline: 6px; }
-      .btn.primary { padding: 8px 12px; font-size: 13px; }
-    }
-    /* Performance: avoid background-attachment: fixed on mobile */
+    /* Fix for numbers display */
     @media (pointer:coarse) {
       header, .hero, footer { background-attachment: scroll !important; }
     }
@@ -636,7 +606,7 @@
           <div class="grid cols-2">
             <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
               <div class="muted" style="font-size:11px" data-translate="hero.frontBackView">منظر أمامي وخلفي</div>
-              <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true')">
+              <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true')">
                 <img src="https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true" alt="منظر أمامي وخلفي للجهاز" loading="lazy" width="150" height="100" />
               </div>
             </div>
