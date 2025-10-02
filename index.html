@@ -45,6 +45,10 @@
   }
   </script>
   
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+  
   <style>
 
     :root {
@@ -59,8 +63,9 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
    
     html, body {
-      font-family: system-ui, -apple-system, Tahoma, Arial, "Noto Kufi Arabic", "Cairo", sans-serif;
+      font-family: "Cairo", sans-serif;
       color: var(--text); background: var(--bg); line-height: 1.5;
+      font-weight: 400;
     }
    
     a { color: inherit; text-decoration: none; }
@@ -119,7 +124,7 @@
       grid-template-columns: 1.1fr .9fr; gap: 16px; align-items: start;
     }
    
-    .hero h1 { font-size: clamp(24px,4vw,40px); line-height: 1.15; margin: 4px 0 8px; color: white; }
+    .hero h1 { font-size: clamp(24px,4vw,40px); line-height: 1.15; margin: 4px 0 8px; color: white; font-weight: 700; }
     .hero .lead { color: #e2e8f0; font-size: clamp(14px,2vw,16px); }
    
     .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
@@ -143,8 +148,8 @@
     .grid.cols-4 { grid-template-columns: repeat(4,1fr); }
    
     section { padding: 14px 0; }
-    h2 { font-size: clamp(20px,2.8vw,26px); margin: 0 0 8px; }
-    h3 { font-size: clamp(16px,2.2vw,20px); margin: 0 0 6px; }
+    h2 { font-size: clamp(20px,2.8vw,26px); margin: 0 0 8px; font-weight: 700; }
+    h3 { font-size: clamp(16px,2.2vw,20px); margin: 0 0 6px; font-weight: 700; }
     .muted { color: var(--muted); }
    
     .features .feat, .steps .step { display: flex; gap: 8px; align-items: flex-start; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; transition: transform 0.2s; }
@@ -204,7 +209,7 @@
     .car-theme-border { border-left: 4px solid var(--brand); }
    
     .warnings { background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius); padding: 12px; margin: 12px 0; }
-    .warnings h4 { margin-top: 0; color: #92400e; }
+    .warnings h4 { margin-top: 0; color: #92400e; font-weight: 700; }
     .warnings ul { margin: 6px 0; padding-right: 16px; }
     .warnings li { margin-bottom: 4px; }
    
@@ -245,7 +250,7 @@
     .timeline-step p { text-align: center; margin: 0; font-size: 12px; }
    
     .privacy-policy { max-height: 300px; overflow-y: auto; padding: 12px; border: 1px solid #e2e8f0; border-radius: var(--radius); background-color: #f8fafc; margin: 12px 0; }
-    .privacy-policy h4 { margin-top: 0; color: var(--brand); }
+    .privacy-policy h4 { margin-top: 0; color: var(--brand); font-weight: 700; }
     .privacy-policy p { font-size: 14px; line-height: 1.6; }
     .privacy-checkbox { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0; }
     .privacy-checkbox input { margin-top: 4px; }
@@ -277,6 +282,7 @@
     .footer-contact h3 {
       margin-bottom: 12px;
       color: white;
+      font-weight: 700;
     }
    
     .footer-contact-item {
@@ -1365,7 +1371,7 @@
         'info.about2': 'الجهاز معتمد ومستخدم في مراكز AXIS المتخصصة بفحص المركبات، وقد أثبت فعالية كبيرة في كشف أدق العيوب والإصلاحات غير المرئية.',
         'info.shippingTitle': 'معلومات الشحن',
         'info.shipping1': 'مدة الشحن: 3-7 أيام عمل',
-        'info.shipping2': 'الشحن متاح لجميع دول الشرق الأوسط والعالم',
+        'info.shipping2': 'الشحن متاح لجميع دول المنطقة والعالم',
         'info.shipping3': 'تتبع الشحنة متاح عبر البريد الإلكتروني',
        
         // سياسة الخصوصية
