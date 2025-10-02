@@ -250,7 +250,7 @@
     .file-upload { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
     .file-upload label { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: #f8fafc; border: 1px dashed #93c5fd; border-radius: 8px; cursor: pointer; }
     .file-upload label:hover { background: #e0f2fe; }
-    .file-name { font-size: 14px; color: var(--muted); }
+    .file-name { font-size: 14px; color: var(--muted); margin-top: 4px; }
    
     .alert { padding: 10px; border-radius: 8px; margin: 8px 0; display: none; }
     .alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
@@ -530,6 +530,42 @@
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Fix: allow nav to shrink and enable horizontal scroll on small screens */
+    header .inner { min-width: 0; align-items: center; }
+    header .inner .logo { flex: 0 0 auto; min-width: 0; }
+    header nav {
+      flex: 1 1 auto;
+      min-width: 0;                /* important to allow flex children to overflow properly */
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-inline: 4px;         /* small padding to avoid clipping */
+    }
+    header nav::-webkit-scrollbar { display: none; }
+    header nav a, header nav .btn {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      min-height: 44px;            /* ensure touch target */
+      display: inline-flex;
+      align-items: center;
+    }
+    /* Tighten spacing on very small screens to avoid clipping */
+    @media (max-width: 420px) {
+      .logo img { height: 28px; }
+      .logo span { display: none; } /* already present but ensure */
+      header nav { gap: 6px; padding-inline: 6px; }
+      .btn.primary { padding: 8px 12px; font-size: 13px; }
+    }
+    /* Performance: avoid background-attachment: fixed on mobile */
+    @media (pointer:coarse) {
+      header, .hero, footer { background-attachment: scroll !important; }
+    }
+
   </style>
 </head>
 
