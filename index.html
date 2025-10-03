@@ -578,6 +578,7 @@
       .sub-image-container {
         padding: 0;
       }
+      .sub-images-grid { display: none; }
     }
    
     @media (max-width:640px) {
@@ -805,7 +806,6 @@
           <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
           <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         </div>
-        <a href="#order" class="btn primary" data-translate="nav.order">اطلب الآن</a>
         <div class="lang-switcher" id="langSwitcher">
           <span id="currentLang">EN</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -854,7 +854,7 @@
             <div class="kpi"><div class="big"><span class="numbers-fix">3-7</span></div><div class="muted" data-translate="hero.delivery">أيام للتوصيل</div></div>
           </div>
 
-          <div class="grid cols-2" style="margin-top:12px">
+          <div class="grid cols-2 sub-images-grid" style="margin-top:12px">
             <div class="card" style="padding:4px; border:none; box-shadow:none; background:none;">
               <div class="muted" style="font-size:11px" data-translate="hero.frontBackView">منظر أمامي وخلفي</div>
               <div class="sub-image-container image-container" onclick="openModal('https://github.com/Axis-auto/uv/blob/main/%D8%B5%D9%88%D8%B1%20%D9%85%D9%86%20%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%20%D9%88%20%D8%A7%D9%84%D8%AE%D9%84%D9%81%20.jpg?raw=true')">
@@ -1596,7 +1596,7 @@
         'order.privacy2': 'سياسة الخصوصية والإرجاع',
         'order.privacy3': ' وشروط الاستخدام',
         'order.whatsappTitle': 'سيتم إرسال طلبك مباشرة عبر واتساب',
-        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال 24 ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
+        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
         'order.submit': 'إرسال الطلب via WhatsApp',
         'order.namePlaceholder': 'مثال: أحمد خالد',
         'order.emailPlaceholder': 'مثال: example@domain.com',
