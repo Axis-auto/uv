@@ -783,18 +783,32 @@
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+/* Disable fixed background on small screens to avoid mobile rendering/perf issues */
+@media (max-width: 768px) {
+  header, .hero, .page-hero, .banner {
+    background-attachment: scroll !important;
+    background-position: center;
+    background-size: cover;
+    will-change: auto;
+  }
+}
+.mobile-menu { display:none; transform-origin: top; transition: transform .25s ease, opacity .18s ease; opacity:0; }
+.mobile-menu.open { display:block; transform: translateY(0); opacity:1; }
+@media (max-width: 360px) {
+  .floating-cta, .whatsapp-float, .floating { transform: translateY(-10px); font-size: 14px; padding: 8px 10px; }
+}
   </style>
 </head>
 
 <body>
-
+<a class="skip-link" href="#main-content">تخطي إلى المحتوى</a>
   <header>
     <div class="container inner">
       <div class="logo" data-brand="Axis Auto">
         <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" width="40" height="40" />
         <span>Axis Auto</span>
       </div>
-      <nav style="display:flex;gap:8px;align-items:center">
+      <nav role="navigation" style="display:flex;gap:8px;align-items:center">
         <div id="mobileMenu" class="mobile-menu">
           <a href="#features" class="btn ghost" data-translate="nav.features">المميزات</a>
           <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
@@ -825,7 +839,7 @@
     </div>
   </header>
 
-  <main>
+  <main id="main-content">
     <!-- HERO SECTION -->
     <section class="hero">
       <div class="container wrap">
@@ -846,7 +860,10 @@
         <!-- START REPLACE: product-card -->
 <div class="card product-card mobile-optimized card-hover">
   <div class="product-img-container image-container" onclick="openModal('https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp')">
-    <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" width="400" height="300" />
+    <picture>
+  <source type="image/webp" srcset="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp 1200w, https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp 800w">
+  <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/%D8%B5%D9%88%D8%B1%D8%A9-%D8%A7%D9%84%D9%87%D9%8A%D8%B1%D9%88.webp" alt="جهاز فحص السيارات — منظر أمامي" loading="lazy" width="400" height="300" sizes="(max-width:768px) 90vw, 1200px">
+</picture>
   </div>
 
   <!-- KPIs moved directly below main image in the requested order -->
@@ -2097,6 +2114,7 @@
      
       if (input.files.length > 0) {
         fileNameField.textContent = input.files[0].name;
+        fileNameField.classList.add('file-selected');
         fileNameField.style.color = "var(--ok)";
        
         if (input.files[0].type.match('image.*')) {
@@ -2118,7 +2136,7 @@
 
     
     async function uploadImageToImgBB(file) {
-      const apiKey = '1404ac190ec18b119b80e9f2e3955731';
+      const apiKey = '1404ac190ec18b119b80e9f2e3955731'; /* TODO: Move API key to server-side. Do not expose in client JS. */
       const formData = new FormData();
       formData.append('image', file);
      
@@ -2452,9 +2470,28 @@
 
     // Mobile Menu Toggle
     function toggleMobileMenu() {
-      const mobileMenu = document.getElementById('mobileMenu');
-      mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
+  const mobileMenu = document.getElementById('mobileMenu'); // احتفظ بنفس الـ ID
+  const menuIcon = document.querySelector('.menu-icon') || document.getElementById('menuIcon');
+  if(!mobileMenu) return;
+  mobileMenu.classList.toggle('open'); // CSS داعم مطلوب (أدناه)
+  const isOpen = mobileMenu.classList.contains('open');
+  if(menuIcon) menuIcon.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+// Ensure keyboard accessibility for the menu icon (add once)
+(function ensureMenuIconAccessibility(){
+  const menuIcon = document.querySelector('.menu-icon') || document.getElementById('menuIcon');
+  if(!menuIcon) return;
+  menuIcon.setAttribute('role','button');
+  menuIcon.setAttribute('tabindex','0');
+  if(!menuIcon.hasAttribute('aria-expanded')) menuIcon.setAttribute('aria-expanded','false');
+  menuIcon.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleMobileMenu();
     }
+  });
+})();
 
     
     window.onclick = function(event) {
