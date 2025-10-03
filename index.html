@@ -250,7 +250,7 @@
     .file-upload { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
     .file-upload label { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: #f8fafc; border: 1px dashed #93c5fd; border-radius: 8px; cursor: pointer; }
     .file-upload label:hover { background: #e0f2fe; }
-    .file-name { font-size: 14px; color: var(--muted); }
+    .file-name { font-size: 14px; color: var(--muted); margin-top: 4px; }
    
     .alert { padding: 10px; border-radius: 8px; margin: 8px 0; display: none; }
     .alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
@@ -471,6 +471,39 @@
       justify-content: center;
     }
 
+    /* Mobile Menu Styles */
+    .menu-icon {
+      display: none;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--header-bg-overlay);
+      width: 200px;
+      padding: 10px;
+      border-radius: 0 0 8px 8px;
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .mobile-menu a {
+      display: block;
+      padding: 10px;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .mobile-menu a:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
     /* Responsive styles */
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
@@ -481,38 +514,45 @@
     @media (max-width:768px) {
       .logo { font-size: 16px; }
       .logo img { height: 35px; }
-      .logo span { font-size: 14px; display: none; } 
-      
-      header .inner { 
-        flex-wrap: nowrap; 
-        justify-content: space-between; 
-        align-items: center; 
-        gap: 8px; 
-        padding: 6px 8px; 
-      } 
-      
-      nav { 
-        display: flex; 
-        align-items: center; 
-        gap: 6px; 
-        flex: 1; 
-        justify-content: flex-end; 
-        flex-wrap: nowrap; 
-        overflow-x: auto; 
-        padding: 0 4px; 
-        -webkit-overflow-scrolling: touch; 
-        scrollbar-width: none; 
-        -ms-overflow-style: none; 
-      } 
-      
-      nav::-webkit-scrollbar { display: none; }
-      
-      .btn.ghost { 
-        padding: 6px 10px; 
-        font-size: 12px; 
-        white-space: nowrap; 
+      .logo span { font-size: 14px; } /* Removed display: none; to keep text visible */
+
+      .menu-icon {
+        display: block;
+        order: -1; /* Place on left */
       }
-      
+
+      header nav .nav-links {
+        display: none; /* Hide original nav links */
+      }
+
+      header .inner {
+        justify-content: space-between;
+        padding: 6px 8px;
+        gap: 8px;
+      }
+
+      header nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      header nav::-webkit-scrollbar { display: none; }
+
+      .btn.ghost {
+        padding: 6px 10px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
       .hero h1, .hero .lead { text-align: center; }
       .badges, .cta-row { justify-content: center; }
       .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
@@ -523,7 +563,7 @@
       .icon, .step .num { margin: 0 auto; }
       .footer-bottom { flex-direction: column; text-align: center; }
       .footer-links { justify-content: center; }
-      
+
       /* تعديلات الهيدر للشاشات المتوسطة */
       .lang-switcher { 
         padding: 4px 8px; 
@@ -531,11 +571,11 @@
         gap: 4px; 
         min-width: 50px;
       }
-      
+
       .cart-icon .fa-shopping-cart { 
         font-size: 16px; 
       }
-      
+
       .cart-count { 
         font-size: 10px; 
         min-width: 16px; 
@@ -750,14 +790,22 @@
 
   <header>
     <div class="container inner">
+      <div class="menu-icon" onclick="toggleMobileMenu()">&#9776;</div>
       <div class="logo" data-brand="Axis Auto">
         <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" width="40" height="40" />
         <span>Axis Auto</span>
       </div>
       <nav style="display:flex;gap:8px;align-items:center">
-        <a href="#features" class="btn ghost" data-translate="nav.features">المميزات</a>
-        <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
-        <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
+        <div id="mobileMenu" class="mobile-menu">
+          <a href="#features" class="btn ghost" data-translate="nav.features">المميزات</a>
+          <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
+          <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
+        </div>
+        <div class="nav-links">
+          <a href="#features" class="btn ghost" data-translate="nav.features">المميزات</a>
+          <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
+          <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
+        </div>
         <a href="#order" class="btn primary" data-translate="nav.order">اطلب الآن</a> <!-- Applied .primary class - visual refactor - 2025-10-02 -->
         <div class="lang-switcher" id="langSwitcher">
           <span id="currentLang">EN</span>
@@ -2400,6 +2448,12 @@
       }
       closeCartModal();
       document.querySelector('#order').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Mobile Menu Toggle
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
     }
 
     
