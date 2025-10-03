@@ -158,7 +158,7 @@
     .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; /* Adjusted spacing - visual refactor - 2025-10-02 */ }
    
     .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); /* Increased padding - visual refactor - 2025-10-02 */ }
-    .product-card { display: grid; gap: 12px; /* Adjusted gap - visual refactor - 2025-10-02 */ }
+    .product-card { display: grid; gap: 12px; /* Adjusted gap - visual refactor - 2025-10-02 */ background: var(--brand-light); }
    
     .product-img-container, .sub-image-container { width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: hidden; margin: 0; padding: 0; background: #f8f8f8; /* Neutral background - visual refactor - 2025-10-02 */ }
     .product-img-container img, .sub-image-container img { width: 100%; height: auto; object-fit: contain; transition: transform 0.3s ease; }
@@ -484,12 +484,13 @@
       position: absolute;
       top: 100%;
       left: 0;
-      background: var(--header-bg-overlay);
+      background: rgba(0,0,0,0.8);
       width: 200px;
       padding: 10px;
       border-radius: 0 0 8px 8px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
       z-index: 100;
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .mobile-menu a {
@@ -518,7 +519,6 @@
 
       .menu-icon {
         display: block;
-        order: -1; /* Place on left */
       }
 
       header nav .nav-links {
@@ -790,7 +790,6 @@
 
   <header>
     <div class="container inner">
-      <div class="menu-icon" onclick="toggleMobileMenu()">&#9776;</div>
       <div class="logo" data-brand="Axis Auto">
         <img src="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/axislogo.webp" alt="Axis Auto Logo" loading="lazy" width="40" height="40" />
         <span>Axis Auto</span>
@@ -822,6 +821,7 @@
           <span class="cart-count" id="cartCount">0</span>
         </div>
       </nav>
+      <div class="menu-icon" onclick="toggleMobileMenu()">&#9776;</div>
     </div>
   </header>
 
