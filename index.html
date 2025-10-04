@@ -1198,7 +1198,7 @@
            
             <div class="card" id="whatsappCard" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
               <strong data-translate="order.whatsappTitle">سيتم إرسال طلبك مباشرة عبر واتساب</strong>
-              <div class="muted" data-translate="order.whatsappDesc">سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال</div>
+              <div class="muted" data-translate="order.whatsappDesc">سيتواصل معك فريق الدعم خلال وقت قصير لتأكيد طلبك وإرسال فاتورة الشراء</div>
             </div>
           </form>
 
@@ -1596,7 +1596,7 @@
         'order.privacy2': 'سياسة الخصوصية والإرجاع',
         'order.privacy3': ' وشروط الاستخدام',
         'order.whatsappTitle': 'سيتم إرسال طلبك مباشرة عبر واتساب',
-        'order.whatsappDesc': 'سيتصل بك فريق الدعم خلال <span class="numbers-fix">24</span> ساعة لتأكيد الطلب ومساعدتك في إرسال صورة الإيصال',
+        'order.whatsappDesc': 'سيتواصل معك فريق الدعم خلال وقت قصير لتأكيد طلبك وإرسال فاتورة الشراء',
         'order.submit': 'إرسال الطلب via WhatsApp',
         'order.namePlaceholder': 'مثال: أحمد خالد',
         'order.emailPlaceholder': 'مثال: example@domain.com',
@@ -1820,7 +1820,7 @@
         'order.privacy2': 'Privacy and Return Policy',
         'order.privacy3': ' and Terms of Use',
         'order.whatsappTitle': 'Your order will be sent directly via WhatsApp',
-        'order.whatsappDesc': 'Our support team will contact you within 24 hours to confirm your order and help you send the receipt image',
+        'order.whatsappDesc': 'Our support team will contact you shortly to confirm your order and send the purchase invoice',
         'order.submit': 'Submit Order via WhatsApp',
         'order.namePlaceholder': 'Example: Ahmed Khalid',
         'order.emailPlaceholder': 'Example: example@domain.com',
@@ -2114,24 +2114,24 @@
       const address = document.getElementById('address').value.trim();
       const paymentMethod = document.getElementById('paymentMethod').value;
      
-      let msg = translations[currentLang]['order.orderMessage'] || 'طلب جهاز فحص السيارات%0A%0A';
-      msg += `${translations[currentLang]['order.name']}: ${name}%0A`;
-      msg += `${translations[currentLang]['order.email']}: ${email}%0A`;
-      msg += `${translations[currentLang]['order.phone']}: ${phone}%0A`;
-      msg += `${translations[currentLang]['order.country']}: ${country}%0A`;
-      msg += `${translations[currentLang]['order.address']}: ${address}%0A`;
-      msg += `${translations[currentLang]['cart.quantity']}: ${cartQuantity}%0A`;
-      msg += `${translations[currentLang]['cart.subtotal']}: ${calculateSubtotal()} $%0A`;
-      msg += `${translations[currentLang]['cart.shipping']}: ${calculateShipping()} $%0A`;
-      msg += `${translations[currentLang]['cart.grandtotal']}: ${calculateGrandTotal()} $%0A`;
-      msg += `${translations[currentLang]['order.paymentMethod']}: ${paymentMethod === 'stripe' ? translations[currentLang]['order.paymentStripe'] : translations[currentLang]['order.paymentSwift']}%0A%0A`;
+      let msg = translations[currentLang]['order.orderMessage'] || 'طلب جهاز فحص السيارات\n\n';
+      msg += `${translations[currentLang]['order.name']}: ${name}\n`;
+      msg += `${translations[currentLang]['order.email']}: ${email}\n`;
+      msg += `${translations[currentLang]['order.phone']}: ${phone}\n`;
+      msg += `${translations[currentLang]['order.country']}: ${country}\n`;
+      msg += `${translations[currentLang]['order.address']}: ${address}\n`;
+      msg += `${translations[currentLang]['cart.quantity']}: ${cartQuantity}\n`;
+      msg += `${translations[currentLang]['cart.subtotal']}: ${calculateSubtotal()} $\n`;
+      msg += `${translations[currentLang]['cart.shipping']}: ${calculateShipping()} $\n`;
+      msg += `${translations[currentLang]['cart.grandtotal']}: ${calculateGrandTotal()} $\n`;
+      msg += `${translations[currentLang]['order.paymentMethod']}: ${paymentMethod === 'stripe' ? translations[currentLang]['order.paymentStripe'] : translations[currentLang]['order.paymentSwift']}\n\n`;
      
       if (imageUrl) {
-        msg += `${translations[currentLang]['order.receipt']}: ${imageUrl}%0A%0A`;
-        msg += `${translations[currentLang]['order.receiptView'] || 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.receipt']}: ${imageUrl}\n\n`;
+        msg += `${translations[currentLang]['order.receiptView'] || 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.'}\n\n`;
       } else {
-        msg += `${translations[currentLang]['order.noReceipt'] || 'لم يتم رفع إيصال الدفع بعد.'}%0A%0A`;
-        msg += `${translations[currentLang]['order.sendLater'] || 'يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.'}%0A%0A`;
+        msg += `${translations[currentLang]['order.noReceipt'] || 'لم يتم رفع إيصال الدفع بعد.'}\n\n`;
+        msg += `${translations[currentLang]['order.sendLater'] || 'يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.'}\n\n`;
       }
      
       msg += translations[currentLang]['order.thanks'] || 'شكراً لخدمتكم!';
