@@ -1603,6 +1603,11 @@
         'order.phonePlaceholder': 'مثال: 05xxxxxxxx',
         'order.countryPlaceholder': 'مثال: الإمارات العربية المتحدة',
         'order.addressPlaceholder': 'مثال: مدينة دبي، منطقة المرر، شارع الشيخ محمد بن زايد',
+        'order.orderMessage': 'طلب جهاز فحص السيارات\n\n',
+        'order.receiptView': 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.\n\n',
+        'order.noReceipt': 'لم يتم رفع إيصال الدفع بعد.\n\n',
+        'order.sendLater': 'يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.\n\n',
+        'order.thanks': 'شكراً لخدمتكم!',
         'info.title': 'معلومات إضافية',
         'info.warrantyTitle': 'الضمان والخدمة',
         'info.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
@@ -1827,6 +1832,11 @@
         'order.phonePlaceholder': 'Example: 05xxxxxxxx',
         'order.countryPlaceholder': 'Example: United Arab Emirates',
         'order.addressPlaceholder': 'Example: Dubai, Al Marrar Area, Sheikh Mohammed Bin Zayed Road',
+        'order.orderMessage': 'Request for Car Inspection Device\n\n',
+        'order.receiptView': 'You can click on the link above to view the receipt image.\n\n',
+        'order.noReceipt': 'No payment receipt uploaded yet.\n\n',
+        'order.sendLater': 'You can send the receipt image later via WhatsApp.\n\n',
+        'order.thanks': 'Thank you for your service!',
         'info.title': 'Additional Information',
         'info.contactTitle': 'For Orders and Inquiries',
         'info.address': 'Sheikh Mohammed Bin Zayed Road - Al Raqa\'a Al Hamra - Used Car Market - United Arab Emirates',
@@ -2115,7 +2125,7 @@
       const paymentMethod = document.getElementById('paymentMethod').value;
      
       let msg = translations[currentLang]['order.orderMessage'] || 'طلب جهاز فحص السيارات\n\n';
-      msg += `${translations[currentLang]['order.name']}: ${name}\n`;
+      msg += `${translations[currentLang]['order.fullName']}: ${name}\n`;
       msg += `${translations[currentLang]['order.email']}: ${email}\n`;
       msg += `${translations[currentLang]['order.phone']}: ${phone}\n`;
       msg += `${translations[currentLang]['order.country']}: ${country}\n`;
