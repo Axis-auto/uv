@@ -1466,7 +1466,7 @@
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="package.item1">جهاز فحص السيارات</li>
             <li data-translate="package.item2">حقيبة حماية ضد الصدمات</li>
-            <li data-translate="package.item3">بطارية ليثيوم <span class="numbers-fix">8400</span> mAh</li>
+            <li data-translate="package.item3">بطارية ليثيوم <span class="numbers-fix">3000</span> mAh</li>
             <li data-translate="package.item4">شاحن سريع + كابل USB-C</li>
             <li data-translate="package.item5">دليل استخدام سريع وفيديوهات تعليمية</li>
             <li data-translate="package.item6">شهادة ضمان لمدة سنة</li>
@@ -1952,14 +1952,42 @@
       }
       applyTranslations(lang);
       updateLangSwitcher();
+      updateMetaTags(lang);
+      updateLdJson(lang);
+      updateUrlParam(lang);
       updateCart();
       localStorage.setItem('preferredLanguage', lang);
+    }
+
+    function updateMetaTags(lang) {
       document.title = translations[lang]['page.title'];
       document.querySelector('meta[name="description"]').content = translations[lang]['page.description'];
-      const comingSoonElement = document.querySelector('.payment-method.coming-soon');
-      if (comingSoonElement) {
-        comingSoonElement.setAttribute('data-coming-soon', lang === 'ar' ? 'يتوفر قريبا' : 'Coming Soon');
+      document.querySelector('meta[property="og:title"]').content = translations[lang]['page.title'];
+      document.querySelector('meta[property="og:description"]').content = translations[lang]['page.description'];
+      document.querySelector('meta[name="twitter:title"]').content = translations[lang]['page.title'];
+      document.querySelector('meta[name="twitter:description"]').content = translations[lang]['page.description'];
+
+      if (lang === 'en') {
+        document.querySelector('meta[name="keywords"]').content = "UV car inspection device, car paint inspection, UV leak detection, UV car inspection, AC leak detection, car paint check, used car inspection, car accident check";
+      } else {
+        document.querySelector('meta[name="keywords"]').content = "UV car inspection device, car paint inspection, UV leak detection, فحص السيارات بالأشعة فوق البنفسجية, كشف تسريبات التكييف, فحص دهان السيارة, فحص سيارة مستعملة, فحص حوادث السيارات";
       }
+    }
+
+    function updateLdJson(lang) {
+      const ldScript = document.querySelector('script[type="application/ld+json"]');
+      if (ldScript) {
+        let ld = JSON.parse(ldScript.textContent);
+        ld.name = translations[lang]['page.title'];
+        ld.description = translations[lang]['page.description'];
+        ldScript.textContent = JSON.stringify(ld);
+      }
+    }
+
+    function updateUrlParam(lang) {
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('lang', lang);
+      window.history.pushState({}, '', newUrl);
     }
 
     function updateLangSwitcher() {
