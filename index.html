@@ -281,6 +281,9 @@
    
     .lang-switcher { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: var(--transition); color: white; }
     .lang-switcher:hover { background: rgba(255,255,255,0.3); }
+    .lang-switcher a { padding: 4px 8px; border-radius: 16px; transition: var(--transition); }
+    .lang-switcher a.active { background: white; color: var(--brand); cursor: default; }
+    .lang-switcher a:hover:not(.active) { background: rgba(255,255,255,0.2); }
    
     .guarantee-badge { display: flex; align-items: center; gap: 6px; margin: 12px 0; padding: 8px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; }
    
@@ -807,8 +810,8 @@
           <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         </div>
         <div class="lang-switcher">
-          <a href="?lang=ar">AR</a>
-          <a href="?lang=en">EN</a>
+          <a onclick="changeLanguage('ar')" id="lang-ar">AR</a>
+          <a onclick="changeLanguage('en')" id="lang-en">EN</a>
         </div>
         <div class="cart-icon" onclick="openCartModal()" role="button" aria-label="Open cart">
           <i class="fas fa-shopping-cart"></i>
@@ -1919,6 +1922,7 @@
         bestsellerElement.setAttribute('data-bestseller', lang === 'ar' ? 'الأفضل مبيعاً' : 'Bestseller');
       }
       applyTranslations(lang);
+      updateLangSwitcher();
       updateCart();
       localStorage.setItem('preferredLanguage', lang);
       document.title = translations[lang]['page.title'];
@@ -1927,6 +1931,11 @@
       if (comingSoonElement) {
         comingSoonElement.setAttribute('data-coming-soon', lang === 'ar' ? 'يتوفر قريبا' : 'Coming Soon');
       }
+    }
+
+    function updateLangSwitcher() {
+      document.getElementById('lang-ar').classList.toggle('active', currentLang === 'ar');
+      document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
     }
 
     function applyTranslations(lang) {
@@ -2130,7 +2139,7 @@
       msg += `${translations[currentLang]['order.paymentMethod']}: ${paymentMethod === 'stripe' ? translations[currentLang]['order.paymentStripe'] : translations[currentLang]['order.paymentSwift']}\n\n`;
      
       if (imageUrl) {
-        msg += `${translations[currentLang]['order.receipt']}: ${imageUrl}\n\n`;
+        msg += `${translations[currentLang]['order.receipt']}:\n${imageUrl}\n\n`;
         msg += `${translations[currentLang]['order.receiptView'] || 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.'}\n\n`;
       } else {
         msg += `${translations[currentLang]['order.noReceipt'] || 'لم يتم رفع إيصال الدفع بعد.'}\n\n`;
