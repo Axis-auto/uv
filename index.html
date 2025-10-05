@@ -23,8 +23,8 @@
   
   <link rel="canonical" href="https://axis-uv.com/" />
   <link rel="alternate" href="https://axis-uv.com/" hreflang="x-default" />
-  <link rel="alternate" href="https://axis-uv.com/" hreflang="ar" />
-  <link rel="alternate" href="https://axis-uv.com/" hreflang="en" />
+  <link rel="alternate" href="https://axis-uv.com/?lang=ar" hreflang="ar" />
+  <link rel="alternate" href="https://axis-uv.com/?lang=en" hreflang="en" />
   
   <meta property="og:title" content="جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ" />
   <meta property="og:description" content="جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
@@ -806,15 +806,9 @@
           <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
           <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         </div>
-        <div class="lang-switcher" id="langSwitcher">
-          <span id="currentLang">EN</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1 1.275-1.275L12 3Z"></path>
-            <path d="M5 3v4"></path>
-            <path d="M19 17v4"></path>
-            <path d="M3 5h4"></path>
-            <path d="M17 19h4"></path>
-          </svg>
+        <div class="lang-switcher">
+          <a href="?lang=ar">AR</a>
+          <a href="?lang=en">EN</a>
         </div>
         <div class="cart-icon" onclick="openCartModal()" role="button" aria-label="Open cart">
           <i class="fas fa-shopping-cart"></i>
@@ -1586,8 +1580,8 @@
         'order.country': 'الدولة',
         'order.address': 'العنوان',
         'order.paymentMethod': 'طريقة الدفع',
-        'order.paymentStripe': 'الدفع بالبطاقة',
         'order.paymentSwift': 'حوالة بنكية (SWIFT)',
+        'order.paymentStripe': 'الدفع بالبطاقة',
         'order.receipt': 'يرجى تحميل ايصال الدفع في حال تم الدفع',
         'order.chooseFile': 'اختر صورة لإرفاقها',
         'order.noFile': 'لم يتم اختيار ملف',
@@ -1610,7 +1604,7 @@
         'order.thanks': 'شكراً لخدمتكم!',
         'info.title': 'معلومات إضافية',
         'info.warrantyTitle': 'الضمان والخدمة',
-        'info.warranty1': 'ضمان لمدة 12 شهر ضد عيوب الصناعة',
+        'info.warranty1': 'ضمان لمدة <span class="numbers-fix">12</span> شهر ضد عيوب الصناعة',
         'info.warranty2': 'دعم فني متاح على مدار الساعة',
         'info.warranty3': 'خدمة ما بعد البيع عبر الواتساب والبريد الإلكتروني',
         'info.warranty4': 'إمكانية الصيانة والإصلاح في مركز معتمد',
@@ -1815,8 +1809,8 @@
         'order.country': 'Country',
         'order.address': 'Address',
         'order.paymentMethod': 'Payment Method',
-        'order.paymentStripe': 'Card Payment',
         'order.paymentSwift': 'Bank Transfer (SWIFT)',
+        'order.paymentStripe': 'Card Payment',
         'order.receipt': 'Please upload payment receipt if payment was made',
         'order.chooseFile': 'Choose image to attach',
         'order.noFile': 'No file selected',
@@ -1906,21 +1900,20 @@
     function initPage() {
       document.getElementById('y').textContent = new Date().getFullYear();
       const savedLang = localStorage.getItem('preferredLanguage');
-      if (savedLang) changeLanguage(savedLang);
+      const urlParams = new URLSearchParams(window.location.search);
+      const lang = urlParams.get('lang');
+      if (lang && ['ar', 'en'].includes(lang)) {
+        changeLanguage(lang);
+      } else if (savedLang) {
+        changeLanguage(savedLang);
+      }
       togglePaymentDetails();
-      document.getElementById('langSwitcher').addEventListener('click', toggleLanguage);
-    }
-
-    function toggleLanguage() {
-      const newLang = currentLang === 'ar' ? 'en' : 'ar';
-      changeLanguage(newLang);
     }
 
     function changeLanguage(lang) {
       currentLang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.lang = lang;
-      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
       const bestsellerElement = document.querySelector('.pricing-card.featured');
       if (bestsellerElement) {
         bestsellerElement.setAttribute('data-bestseller', lang === 'ar' ? 'الأفضل مبيعاً' : 'Bestseller');
