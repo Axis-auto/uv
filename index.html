@@ -2183,30 +2183,53 @@
       const address = document.getElementById('address').value.trim();
       const paymentMethod = document.getElementById('paymentMethod').value;
      
-      let msg = translations[currentLang]['order.orderMessage'] || 'طلب جهاز فحص السيارات\n\n';
-      msg += `${translations[currentLang]['order.fullName']}: ${name}\n`;
-      msg += `${translations[currentLang]['order.email']}: ${email}\n`;
-      msg += `${translations[currentLang]['order.phone']}: ${phone}\n`;
-      msg += `${translations[currentLang]['order.country']}: ${country}\n`;
-      msg += `${translations[currentLang]['order.address']}: ${address}\n`;
-      msg += `${translations[currentLang]['cart.quantity']}: ${cartQuantity}\n`;
-      msg += `${translations[currentLang]['cart.subtotal']}: ${calculateSubtotal()} $\n`;
-      msg += `${translations[currentLang]['cart.shipping']}: ${calculateShipping()} $\n`;
-      msg += `${translations[currentLang]['cart.grandtotal']}: ${calculateGrandTotal()} $\n`;
-      msg += `${translations[currentLang]['order.paymentMethod']}: ${paymentMethod === 'stripe' ? translations[currentLang]['order.paymentStripe'] : translations[currentLang]['order.paymentSwift']}\n\n`;
-     
-      if (imageUrl) {
-        msg += `${translations[currentLang]['order.receipt']}:\n${imageUrl}\n\n`;
-        msg += `${translations[currentLang]['order.receiptView'] || 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.'}\n\n`;
+      let msg = '';
+      if (currentLang === 'ar') {
+        msg = 'طلب جهاز فحص السيارات\n\n';
+        msg += `الاسم الكامل: ${name}\n`;
+        msg += `البريد الإلكتروني: ${email}\n`;
+        msg += `رقم الهاتف: ${phone}\n`;
+        msg += `الدولة: ${country}\n`;
+        msg += `العنوان: ${address}\n`;
+        msg += `الكمية: ${cartQuantity}\n`;
+        msg += `المجموع: ${calculateSubtotal()} $\n`;
+        msg += `الشحن: ${calculateShipping()} $\n`;
+        msg += `الإجمالي الكلي: ${calculateGrandTotal()} $\n`;
+        msg += `طريقة الدفع: ${paymentMethod === 'stripe' ? 'الدفع بالبطاقة' : 'حوالة بنكية (SWIFT)'}\n\n`;
+        
+        if (imageUrl) {
+          msg += `يرجى تحميل ايصال الدفع في حال تم الدفع:\n${imageUrl}\n\n`;
+          msg += `يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.\n\n`;
+        } else {
+          msg += `لم يتم رفع إيصال الدفع بعد.\n\n`;
+          msg += `يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.\n\n`;
+        }
+        msg += 'شكراً لخدمتكم!';
       } else {
-        msg += `${translations[currentLang]['order.noReceipt'] || 'لم يتم رفع إيصال الدفع بعد.'}\n\n`;
-        msg += `${translations[currentLang]['order.sendLater'] || 'يمكنك إرسال صورة الإيصال لاحقاً عبر واتساب.'}\n\n`;
+        msg = 'Request for Car Inspection Device\n\n';
+        msg += `Full Name: ${name}\n`;
+        msg += `Email Address: ${email}\n`;
+        msg += `Phone Number: ${phone}\n`;
+        msg += `Country: ${country}\n`;
+        msg += `Address: ${address}\n`;
+        msg += `Quantity: ${cartQuantity}\n`;
+        msg += `Subtotal: ${calculateSubtotal()} $\n`;
+        msg += `Shipping: ${calculateShipping()} $\n`;
+        msg += `Grand Total: ${calculateGrandTotal()} $\n`;
+        msg += `Payment Method: ${paymentMethod === 'stripe' ? 'Card Payment' : 'Bank Transfer (SWIFT)'}\n\n`;
+        
+        if (imageUrl) {
+          msg += `Please upload payment receipt if payment was made:\n${imageUrl}\n\n`;
+          msg += `You can click on the link above to view the receipt image.\n\n`;
+        } else {
+          msg += `No payment receipt uploaded yet.\n\n`;
+          msg += `You can send the receipt image later via WhatsApp.\n\n`;
+        }
+        msg += 'Thank you for your service!';
       }
      
-      msg += translations[currentLang]['order.thanks'] || 'شكراً لخدمتكم!';
-     
       window.open(`https://wa.me/905075803495?text=${encodeURIComponent(msg)}`, '_blank');
-      showAlert(translations[currentLang]['order.success'] || 'تم إرسال طلبك بنجاح! سيتم توجيهك إلى واتساب الآن.', 'success');
+      showAlert(currentLang === 'ar' ? 'تم إرسال طلبك بنجاح! سيتم توجيهك إلى واتساب الآن.' : 'Your order has been sent successfully! You will be redirected to WhatsApp now.', 'success');
     }
 
     function resetForm() {
