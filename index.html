@@ -1,12 +1,15 @@
+<?php
+$lang = isset($_GET['lang']) ? $_GET['lang'] : 'ar';
+?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<?php echo $lang; ?>" dir="<?php echo $lang === 'ar' ? 'rtl' : 'ltr'; ?>">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="google-site-verification" content="TcCCFwhwYg_PtnMNX-tUHu9xlrXKA_9XjxTDylHYB38" />
-  <title>جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ</title>
-  <meta name="description" content="جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
-  <meta name="keywords" content="UV car inspection device, car paint inspection, UV leak detection, فحص السيارات بالأشعة فوق البنفسجية, كشف تسريبات التكييف, فحص دهان السيارة, فحص سيارة مستعملة, فحص حوادث السيارات" />
+  <title><?php echo $lang === 'en' ? 'Axis Auto UV Car Inspection Device | Discover Hidden Repairs in Seconds' : 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ'; ?></title>
+  <meta name="description" content="<?php echo $lang === 'en' ? 'Axis Auto UV Car Inspection Device: Detects spray marks, hidden repairs, and AC leaks. Quick order form via WhatsApp.' : 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب.'; ?>" />
+  <meta name="keywords" content="<?php echo $lang === 'en' ? 'UV car inspection device, car paint inspection, UV leak detection, UV car inspection, AC leak detection, car paint check, used car inspection, car accident check' : 'UV car inspection device, car paint inspection, UV leak detection, فحص السيارات بالأشعة فوق البنفسجية, كشف تسريبات التكييف, فحص دهان السيارة, فحص سيارة مستعملة, فحص حوادث السيارات'; ?>" />
   <meta name="color-scheme" content="light dark" />
   <meta http-equiv="Cache-Control" content="max-age=31536000">
   
@@ -26,15 +29,15 @@
   <link rel="alternate" href="https://axis-uv.com/?lang=ar" hreflang="ar" />
   <link rel="alternate" href="https://axis-uv.com/?lang=en" hreflang="en" />
   
-  <meta property="og:title" content="جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ" />
-  <meta property="og:description" content="جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
+  <meta property="og:title" content="<?php echo $lang === 'en' ? 'Axis Auto UV Car Inspection Device | Discover Hidden Repairs in Seconds' : 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ'; ?>" />
+  <meta property="og:description" content="<?php echo $lang === 'en' ? 'Axis Auto UV Car Inspection Device: Detects spray marks, hidden repairs, and AC leaks. Quick order form via WhatsApp.' : 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب.'; ?>" />
   <meta property="og:image" content="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp" />
   <meta property="og:url" content="https://axis-uv.com/" />
   <meta property="og:type" content="website" />
   
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ" />
-  <meta name="twitter:description" content="جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب." />
+  <meta name="twitter:title" content="<?php echo $lang === 'en' ? 'Axis Auto UV Car Inspection Device | Discover Hidden Repairs in Seconds' : 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto | اكتشف الإصلاحات المخفية خلال ثوانٍ'; ?>" />
+  <meta name="twitter:description" content="<?php echo $lang === 'en' ? 'Axis Auto UV Car Inspection Device: Detects spray marks, hidden repairs, and AC leaks. Quick order form via WhatsApp.' : 'جهاز فحص السيارات بالأشعة فوق البنفسجية من Axis Auto: يكشف آثار الرش والإصلاحات المخفية وتسريبات التكييف. نموذج طلب سريع عبر واتساب.'; ?>" />
   <meta name="twitter:image" content="https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp" />
   
   <script type="application/ld+json">
@@ -1255,24 +1258,8 @@
   </script>
 
   <script>
-    let lang = new URLSearchParams(window.location.search).get('lang') || 'ar';
+    const lang = '<?php echo $lang; ?>';
     if (lang === 'en') {
-      document.title = translations.en['page.title'];
-      document.querySelector('meta[name="description"]').content = translations.en['page.description'];
-      document.querySelector('meta[name="keywords"]').content = "UV car inspection device, car paint inspection, UV leak detection, UV car inspection, AC leak detection, car paint check, used car inspection, car accident check";
-      document.querySelector('meta[property="og:title"]').content = translations.en['page.title'];
-      document.querySelector('meta[property="og:description"]').content = translations.en['page.description'];
-      document.querySelector('meta[name="twitter:title"]').content = translations.en['page.title'];
-      document.querySelector('meta[name="twitter:description"]').content = translations.en['page.description'];
-
-      const ldScript = document.querySelector('script[type="application/ld+json"]');
-      if (ldScript) {
-        let ld = JSON.parse(ldScript.textContent);
-        ld.name = translations.en['page.title'];
-        ld.description = translations.en['page.description'];
-        ldScript.textContent = JSON.stringify(ld);
-      }
-
       document.documentElement.lang = 'en';
       document.documentElement.dir = 'ltr';
     } else {
@@ -1919,7 +1906,7 @@
   <script>
     const API_BASE = "https://uv-rk1s.onrender.com";
 
-    let currentLang = new URLSearchParams(window.location.search).get('lang') || 'ar';
+    let currentLang = '<?php echo $lang; ?>';
     let twoCheckout = null;
     let cartQuantity = 0;
 
@@ -1932,10 +1919,8 @@
     function initPage() {
       document.getElementById('y').textContent = new Date().getFullYear();
       const savedLang = localStorage.getItem('preferredLanguage');
-      const urlParams = new URLSearchParams(window.location.search);
-      const lang = urlParams.get('lang');
-      if (lang && ['ar', 'en'].includes(lang)) {
-        changeLanguage(lang);
+      if (currentLang && ['ar', 'en'].includes(currentLang)) {
+        changeLanguage(currentLang);
       } else if (savedLang) {
         changeLanguage(savedLang);
       }
