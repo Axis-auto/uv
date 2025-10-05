@@ -806,9 +806,15 @@
           <a href="#pricing" class="btn ghost" data-translate="nav.pricing">السعر</a>
           <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         </div>
-        <div class="lang-switcher">
-          <a href="?lang=ar">AR</a>
-          <a href="?lang=en">EN</a>
+        <div class="lang-switcher" id="langSwitcher" onclick="toggleLanguage()">
+          <span id="currentLang">EN</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1 1.275-1.275L12 3Z"></path>
+            <path d="M5 3v4"></path>
+            <path d="M19 17v4"></path>
+            <path d="M3 5h4"></path>
+            <path d="M17 19h4"></path>
+          </svg>
         </div>
         <div class="cart-icon" onclick="openCartModal()" role="button" aria-label="Open cart">
           <i class="fas fa-shopping-cart"></i>
@@ -971,7 +977,7 @@
           <ul class="muted" style="margin:0 0 8px 0; padding:0 12px;line-height:1.8">
             <li data-translate="package.item1">جهاز فحص السيارات</li>
             <li data-translate="package.item2">حقيبة حماية ضد الصدمات</li>
-            <li data-translate="package.item3">بطارية ليثيوم <span class="numbers-fix">8400</span> mAh</li>
+            <li data-translate="package.item3">بطارية ليثيوم <span class="numbers-fix">3000</span> mAh</li>
             <li data-translate="package.item4">شاحن سريع + كابل USB-C</li>
             <li data-translate="package.item5">دليل استخدام سريع وفيديوهات تعليمية</li>
             <li data-translate="package.item6">شهادة ضمان لمدة سنة</li>
@@ -1901,32 +1907,47 @@
       document.getElementById('y').textContent = new Date().getFullYear();
       const savedLang = localStorage.getItem('preferredLanguage');
       const urlParams = new URLSearchParams(window.location.search);
-      const lang = urlParams.get('lang');
-      if (lang && ['ar', 'en'].includes(lang)) {
-        changeLanguage(lang);
-      } else if (savedLang) {
-        changeLanguage(savedLang);
-      }
+      const lang = urlParams.get('lang') || savedLang || 'ar';
+      changeLanguage(lang);
       togglePaymentDetails();
+      document.getElementById('langSwitcher').addEventListener('click', toggleLanguage);
+    }
+
+    function toggleLanguage() {
+      const newLang = currentLang === 'ar' ? 'en' : 'ar';
+      changeLanguage(newLang);
+      history.pushState(null, '', `?lang=${newLang}`);
     }
 
     function changeLanguage(lang) {
       currentLang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.lang = lang;
+      document.getElementById('currentLang').textContent = lang === 'ar' ? 'EN' : 'AR';
       const bestsellerElement = document.querySelector('.pricing-card.featured');
       if (bestsellerElement) {
         bestsellerElement.setAttribute('data-bestseller', lang === 'ar' ? 'الأفضل مبيعاً' : 'Bestseller');
       }
       applyTranslations(lang);
+      updateMetaTags(lang);
       updateCart();
       localStorage.setItem('preferredLanguage', lang);
+    }
+
+    function updateMetaTags(lang) {
       document.title = translations[lang]['page.title'];
-      document.querySelector('meta[name="description"]').setAttribute('content', translations[lang]['page.description']);
-      const comingSoonElement = document.querySelector('.payment-method.coming-soon');
-      if (comingSoonElement) {
-        comingSoonElement.setAttribute('data-coming-soon', lang === 'ar' ? 'يتوفر قريبا' : 'Coming Soon');
-      }
+      const descMeta = document.querySelector('meta[name="description"]');
+      if (descMeta) descMeta.content = translations[lang]['page.description'];
+
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.content = translations[lang]['page.title'];
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.content = translations[lang]['page.description'];
+
+      const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twitterTitle) twitterTitle.content = translations[lang]['page.title'];
+      const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+      if (twitterDesc) twitterDesc.content = translations[lang]['page.description'];
     }
 
     function applyTranslations(lang) {
@@ -2130,7 +2151,7 @@
       msg += `${translations[currentLang]['order.paymentMethod']}: ${paymentMethod === 'stripe' ? translations[currentLang]['order.paymentStripe'] : translations[currentLang]['order.paymentSwift']}\n\n`;
      
       if (imageUrl) {
-        msg += `${translations[currentLang]['order.receipt']}: ${imageUrl}\n\n`;
+        msg += `${translations[currentLang]['order.receipt']}: \n${imageUrl}\n\n`;
         msg += `${translations[currentLang]['order.receiptView'] || 'يمكنك الضغط على الرابط أعلاه لمشاهدة صورة الإيصال.'}\n\n`;
       } else {
         msg += `${translations[currentLang]['order.noReceipt'] || 'لم يتم رفع إيصال الدفع بعد.'}\n\n`;
