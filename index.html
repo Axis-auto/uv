@@ -1333,7 +1333,7 @@
           <a href="#faq" class="btn ghost" data-translate="nav.faq">الأسئلة الشائعة</a>
         </div>
         <div class="lang-switcher">
-          <a href="https://axis-uv.com/" id="lang-ar">AR</a>
+          <a href="https://axis-uv.com/?lang=ar" id="lang-ar">AR</a>
           <a href="https://axis-uv.com/?lang=en" id="lang-en">EN</a>
         </div>
         <div class="cart-icon" onclick="openCartModal()" role="button" aria-label="Open cart">
@@ -1540,7 +1540,7 @@
               <li data-translate="pricing.option1.item2">بطارية ليثيوم <span class="numbers-fix">3000</span> mAh</li>
               <li data-translate="pricing.option1.item3">شاحن سريع + كابل USB-C</li>
               <li data-translate="pricing.option1.item4">حقيبة حماية</li>
-              <li data-translate="pricing.option1.item5">ضمان <span class="numbers-fix">12</span> شهر</li>
+              <li data-translate="pricing.option1.item5">ضمان 12 شهر</li>
             </ul>
             <button class="btn primary" onclick="addToCart(1)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
           </div>
@@ -1555,7 +1555,7 @@
               <li data-translate="pricing.option2.item2">بطاريات ليثيوم <span class="numbers-fix">3000</span> mAh</li>
               <li data-translate="pricing.option2.item3">شواحن سريعة + كابلات USB-C</li>
               <li data-translate="pricing.option2.item4">حقيبتي حماية</li>
-              <li data-translate="pricing.option2.item5">ضمان <span class="numbers-fix">12</span> شهر للجهازين</li>
+              <li data-translate="pricing.option2.item5">ضمان 12 شهر للجهازين</li>
               <li data-translate="pricing.option2.item6">شحن مجاني</li>
             </ul>
             <button class="btn primary" onclick="addToCart(2)" data-translate="pricing.orderNow">إضافة إلى السلة</button>
@@ -1924,7 +1924,7 @@
     <div id="modalCaption" class="modal-caption"></div>
   </div>
 
-  <a href="https://wa.me/905075803495" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contact via WhatsApp">
+  <a class="whatsapp-float" href="https://wa.me/905075803495" target="_blank" rel="noopener noreferrer" aria-label="Contact via WhatsApp">
     <i class="fab fa-whatsapp whatsapp-icon"></i>
   </a>
 
@@ -1972,8 +1972,14 @@
         changeLanguage(lang);
       } else if (savedLang) {
         changeLanguage(savedLang);
+      } else {
+        changeLanguage('ar');
       }
       togglePaymentDetails();
+      const urlParamsAfter = new URLSearchParams(window.location.search);
+      if (!urlParamsAfter.has('lang')) {
+        updateUrlParam(currentLang);
+      }
     }
 
     function changeLanguage(lang) {
@@ -2012,7 +2018,7 @@
         document.querySelector('meta[name="description"]').content = translations.ar['page.description'];
         document.querySelector('meta[name="keywords"]').content = "UV car inspection device, car paint inspection, UV leak detection, فحص السيارات بالأشعة فوق البنفسجية, كشف تسريبات التكييف, فحص دهان السيارة, فحص سيارة مستعملة, فحص حوادث السيارات";
         
-        
+        // Update Open Graph tags for Arabic
         document.querySelector('meta[property="og:title"]').content = translations.ar['page.title'];
         document.querySelector('meta[property="og:description"]').content = translations.ar['page.description'];
         document.querySelector('meta[property="og:url"]').content = "https://axis-uv.com/";
@@ -2046,13 +2052,13 @@
       if (currentLang === 'ar') {
         langAr.classList.add('active');
         langEn.classList.remove('active');
-        langAr.href = "https://axis-uv.com/";
+        langAr.href = "#";
         langEn.href = "https://axis-uv.com/?lang=en";
       } else {
         langAr.classList.remove('active');
         langEn.classList.add('active');
-        langAr.href = "https://axis-uv.com/";
-        langEn.href = "https://axis-uv.com/?lang=en";
+        langAr.href = "https://axis-uv.com/?lang=ar";
+        langEn.href = "#";
       }
     }
 
