@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
 Sitemap: https://axis-uv.com/sitemap.xml
+Sitemap: https://axis-uv.com/en/sitemap.xml
