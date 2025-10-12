@@ -813,11 +813,38 @@
     "url": "https://axis-uv.com/en/",
     "hasMerchantReturnPolicy": {
       "@type": "MerchantReturnPolicy",
-      "applicableCountry": "AE",
+      "applicableCountry": ["AE", "SA", "KW", "QA", "OM", "BH"],
       "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
       "merchantReturnDays": 14,
       "returnMethod": "https://schema.org/ReturnByMail",
       "returnFees": "https://schema.org/FreeReturn"
+    },
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "40",
+        "currency": "USD"
+      },
+      "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": ["AE", "SA", "KW", "QA", "OM", "BH"]
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 1,
+          "maxValue": 2,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 3,
+          "maxValue": 7,
+          "unitCode": "DAY"
+        }
+      }
     }
   },
   "weight": {
@@ -1474,46 +1501,7 @@
     "price": "",
     "priceCurrency": "USD",
     "availability": "https://schema.org/InStock",
-    "priceValidUntil": "",
-    "hasMerchantReturnPolicy": {
-      "@type": "MerchantReturnPolicy",
-      "applicableCountry": ["AE", "SA", "KW", "QA", "OM", "BH"],
-      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-      "merchantReturnDays": 14,
-      "returnMethod": "https://schema.org/ReturnByMail",
-      "returnShippingFeesAmount": {
-        "@type": "MonetaryAmount",
-        "value": "0",
-        "currency": "USD"
-      }
-    },
-    "shippingDetails": {
-      "@type": "OfferShippingDetails",
-      "shippingRate": {
-        "@type": "MonetaryAmount",
-        "value": "40",
-        "currency": "USD"
-      },
-      "shippingDestination": {
-        "@type": "DefinedRegion",
-        "addressCountry": ["AE", "SA", "KW", "QA", "OM", "BH"]
-      },
-      "deliveryTime": {
-        "@type": "ShippingDeliveryTime",
-        "handlingTime": {
-          "@type": "QuantitativeValue",
-          "minValue": 1,
-          "maxValue": 2,
-          "unitCode": "DAY"
-        },
-        "transitTime": {
-          "@type": "QuantitativeValue",
-          "minValue": 3,
-          "maxValue": 7,
-          "unitCode": "DAY"
-        }
-      }
-    }
+    "priceValidUntil": ""
   }
 }
   </script>
@@ -1574,7 +1562,7 @@
         fileNameField.textContent = input.files[0].name;
         fileNameField.style.color = "var(--ok)";
        
-        if (input.files[0].type.match('image.*')) {
+       if (input.files[0].type.match('image.*')) {
           const reader = new FileReader();
           reader.onload = function(e) {
             previewImg.src = e.target.result;
