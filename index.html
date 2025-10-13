@@ -187,7 +187,7 @@
     .table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
     .table tr { background: #fff; border: 1px solid #e2e8f0; }
     .table td, .table th { padding: 8px 10px; }
-    .table th { background: #f1f5f9; text-align: right; }
+    .table th { background: #f1f5f9; text-align: left; }
    
     .kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
     .kpi { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; text-align: center; box-shadow: var(--shadow); }
@@ -205,7 +205,7 @@
     .pricing-card.featured::before { content: attr(data-bestseller); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--brand); color: white; padding: 3px 10px; border-radius: 16px; font-size: 11px; font-weight: bold; }
     .pricing-card h3 { margin-top: 0; }
     .pricing-card .price { font-size: 28px; margin: 10px 0; }
-    .pricing-card ul { list-style: none; padding: 0; margin: 12px 0; text-align: right; }
+    .pricing-card ul { list-style: none; padding: 0; margin: 12px 0; text-align: left; padding-left: 16px; }
     .pricing-card li { padding: 4px 0; border-bottom: 1px solid #f1f5f9; }
     .pricing-card img { max-width: 100%; height: auto; max-height: 150px; object-fit: contain; margin-bottom: 10px; border-radius: 8px; }
    
@@ -235,7 +235,7 @@
    
     .warnings { background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius); padding: 12px; margin: 12px 0; }
     .warnings h4 { margin-top: 0; color: #92400e; font-weight: 700; }
-    .warnings ul { margin: 6px 0; padding-right: 16px; }
+    .warnings ul { margin: 6px 0; padding-left: 16px; }
     .warnings li { margin-bottom: 4px; }
    
     .payment-methods { display: flex; gap: 12px; margin: 12px 0; }
@@ -571,7 +571,7 @@
       .cart-icon .fa-shopping-cart { 
         font-size: 16px; 
       }
-    
+
       .cart-count { 
         font-size: 10px; 
         min-width: 16px; 
@@ -796,15 +796,15 @@
 {
   "@context": "https://schema.org",
   "@type": "Product",
-  "name": "جهاز فحص السيارات بالأشعة فوق البنفسجية UVRA 100 B",
+  "name": "جهاز فحص السيارات بالأشعة فوق البنفسجية UVRA 100 B - جهاز واحد",
   "description": "جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين. يعمل بالبطارية لمدة 60-70 دقيقة، مع قوة إشعاعية عالية تصل إلى 9000 W، ومصمم للاستخدام اليومي الطويل.",
   "brand": {
     "@type": "Brand",
     "name": "Axis Auto"
   },
   "model": "UVRA 100 B",
-  "sku": "UVRA100B",
-  "image": "https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp",
+  "sku": "UVRA100B-SINGLE",
+  "image": "https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp",
   "offers": {
     "@type": "Offer",
     "price": "799",
@@ -865,6 +865,84 @@
   "depth": {
     "@type": "QuantitativeValue",
     "value": "21.5",
+    "unitText": "cm"
+  }
+}
+  </script>
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "جهاز فحص السيارات بالأشعة فوق البنفسجية UVRA 100 B - جهازين",
+  "description": "جهاز قوي ومحمول لفحص هيكل السيارة، الدهان، تسريبات التكييف مع صبغة UV، وآثار الإصلاحات غير المرئية بالعين المجردة. مثالي لمعارض السيارات، المفتشين، والمشترين. يعمل بالبطارية لمدة 60-70 دقيقة، مع قوة إشعاعية عالية تصل إلى 9000 W، ومصمم للاستخدام اليومي الطويل. (عرض لجهازين)",
+  "brand": {
+    "@type": "Brand",
+    "name": "Axis Auto"
+  },
+  "model": "UVRA 100 B",
+  "sku": "UVRA100B-DOUBLE",
+  "image": "https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp",
+  "offers": {
+    "@type": "Offer",
+    "price": "1299",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock",
+    "url": "https://axis-uv.com/",
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": ["AE", "SA", "KW", "QA", "OM", "BH"],
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+    },
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0",
+        "currency": "USD"
+      },
+      "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": ["AE", "SA", "KW", "QA", "OM", "BH"]
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 1,
+          "maxValue": 2,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 3,
+          "maxValue": 7,
+          "unitCode": "DAY"
+        }
+      }
+    }
+  },
+  "weight": {
+    "@type": "QuantitativeValue",
+    "value": "2620",
+    "unitText": "g"
+  },
+  "width": {
+    "@type": "QuantitativeValue",
+    "value": "8.6",
+    "unitText": "cm"
+  },
+  "height": {
+    "@type": "QuantitativeValue",
+    "value": "24",
+    "unitText": "cm"
+  },
+  "depth": {
+    "@type": "QuantitativeValue",
+    "value": "43",
     "unitText": "cm"
   }
 }
