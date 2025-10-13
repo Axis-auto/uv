@@ -796,15 +796,15 @@
 {
   "@context": "https://schema.org",
   "@type": "Product",
-  "name": "Axis Auto UV Car Inspection Device UVRA 100 B",
+  "name": "Axis Auto UV Car Inspection Device UVRA 100 B - Single Device",
   "description": "A powerful, portable device for inspecting car body, paint, AC leaks with UV dye, and hidden repair traces. Ideal for car dealerships, inspectors, and buyers. Battery-powered for 60-70 minutes of continuous use, with high radiant power up to 9000 W, designed for long daily usage.",
   "brand": {
     "@type": "Brand",
     "name": "Axis Auto"
   },
   "model": "UVRA 100 B",
-  "sku": "UVRA100B",
-  "image": "https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/hero.webp",
+  "sku": "UVRA100B-SINGLE",
+  "image": "https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/one-piece_1.webp",
   "offers": {
     "@type": "Offer",
     "price": "799",
@@ -865,6 +865,84 @@
   "depth": {
     "@type": "QuantitativeValue",
     "value": "21.5",
+    "unitText": "cm"
+  }
+}
+  </script>
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Axis Auto UV Car Inspection Device UVRA 100 B - Two Devices",
+  "description": "A powerful, portable device for inspecting car body, paint, AC leaks with UV dye, and hidden repair traces. Ideal for car dealerships, inspectors, and buyers. Battery-powered for 60-70 minutes of continuous use, with high radiant power up to 9000 W, designed for long daily usage. (Two Devices Bundle)",
+  "brand": {
+    "@type": "Brand",
+    "name": "Axis Auto"
+  },
+  "model": "UVRA 100 B",
+  "sku": "UVRA100B-DOUBLE",
+  "image": "https://raw.githubusercontent.com/Axis-auto/uv/refs/heads/main/tow-pieces.webp",
+  "offers": {
+    "@type": "Offer",
+    "price": "1299",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock",
+    "url": "https://axis-uv.com/en/",
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": ["AE", "SA", "KW", "QA", "OM", "BH"],
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+    },
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0",
+        "currency": "USD"
+      },
+      "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": ["AE", "SA", "KW", "QA", "OM", "BH"]
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 1,
+          "maxValue": 2,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 3,
+          "maxValue": 7,
+          "unitCode": "DAY"
+        }
+      }
+    }
+  },
+  "weight": {
+    "@type": "QuantitativeValue",
+    "value": "2620",
+    "unitText": "g"
+  },
+  "width": {
+    "@type": "QuantitativeValue",
+    "value": "8.6",
+    "unitText": "cm"
+  },
+  "height": {
+    "@type": "QuantitativeValue",
+    "value": "24",
+    "unitText": "cm"
+  },
+  "depth": {
+    "@type": "QuantitativeValue",
+    "value": "43",
     "unitText": "cm"
   }
 }
@@ -1562,7 +1640,7 @@
         fileNameField.textContent = input.files[0].name;
         fileNameField.style.color = "var(--ok)";
        
-       if (input.files[0].type.match('image.*')) {
+        if (input.files[0].type.match('image.*')) {
           const reader = new FileReader();
           reader.onload = function(e) {
             previewImg.src = e.target.result;
