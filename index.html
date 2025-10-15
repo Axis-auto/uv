@@ -324,7 +324,7 @@
     .table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
     .table tr { background: #fff; border: 1px solid #e2e8f0; }
     .table td, .table th { padding: 8px 10px; }
-    .table th { background: #f1f5f9; text-align: left; }
+    .table th { background: #f1f5f9; text-align: right; }
    
     .kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
     .kpi { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; text-align: center; box-shadow: var(--shadow); }
@@ -342,7 +342,7 @@
     .pricing-card.featured::before { content: attr(data-bestseller); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--brand); color: white; padding: 3px 10px; border-radius: 16px; font-size: 11px; font-weight: bold; }
     .pricing-card h3 { margin-top: 0; }
     .pricing-card .price { font-size: 28px; margin: 10px 0; }
-    .pricing-card ul { list-style: none; padding: 0; margin: 12px 0; text-align: left; padding-left: 16px; }
+    .pricing-card ul { list-style: none; padding: 0; margin: 12px 0; text-align: right; padding-right: 16px; }
     .pricing-card li { padding: 4px 0; border-bottom: 1px solid #f1f5f9; }
     .pricing-card img { max-width: 100%; height: auto; max-height: 150px; object-fit: contain; margin-bottom: 10px; border-radius: 8px; }
    
@@ -536,7 +536,7 @@
    
     [dir="ltr"] { text-align: left; direction: ltr; }
     [dir="ltr"] .table th { text-align: left; }
-    [dir="ltr"] .pricing-card ul { text-align: left; padding-left: 16px; }
+    [dir="ltr"] .pricing-card ul { text-align: left; padding-left: 16px; padding-right: 0; }
     [dir="ltr"] .warnings ul { padding-right: 0; padding-left: 16px; }
     [dir="ltr"] .features .feat, [dir="ltr"] .steps .step { flex-direction: row; }
     [dir="ltr"] .car-theme-border { border-left: none; border-right: 4px solid var(--brand); }
