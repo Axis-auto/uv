@@ -475,31 +475,6 @@
       transform: translateY(-2px);
     }
    
-    .footer-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.2);
-      flex-wrap: wrap;
-      gap: 12px;
-      color: white;
-    }
-   
-    .footer-links {
-      display: flex;
-      gap: 16px;
-    }
-   
-    .footer-links a {
-      color: rgba(255,255,255,0.8);
-      transition: var(--transition);
-    }
-   
-    .footer-links a:hover {
-      color: white;
-    }
-   
     .whatsapp-contact {
       display: flex;
       align-items: center;
@@ -722,17 +697,17 @@
       } 
       
       .logo { 
-        font-size: 14px; 
+        font-size: 16px; 
         gap: 6px; 
-        min-width: 80px;
+        min-width: 90px;
       }
       
       .logo img { 
-        height: 30px; 
+        height: 35px; 
       }
       
       .logo span { 
-        font-size: 12px; 
+        font-size: 14px; 
       } 
       
       .btn { 
@@ -761,8 +736,8 @@
       
       .lang-switcher { 
         padding: 4px 8px; 
-        font-size: 11px; 
-        min-width: 45px;
+        font-size: 12px; 
+        min-width: 50px;
       }
       
       .floating-cta { 
@@ -776,16 +751,16 @@
       }
       
       .cart-icon .fa-shopping-cart { 
-        font-size: 15px; 
+        font-size: 16px; 
       }
       
       .cart-count { 
-        font-size: 9px; 
-        min-width: 14px; 
-        padding: 0px 3px; 
-        top: -5px; 
-        right: -5px; 
-        height: 12px;
+        font-size: 10px; 
+        min-width: 16px; 
+        padding: 1px 4px; 
+        top: -6px; 
+        right: -6px; 
+        height: 14px;
       }
 
       .sub-image-container {
@@ -795,16 +770,16 @@
    
     @media (max-width:480px) {
       .logo { 
-        font-size: 12px; 
-        min-width: 70px;
+        font-size: 14px; 
+        min-width: 80px;
       }
       
       .logo img { 
-        height: 25px; 
+        height: 30px; 
       }
       
       .logo span { 
-        font-size: 10px; 
+        font-size: 12px; 
       } 
       
       .btn { 
@@ -838,22 +813,22 @@
       
       .lang-switcher { 
         padding: 3px 6px; 
-        font-size: 10px; 
+        font-size: 11px; 
         gap: 2px; 
-        min-width: 40px;
+        min-width: 45px;
       }
       
       .cart-icon .fa-shopping-cart { 
-        font-size: 14px; 
+        font-size: 15px; 
       }
       
       .cart-count { 
-        font-size: 8px; 
-        min-width: 12px; 
-        padding: 0px 2px; 
-        top: -4px; 
-        right: -4px; 
-        height: 10px;
+        font-size: 9px; 
+        min-width: 14px; 
+        padding: 0px 3px; 
+        top: -5px; 
+        right: -5px; 
+        height: 12px;
       }
       
       header nav a {
@@ -1318,7 +1293,7 @@
               <input type="checkbox" id="privacyAgreement" required>
               <label for="privacyAgreement">
                 <span>I agree to the </span>
-                <span class="privacy-link" onclick="showPrivacyPolicy()">Privacy and Return Policy</span>
+                <a href="https://axis-uv.com/en/privacy-policy" target="_blank" class="privacy-link">Privacy and Return Policy</a>
                 <span> and Terms of Use</span>
               </label>
             </div>
@@ -1387,56 +1362,6 @@
         </div>
       </div>
     </section>
-
-    <div id="privacyModal" class="modal">
-      <div class="modal-content" style="background: white; padding: 20px; border-radius: 12px; max-width: 800px; margin: 5% auto;">
-        <span class="close-modal" onclick="closePrivacyModal()" style="color: black; font-size: 30px;">&times;</span>
-        <h2>Privacy and Return Policy</h2>
-        <div class="privacy-policy">
-          <h4>Introduction</h4>
-          <p>At AXIS AUTO, we respect your privacy and are committed to protecting your personal data. This Privacy and Return Policy explains how we collect, use, and protect your information when you use our website and services.</p>
-         
-          <h4>Data We Collect</h4>
-          <p>When completing a purchase, we collect the following information: full name, email address, phone number, address, and payment information. We use 2Checkout to process payments and do not store credit card details on our servers.</p>
-         
-          <h4>How We Use Your Data</h4>
-          <p>We use your information to process your orders, manage your account, and provide customer service. We may use your email to send updates about your orders and promotional offers (you can unsubscribe at any time).</p>
-         
-          <h4>Data Sharing</h4>
-          <p>We share your information with payment providers (2Checkout) and shipping companies only for order processing and delivery purposes. We do not sell or rent your personal data to third parties.</p>
-         
-          <h4>Data Protection</h4>
-          <p>We use technical and administrative security measures to prevent unauthorized access to your personal data and maintain its accuracy and proper use.</p>
-         
-          <h4>Return and Refund Policy</h4>
-          <p>We trust in the quality of our product, so we grant you the right to return the product within <span class="numbers-fix">14</span> days of receipt and receive a full refund if you are dissatisfied for any reason.</p>
-         
-          <h4>Return Conditions:</h4>
-          <ul>
-            <li>The product must be in its original condition and original packaging</li>
-            <li>All accessories and documents must be available</li>
-            <li>The return must be made within <span class="numbers-fix">14</span> days of receipt date</li>
-            <li>The product must not have been damaged due to misuse</li>
-          </ul>
-         
-          <h4>Refund Process:</h4>
-          <p>When the product is returned according to the mentioned conditions, the paid amount will be refunded using the original payment method within <span class="numbers-fix">5-7</span> business days. For card payments, the amount will appear in your statement within <span class="numbers-fix">1-2</span> billing cycles.</p>
-         
-          <div class="stripe-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--brand)" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
-            </svg>
-            <span>Secure payments via 2Checkout - Instant refund</span>
-          </div>
-         
-          <h4>Policy Changes</h4>
-          <p>We may update this Privacy and Return Policy from time to time. Any changes will be posted on this page and we will notify you by email if the changes are substantial.</p>
-         
-          <h4>Contact Us</h4>
-          <p>If you have any questions about this Privacy and Return Policy, please contact us at: info@axis-auto.com</p>
-        </div>
-      </div>
-    </div>
 
     <div id="cartModal" class="cart-modal">
       <div class="cart-content">
@@ -1509,7 +1434,7 @@
             <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
             <a href="#order">Order Now</a>
-            <a href="#" onclick="showPrivacyPolicy(); return false;">Privacy and Return Policy</a>
+            <a href="https://axis-uv.com/en/privacy-policy" target="_blank">Privacy and Return Policy</a>
           </div>
         </div>
       </div>
@@ -1517,7 +1442,7 @@
       <div class="footer-bottom">
         <div class="muted">© <span id="y"></span> Axis Auto — All rights reserved.</div>
         <div class="footer-links">
-          <a href="#" onclick="showPrivacyPolicy(); return false;">Privacy and Return Policy</a>
+          <a href="https://axis-uv.com/en/privacy-policy" target="_blank">Privacy and Return Policy</a>
         </div>
       </div>
     </div>
@@ -1901,20 +1826,14 @@
       mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
     }
 
-    function showPrivacyPolicy() {
-      document.getElementById('privacyModal').style.display = 'block';
-    }
-
-    function closePrivacyModal() {
-      document.getElementById('privacyModal').style.display = 'none';
-    }
+    // Removed showPrivacyPolicy and closePrivacyModal functions
 
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
-      const privacyModal = document.getElementById('privacyModal');
+      // const privacyModal = document.getElementById('privacyModal'); // Removed
       const cartModal = document.getElementById('cartModal');
       if (event.target === modal) closeModal();
-      if (event.target === privacyModal) closePrivacyModal();
+      // if (event.target === privacyModal) closePrivacyModal(); // Removed
       if (event.target === cartModal) closeCartModal();
     }
 
