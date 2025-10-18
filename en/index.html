@@ -605,6 +605,24 @@
       background: rgba(255,255,255,0.1);
     }
 
+    /* إصلاح تداخل الروابط في الفوتر */
+    .footer-links {
+      display: flex;
+      flex-direction: column; /* جعل الروابط تظهر تحت بعضها */
+      gap: 8px; /* إضافة مسافة بين الروابط */
+      margin-top: 10px; /* إضافة مسافة من الأعلى */
+    }
+    
+    .footer-links a {
+      color: #e2e8f0; /* لون أفتح للروابط */
+      padding: 4px 0; /* مسافة داخلية */
+      transition: color 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+      color: var(--brand-light); /* لون عند التحويم */
+    }
+
     @media (max-width:920px) {
       .hero .wrap { grid-template-columns: 1fr; }
       .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
@@ -661,7 +679,10 @@
       .features .feat, .steps .step { flex-direction: column; text-align: center; }
       .icon, .step .num { margin: 0 auto; }
       .footer-bottom { flex-direction: column; text-align: center; }
-      .footer-links { justify-content: center; }
+      .footer-links { 
+        justify-content: center; 
+        align-items: center; /* لتوسيط الروابط في وضع العمود */
+      }
 
       .lang-switcher { 
         padding: 4px 8px; 
@@ -1431,13 +1452,9 @@
           <h3>Quick Links</h3>
           <div class="footer-links">
             <a href="#features">Features</a>
-            
             <a href="#pricing">Pricing</a>
-            
             <a href="#faq">FAQ</a>
-            
             <a href="#order">Order Now</a>
-            
             <a href="https://axis-uv.com/en/privacy-policy" target="_blank">Privacy and Return Policy</a>
           </div>
         </div>
