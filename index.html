@@ -10,7 +10,7 @@
   <meta name="color-scheme" content="light dark" />
   <meta http-equiv="Cache-Control" content="max-age=31536000">
   
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://raw.githubusercontent.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -738,7 +738,7 @@
       }
       
       .logo img { 
-        height: 30px; 
+        height: 35px; 
       }
       
       .logo span { 
@@ -1328,7 +1328,7 @@
               <input type="checkbox" id="privacyAgreement" required>
               <label for="privacyAgreement">
                 <span>أوافق على </span>
-                <span class="privacy-link" onclick="showPrivacyPolicy()">سياسة الخصوصية والإرجاع</span>
+                <a href="https://axis-uv.com/privacy-policy" class="privacy-link" target="_blank">سياسة الخصوصية والإرجاع</a>
                 <span> وشروط الاستخدام</span>
               </label>
             </div>
@@ -1397,56 +1397,6 @@
         </div>
       </div>
     </section>
-
-    <div id="privacyModal" class="modal">
-      <div class="modal-content" style="background: white; padding: 20px; border-radius: 12px; max-width: 800px; margin: 5% auto;">
-        <span class="close-modal" onclick="closePrivacyModal()" style="color: black; font-size: 30px;">&times;</span>
-        <h2>سياسة الخصوصية والإرجاع</h2>
-        <div class="privacy-policy">
-          <h4>مقدمة</h4>
-          <p>نحن في AXIS AUTO نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية والإرجاع هذه كيف نقوم بجمع واستخدام وحماية معلوماتك عند استخدامك لموقعنا وخدماتنا.</p>
-         
-          <h4>البيانات التي نجمعها</h4>
-          <p>عند إتمام عملية الشراء، نقوم بجمع المعلومات التالية: الاسم الكامل، عنوان البريد الإلكتروني، رقم الهاتف، العنوان، ومعلومات الدفع. نستخدم 2Checkout لمعالجة المدفوعات، ولا نقوم بتخزين تفاصيل بطاقات الائتمان على خوادمنا.</p>
-         
-          <h4>كيف نستخدم بياناتك</h4>
-          <p>نستخدم معلوماتك لمعالجة طلباتك، إدارة حسابك، وتقديم خدمة العملاء. قد نستخدم بريدك الإلكتروني لإرسال تحديثات حول طلباتك وعروضنا الترويجية (يمكنك إلغاء الاشتراك في أي وقت).</p>
-         
-          <h4>مشاركة البيانات</h4>
-          <p>نشارك معلوماتك مع مقدمي خدمات الدفع (2Checkout) وشركات الشحن فقط لأغراض معالجة الطلبات والتوصيل. نحن لا نبيع أو نؤجر بياناتك الشخصية لأطراف ثالثة.</p>
-         
-          <h4>حماية البيانات</h4>
-          <p>نحن نستخدم تدابير أمنية تقنية وإدارية لمنع الوصول غير المصرح به إلى بياناتك الشخصية والحفاظ على دقتها واستخدامها بشكل صحيح.</p>
-         
-          <h4>سياسة الإرجاع والاسترداد</h4>
-          <p>نحن نثق بجودة منتجنا، ولذلك نمنحك حق إرجاع المنتج خلال <span class="numbers-fix">14</span> يوم من الاستلامه واسترداد كامل المبلغ في حال عدم الرضا لأي سبب كان.</p>
-         
-          <h4>شروط الإرجاع:</h4>
-          <ul>
-            <li>أن يكون المنتج في حالته الأصلية وبغلافه الأصلي</li>
-            <li>أن تكون جميع الملحقات والوثائق متوفرة</li>
-            <li>أن يتم الإرجاعخلال <span class="numbers-fix">14</span> يوم من تاريخ الاستلام</li>
-            <li>أن لا يكون المنتج قد تعرض للتلف بسبب سوء الاستخدام</li>
-          </ul>
-         
-          <h4>عملية الاسترداد:</h4>
-          <p>عند إرجاع المنتج وفق الشروط المذكورة، سيتم استرداد المبلغ المدفوع بنفس طريقة الدفع الأصلية خلال <span class="numbers-fix">5-7</span> أيام عمل. بالنسبة للمدفوعات عبر البطاقات، سيظهر المبلغ في كشف حسابك خلال <span class="numbers-fix">1-2</span> دورات فوترة.</p>
-         
-          <div class="stripe-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--brand)" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16a4 4 0 0 1-8 0c0-5 4-8 8-8"></path>
-            </svg>
-            <span>مدفوعات آمنة عبر 2Checkout - استرداد فوري</span>
-          </div>
-         
-          <h4>التغييرات على السياسة</h4>
-          <p>التحديثات على السياسة من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة وسنخطرك عبر البريد الإلكتروني إذا كانت التغييرات جوهرية.</p>
-         
-          <h4>اتصل بنا</h4>
-          <p>إذا كان لديك أي أسئلة حول سياسة الخصوصية والإرجاع هذه، يرجى الاتصال بنا على: info@axis-auto.com</p>
-        </div>
-      </div>
-    </div>
 
     <div id="cartModal" class="cart-modal">
       <div class="cart-content">
@@ -1519,7 +1469,7 @@
             <a href="#pricing">السعر</a>
             <a href="#faq">الأسئلة الشائعة</a>
             <a href="#order">اطلب الآن</a>
-            <a href="#" onclick="showPrivacyPolicy(); return false;">سياسة الخصوصية والإرجاع</a>
+            <a href="https://axis-uv.com/privacy-policy" target="_blank">سياسة الخصوصية والإرجاع</a>
           </div>
         </div>
       </div>
@@ -1527,7 +1477,7 @@
       <div class="footer-bottom">
         <div class="muted">© <span id="y"></span> Axis Auto — جميع الحقوق محفوظة.</div>
         <div class="footer-links">
-          <a href="#" onclick="showPrivacyPolicy(); return false;">سياسة الخصوصية والإرجاع</a>
+          <a href="https://axis-uv.com/privacy-policy" target="_blank">سياسة الخصوصية والإرجاع</a>
         </div>
       </div>
     </div>
@@ -1911,20 +1861,12 @@
       mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
     }
 
-    function showPrivacyPolicy() {
-      document.getElementById('privacyModal').style.display = 'block';
-    }
-
-    function closePrivacyModal() {
-      document.getElementById('privacyModal').style.display = 'none';
-    }
+    // Removed showPrivacyPolicy and closePrivacyModal functions
 
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
-      const privacyModal = document.getElementById('privacyModal');
       const cartModal = document.getElementById('cartModal');
       if (event.target === modal) closeModal();
-      if (event.target === privacyModal) closePrivacyModal();
       if (event.target === cartModal) closeCartModal();
     }
 
