@@ -927,6 +927,65 @@
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Cookie Banner Styles */
+    #cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #f1f5f9;
+      color: var(--text);
+      padding: 16px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    #cookie-banner p {
+      margin: 0;
+      flex: 1;
+    }
+
+    #cookie-banner .cookie-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    #cookie-banner button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    #cookie-accept {
+      background-color: var(--brand);
+      color: white;
+    }
+
+    #cookie-accept:hover {
+      background-color: var(--brand-2);
+    }
+
+    #cookie-decline {
+      background-color: transparent;
+      color: var(--muted);
+      border: 1px solid var(--muted);
+    }
+
+    #cookie-decline:hover {
+      background-color: #e2e8f0;
+    }
+
+    #cookie-banner a {
+      color: var(--brand);
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -1324,15 +1383,6 @@
               <div class="upload-status"><div class="loader" id="uploadLoader"></div><span id="uploadStatusText" class="form-note"></span></div>
             </div>
            
-            <div class="privacy-checkbox" id="privacyCheckbox">
-              <input type="checkbox" id="privacyAgreement" required>
-              <label for="privacyAgreement">
-                <span>أوافق على </span>
-                <a href="https://axis-uv.com/privacy-policy" class="privacy-link" target="_blank">سياسة الخصوصية والإرجاع</a>
-                <span> وشروط الاستخدام</span>
-              </label>
-            </div>
-           
             <div class="card" id="whatsappCard" style="background:#f8fafc;border-style:dashed; margin: 16px 0;">
               <strong>سيتم إرسال طلبك مباشرة عبر واتساب</strong>
               <div class="muted">سيتواصل معك فريق الدعم خلال وقت قصير لتأكيد طلبك وإرسال فاتورة الشراء</div>
@@ -1469,7 +1519,8 @@
             <a href="#pricing">السعر</a>
             <a href="#faq">الأسئلة الشائعة</a>
             <a href="#order">اطلب الآن</a>
-            <a href="https://axis-uv.com/privacy-policy" target="_blank">سياسة الخصوصية والإرجاع</a>
+            <a href="https://axis-uv.com/privacy-policy" target="_blank">سياسة الخصوصية</a>
+            <a href="https://axis-uv.com/return-policy" target="_blank">سياسة الإرجاع</a>
           </div>
         </div>
       </div>
@@ -1477,7 +1528,8 @@
       <div class="footer-bottom">
         <div class="muted">© <span id="y"></span> Axis Auto — جميع الحقوق محفوظة.</div>
         <div class="footer-links">
-          <a href="https://axis-uv.com/privacy-policy" target="_blank">سياسة الخصوصية والإرجاع</a>
+          <a href="https://axis-uv.com/privacy-policy" target="_blank">سياسة الخصوصية</a>
+          <a href="https://axis-uv.com/return-policy" target="_blank">سياسة الإرجاع</a>
         </div>
       </div>
     </div>
@@ -1495,6 +1547,15 @@
     <i class="fab fa-whatsapp whatsapp-icon"></i>
   </a>
 
+  <!-- Cookie Banner -->
+  <div id="cookie-banner">
+    <p>نحن نستخدم ملفات تعريف الارتباط (الكوكيز) لتحسين تجربتك على موقعنا. باستخدامك للموقع، أنت توافق على استخدامنا للكوكيز وفقاً لـ <a href="https://axis-uv.com/privacy-policy" target="_blank">سياسة الخصوصية</a>.</p>
+    <div class="cookie-buttons">
+      <button id="cookie-accept">موافق</button>
+      <button id="cookie-decline">رفض</button>
+    </div>
+  </div>
+
   <script>
     const API_BASE = "https://uv-rk1s.onrender.com";
 
@@ -1506,6 +1567,7 @@
       initPage();
       loadCart();
       updateCart();
+      initCookieBanner();
     });
 
     function initPage() {
@@ -1519,7 +1581,6 @@
       document.getElementById('personalFields').style.display = method === 'swift' ? 'block' : 'none';
       document.getElementById('stripePayment').style.display = method === 'stripe' ? 'block' : 'none';
       document.getElementById('swiftDetails').style.display = method === 'swift' ? 'block' : 'none';
-      document.getElementById('privacyCheckbox').style.display = method === 'swift' ? 'flex' : 'none';
       document.getElementById('whatsappCard').style.display = method === 'swift' ? 'block' : 'none';
       document.getElementById('paymentIcons').style.display = method === 'stripe' ? 'flex' : 'none';
 
@@ -1657,11 +1718,6 @@
           input.focus();
           return false;
         }
-      }
-     
-      if (!document.getElementById('privacyAgreement').checked) {
-        showAlert('يجب الموافقة على سياسة الخصوصية والإرجاع وشروط الاستخدام', 'error');
-        return false;
       }
      
       if (cartQuantity === 0) {
@@ -1861,8 +1917,6 @@
       mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
     }
 
-    // Removed showPrivacyPolicy and closePrivacyModal functions
-
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
       const cartModal = document.getElementById('cartModal');
@@ -1879,6 +1933,26 @@
     }
 
     const debouncedChangeQuantity = debounce(changeQuantity, 300);
+
+    function initCookieBanner() {
+      const cookieBanner = document.getElementById('cookie-banner');
+      const acceptBtn = document.getElementById('cookie-accept');
+      const declineBtn = document.getElementById('cookie-decline');
+
+      if (!localStorage.getItem('cookieConsent')) {
+        cookieBanner.style.display = 'flex';
+      }
+
+      acceptBtn.addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'accepted');
+        cookieBanner.style.display = 'none';
+      });
+
+      declineBtn.addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'declined');
+        cookieBanner.style.display = 'none';
+      });
+    }
   </script>
 </body>
 </html>
