@@ -1,415 +1,183 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>سياسة الخصوصية — Axis-UV</title>
-  <meta name="description" content="سياسة الخصوصية لموقع Axis-UV (axis-uv.com). كيفية جمع البيانات، أساس المعالجة، حقوقك، وكيف تدير موافقات الكوكيز." />
-  <style>
-    :root{
-      --bg:#ffffff; --muted:#6b7280; --accent:#0b6fb8; --card:#f8fafc; --maxw:980px; --pad:22px;
-      font-family: "Noto Kufi Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
-    }
-    body{ margin:0; background:var(--bg); color:#0b1220; line-height:1.65; padding:28px 12px; display:flex; justify-content:center; }
-    .wrap{ max-width:var(--maxw); background:#fff; padding:var(--pad); border-radius:10px; box-shadow:0 10px 30px rgba(2,6,23,0.06); }
-    h1{ color:var(--accent); margin:0 0 12px 0; }
-    h2{ margin-top:24px; color:#13293b; }
-    p, li{ color:#111827; }
-    .muted{ color:var(--muted); font-size:14px; }
-    ul{ margin:0 0 0 1.2rem; padding:0; }
-    a{ color:var(--accent); text-decoration:none; }
-    a:hover{text-decoration:underline;}
-    .meta{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
-    .badge{ background:var(--card); padding:6px 10px; border-radius:8px; color:var(--muted); font-size:13px; border:1px solid #eef2f7; }
-    footer.note{ margin-top:28px; font-size:13px; color:var(--muted); }
-
-    /* Cookie consent modal */
-    .cookie-fixed{ position:fixed; left:16px; right:16px; bottom:16px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,0.08); padding:16px; z-index:9999; display:none; }
-    .cookie-grid{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .cookie-text{ flex:1; min-width:280px; color:#0b1220; }
-    .cookie-actions{ display:flex; gap:8px; align-items:center; }
-    .btn{ background:var(--accent); color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
-    .btn.secondary{ background:#eef2f7; color:#0b1228; }
-    .open-settings{ background:transparent; border:1px solid #e6eef7; padding:8px 10px; border-radius:8px; cursor:pointer; }
-    /* Settings modal */
-    .consent-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:10000; }
-    .consent-backdrop{ position:absolute; inset:0; background:rgba(7,12,20,0.45); }
-    .consent-panel{ position:relative; background:#fff; border-radius:12px; padding:20px; width:760px; max-width:94%; max-height:90vh; overflow:auto; z-index:10001; box-shadow:0 14px 40px rgba(2,6,23,0.2); direction:rtl; }
-    .consent-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f3f6f9; }
-    .consent-row:last-child{ border-bottom:none; }
-    .toggle{ display:inline-flex; align-items:center; gap:6px; }
-    .switch{ width:44px; height:24px; background:#e6eef7; border-radius:999px; position:relative; cursor:pointer; }
-    .switch .knob{ position:absolute; top:2px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:all .18s ease; box-shadow:0 2px 6px rgba(2,6,23,0.12); }
-    .switch.on{ background:var(--accent); }
-    .switch.on .knob{ left:22px; }
-    .consent-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:14px; }
-    details{ margin-top:8px; }
-    .small{ font-size:13px; color:var(--muted); }
-    @media(max-width:640px){
-      .cookie-grid{ flex-direction:column; align-items:flex-start; }
-      .consent-row{ flex-direction:column; align-items:flex-start; gap:8px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سياسة الخصوصية - Axis Auto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand: #5B21B6;
+            --text: #0F172A;
+            --muted: #64748B;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --radius: 12px;
+            --shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        body {
+            font-family: "Cairo", sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: var(--card);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        h1, h2, h3 {
+            color: var(--brand);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 2px solid var(--brand);
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+            font-size: 1.4em;
+            margin-top: 25px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style: disc inside;
+            margin-bottom: 10px;
+            padding-right: 20px;
+        }
+        ol {
+            list-style: decimal inside;
+            margin-bottom: 10px;
+            padding-right: 20px;
+        }
+        a {
+            color: var(--brand);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        strong {
+            font-weight: 700;
+        }
+        .last-updated {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9em;
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
-  <main class="wrap" role="main" aria-labelledby="title">
-    <h1 id="title">سياسة الخصوصية وملفات تعريف الارتباط — Axis-UV</h1>
-    <div class="meta">
-      <span class="badge">الموقع: <a href="https://axis-uv.com">axis-uv.com</a></span>
-      <span class="badge">للتواصل: <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a></span>
-      <span class="badge">آخر تحديث: 2025-10-16</span>
-    </div>
+    <div class="container">
+        <h1>سياسة الخصوصية</h1>
+        <p>تاريخ السريان: <strong class="last-updated-date">[تاريخ السريان]</strong></p>
 
-    <p class="small">تشرح هذه الصفحة كيفية جمع ومعالجة بياناتك عند استخدامك لموقع <strong>Axis-UV</strong> وشراء جهاز فحص هيكل السيارة بالأشعة فوق البنفسجية. نعمل لتوفير مستوى حماية واضح ومتوافق مع متطلبات القانون الأوروبي (GDPR) واللوائح الدولية ذات الصلة.</p>
+        <p>نحن في <strong>Axis Auto</strong> ("نحن"، "الخاص بنا"، "الشركة") نلتزم بحماية خصوصية زوار ومستخدمي موقعنا الإلكتروني <a href="https://axis-uv.com/">axis-uv.com</a> (يُشار إليه فيما بعد بـ "الموقع"). توضح سياسة الخصوصية هذه أنواع المعلومات التي نجمعها، كيفية استخدامنا لها، والخيارات المتاحة لك فيما يتعلق بجمع واستخدام معلوماتك. من خلال استخدامك للموقع، فإنك توافق على ممارسات جمع المعلومات واستخدامها الموضحة في هذه السياسة.</p>
 
-    <h2>1. من نحن ومعطيات الاتصال</h2>
-    <p><strong>Axis-UV</strong> — موقع: <a href="https://axis-uv.com">axis-uv.com</a> — للتواصل: <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a></p>
-
-    <h2>2. نطاق السياسة ولماذا تجمع البيانات</h2>
-    <p>نقوم بجمع بيانات شخصية من زوّار الموقع والعملاء لأغراض: تنفيذ طلبات الشراء، معالجة المدفوعات، التواصل، تقديم الدعم الفني، الشحن، الامتثال للالتزامات القانونية، وتحسين تجربة المستخدم وتحليلات الاستخدام.</p>
-
-    <h2>3. أنواع البيانات التي نعالجها</h2>
-    <ul>
-      <li><strong>بيانات التعريف:</strong> الاسم، البريد الإلكتروني، عنوان الشحن/الفاتورة، رقم الهاتف (إذا زودت به).</li>
-      <li><strong>بيانات الدفع:</strong> عند الدفع بالبطاقة، نعالج معلومات الدفع عبر مزودي خدمة دفع (مثلاً: Stripe/PayPal أو بوابات بنكية) — نحن لا نخزن معلومات البطاقة على خوادمنا.</li>
-      <li><strong>بيانات الاستخدام والزيارات:</strong> صفحات زيارة، سجلات الخادم، عنوان IP، نوع المتصفح، بيانات جهازية.</li>
-      <li><strong>معلومات المراسلات:</strong> رسائل البريد أو محادثات الدعم ومحتواها.</li>
-    </ul>
-
-    <h2>4. الأساس القانوني للمعالجة</h2>
-    <p>نستند إلى أحد أو أكثر من الأسس التالية:</p>
-    <ul>
-      <li><strong>تنفيذ عقد:</strong> معالجة بياناتك ضرورية لتنفيذ طلبات الشراء، التسليم، وخدمة ما بعد البيع.</li>
-      <li><strong>الالتزام القانوني:</strong> الامتثال للالتزامات القانونية والضريبية.</li>
-      <li><strong>الموافقة:</strong> لبعض أوامر التتبع التسويقي والتحليلي نعتمد على موافقتك الصريحة (قابلة للسحب في أي وقت).</li>
-      <li><strong>مصلحة مشروعة:</strong> لبعض أنشطة التحليل الوظيفي وضمان أمان الموقع، مع مراعاة حقوقك وحرياتك الأساسية.</li>
-    </ul>
-
-    <h2>5. ملفات تعريف الارتباط (Cookies) وإدارة الموافقة</h2>
-    <p>نستخدم أنواعًا مختلفة من الكوكيز — هناك کوکیز ضرورية لتشغيل الموقع، وکوکیز تفضيلية لتحسين التجربة، وکوکیز تحليلات لقياس الأداء، وکوکیز تسويقية لإعلانات مخصّصة. يمكنك إدارة موافقاتك بشكل مفصّل من خلال أداة الموافقة الموجّهة (Cookie Manager) في أسفل الصفحة. لا نقوم بتحميل أي سكربتات تحليليّة أو تسويقية قبل منح الموافقة المناسبة.</p>
-
-    <h2>6. الدفع ومعالجة بيانات الدفع</h2>
-    <p>عند الدفع بالبطاقة، تعتمد معالجة بيانات البطاقة على موفّر الدفع الذي تختاره. نحن نعمل مع مزوّد (أو مزودين) دفع يلتزم بمعايير الأمان (PCI-DSS). نوصي بالتحقق من سياسة الخصوصية لمزوّد الدفع لتفاصيل إضافية؛ نحن لا نخزن بيانات البطاقة كاملةً على خوادمنا.</p>
-
-    <h2>7. مشاركات طرف ثالث</h2>
-    <p>قد نشارك بياناتك مع:</p>
-    <ul>
-      <li>مقدمي خدمات الشحن (لتسليم المنتج).</li>
-      <li>مزودي الدفع (لمعالجة المعاملات).</li>
-      <li>مزودي استضافة وخدمات تقنية ومقدمي دعم فني.</li>
-      <li>جهات إنفاذ القانون عندما يقتضي القانون ذلك.</li>
-    </ul>
-    <p class="small">سنذكر بالوضوح أسماء مقدمي الخدمات في صفحة "معالِجون بيانات طرف ثالث" داخل الموقع عند توافرها (يمكن إضافتها لاحقاً). إذا أردت، أدرج لك قائمة مزودي الخدمة المستخدمة حالياً.</p>
-
-    <h2>8. التحويل الدولي للبيانات</h2>
-    <p>قد يتم معالجة البيانات أو تخزينها في دول خارج منطقتك (بما في ذلك خارج الاتحاد الأوروبي). عند حدوث نقل دولي نطبق ضوابط مناسبة (مثل بنود العقد النموذجية أو ضمانات أخرى) لضمان حماية بياناتك وفقاً للمعايير المقبولة دوليًا.</p>
-
-    <h2>9. مدة الاحتفاظ بالبيانات</h2>
-    <p>نحتفظ بالبيانات طالما استمرت العلاقة أو ما دعت إليه حاجة قانونية أو محاسبية (مثلاً سجلات الفواتير). للطلبات الفردية (مثل حذف الحساب)، الرجاء التواصل على <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a>.</p>
-
-    <h2>10. حقوقك وفق قوانين حماية البيانات</h2>
-    <p>لديك، حسب القانون المعمول به، حقوق مثل:</p>
-    <ul>
-      <li>الاطلاع على بياناتك وتصحيحها.</li>
-      <li>طلب حذف بياناتك (الاستثناءات القانونية قد تنطبق).</li>
-      <li>سحب الموافقة في أي وقت بالنسبة للمعالجات المعتمدة على الموافقة.</li>
-      <li>طلب تقييد المعالجة أو نقل البيانات.</li>
-      <li>الاعتراض على المعالجة لأغراض التسويق المباشر.</li>
-    </ul>
-    <p>لممارسة أي من الحقوق أعلاه تواصل معنا على: <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a>. يمكنك أيضاً تقديم شكوى إلى سلطة حماية البيانات المحلية إذا لم تُحل المشكلة.</p>
-
-    <h2>11. أمن البيانات</h2>
-    <p>نوفر تدابير تقنية وإدارية ملائمة (التشفير، وصول مقيد، نسخ احتياطي) لحماية بياناتك. مع ذلك لا يوجد نظام آمن تماماً، وسنقوم بالإبلاغ عن أي خرق بيانات يتطلب إشعاراً قانونياً.</p>
-
-    <h2>12. الأطفال</h2>
-    <p>موقعنا ومبيعاتنا موجهان للبالغين والمؤسسات. لا نجمع بيانات شخصية عن أطفال بوعي عمدي ولا نسمح بشراء المنتجات للأفراد دون السن القانوني إن كان ذلك مطلوبًا بموجب القانون المحلي.</p>
-
-    <h2>13. التغييرات على السياسة</h2>
-    <p>نحتفظ بالحق في تعديل هذه السياسة. سنعلن عن التغييرات الجوهرية وسنحدّث تاريخ "آخر تحديث" أعلى الصفحة.</p>
-
-    <footer class="note">
-      <p>للاستفسارات وطلبات البيانات: <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a> — Axis-UV — الموقع: <a href="https://axis-uv.com">axis-uv.com</a></p>
-      <p class="muted">ملاحظة: هذه الوثيقة مرجعية وليست بديلاً عن استشارة قانونية؛ إن كان جمهورك في الاتحاد الأوروبي أو لديك متطلبات تنظيمية خاصة ننصح باستشارة مستشار قانوني لضبط نصوص تتناسب تماماً مع نشاطك وموفّقي الخدمة.</p>
-    </footer>
-  </main>
-
-  <!-- Cookie consent bar -->
-  <div id="cookieBar" class="cookie-fixed" role="region" aria-label="شريط ملفات تعريف الارتباط">
-    <div class="cookie-grid">
-      <div class="cookie-text">
-        <strong>نستخدم الكوكيز لتحسين تجربتك.</strong>
-        <div class="small muted">اختر تفضيلاتك: بعض الكوكيز ضرورية لتشغيل الموقع؛ البعض الآخر لتحليلات أو تسويق — يمكنك تعديل اختياراتك في "إعدادات الكوكيز".</div>
-      </div>
-      <div class="cookie-actions">
-        <button class="btn secondary" id="rejectAll">رفض الكل</button>
-        <button class="open-settings" id="openSettings">إعدادات الكوكيز</button>
-        <button class="btn" id="acceptAll">أوافق وأستمر</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Consent modal -->
-  <div id="consentModal" class="consent-modal" aria-hidden="true">
-    <div class="consent-backdrop" id="consentBackdrop" tabindex="-1"></div>
-    <div class="consent-panel" role="dialog" aria-modal="true" aria-label="إعدادات الكوكيز">
-      <h2>إعدادات ملفات تعريف الارتباط</h2>
-      <p class="small">يمكنك تفعيل أو تعطيل أنواع الكوكيز التالية. لن يتم تحميل أدوات التحليل أو التسويق دون موافقتك.</p>
-
-      <div class="consent-row">
-        <div>
-          <strong>الكوكيز الضرورية</strong>
-          <div class="small muted">مطلوبة لتشغيل الموقع، الأمن، والوظائف الأساسية (مثلاً عربة التسوق، إدارة الجلسة).</div>
-        </div>
-        <div class="toggle">
-          <div class="switch on" data-key="necessary"><div class="knob"></div></div>
-        </div>
-      </div>
-
-      <div class="consent-row">
-        <div>
-          <strong>الكوكيز التفضيلية</strong>
-          <div class="small muted">تخزين تفضيلات العرض واللغة لتحسين تجربتك.</div>
-        </div>
-        <div class="toggle">
-          <div class="switch" data-key="preferences"><div class="knob"></div></div>
-        </div>
-      </div>
-
-      <div class="consent-row">
-        <div>
-          <strong>الكوكيز التحليلية</strong>
-          <div class="small muted">تساعدنا على قياس أداء الموقع وتحسينه (مثلاً Google Analytics). لن تُحمّل أداة التحليل دون موافقتك.</div>
-        </div>
-        <div class="toggle">
-          <div class="switch" data-key="analytics"><div class="knob"></div></div>
-        </div>
-      </div>
-
-      <div class="consent-row">
-        <div>
-          <strong>الكوكيز التسويقية</strong>
-          <div class="small muted">تستخدم للإعلانات المخصصة وإحصاءات الحملة (مثلاً شبكات إعلانية خارجية).</div>
-        </div>
-        <div class="toggle">
-          <div class="switch" data-key="marketing"><div class="knob"></div></div>
-        </div>
-      </div>
-
-      <details>
-        <summary>قائمة مزودي الطرف الثالث (أمثلة)</summary>
+        <h2>1. المعلومات التي نجمعها</h2>
+        <h3>أ. المعلومات الشخصية التي تقدمها لنا:</h3>
+        <p>نقوم بجمع المعلومات الشخصية التي تقدمها لنا طوعًا عند تفاعلك مع الموقع، مثل عند إجراء عملية شراء، التسجيل للحصول على حساب، الاشتراك في النشرة الإخبارية، أو الاتصال بنا. قد تتضمن هذه المعلومات:</p>
         <ul>
-          <li>مزود الدفع: Stripe / PayPal (لمعالجة بطاقات الدفع)</li>
-          <li>التحليلات: Google Analytics / Google Tag Manager</li>
-          <li>خدمات الاستضافة: مزود استضافة ويب (مُحدد في العقد)</li>
+            <li>الاسم الكامل</li>
+            <li>عنوان البريد الإلكتروني</li>
+            <li>رقم الهاتف</li>
+            <li>عنوان الشحن والفوترة</li>
+            <li>تفاصيل الدفع (يتم معالجتها بواسطة طرف ثالث، ولا نخزن تفاصيل بطاقة الائتمان الحساسة مباشرة على خوادمنا)</li>
+            <li>أي معلومات أخرى تختار تقديمها لنا</li>
         </ul>
-        <p class="small muted">سنوفر قائمة مفصّلة بالموردين وعقود معالِجة البيانات عند طلبها.</p>
-      </details>
 
-      <div class="consent-actions">
-        <button class="btn secondary" id="savePreferences">حفظ التفضيلات</button>
-        <button class="btn" id="saveAccept">قبول وحفظ</button>
-      </div>
+        <h3>ب. معلومات يتم جمعها تلقائيًا:</h3>
+        <p>عندما تزور موقعنا، قد نقوم بجمع معلومات معينة تلقائيًا من جهازك. قد تتضمن هذه المعلومات:</p>
+        <ul>
+            <li>عنوان IP الخاص بك</li>
+            <li>نوع المتصفح وإصداره</li>
+            <li>نظام التشغيل</li>
+            <li>الصفحات التي زرتها على موقعنا</li>
+            <li>التاريخ والوقت لزيارتك</li>
+            <li>المدة الزمنية التي قضيتها على تلك الصفحات</li>
+            <li>بيانات النقر (Clickstream data)</li>
+            <li>معرفات الجهاز الفريدة وبيانات التشخيص الأخرى</li>
+        </ul>
+        <p>نستخدم ملفات تعريف الارتباط (الكوكيز) وتقنيات التتبع المماثلة لتتبع النشاط على موقعنا والاحتفاظ بمعلومات معينة. يمكنك التحكم في استخدام ملفات تعريف الارتباط من خلال إعدادات متصفحك.</p>
+
+        <h2>2. كيفية استخدامنا لمعلوماتك</h2>
+        <p>نستخدم المعلومات التي نجمعها لأغراض مختلفة، بما في ذلك:</p>
+        <ul>
+            <li>معالجة طلباتك وتوصيل المنتجات</li>
+            <li>إدارة حسابك وتقديم خدمات الدعم الفني</li>
+            <li>تحسين وتخصيص تجربتك على الموقع</li>
+            <li>تحليل استخدام الموقع ومراقبة الاتجاهات</li>
+            <li>إرسال رسائل بريد إلكتروني تسويقية ونشرات إخبارية (يمكنك إلغاء الاشتراك في أي وقت)</li>
+            <li>الكشف عن الاحتيال ومنعه، وضمان أمن الموقع</li>
+            <li>الامتثال للالتزامات القانونية</li>
+        </ul>
+
+        <h2>3. مشاركة معلوماتك</h2>
+        <p>قد نشارك معلوماتك الشخصية مع الأطراف الثالثة التالية:</p>
+        <ul>
+            <li><strong>مقدمو خدمات الدفع:</strong> لمعالجة مدفوعاتك بشكل آمن (مثل 2Checkout).</li>
+            <li><strong>شركات الشحن والتوصيل:</strong> لتوصيل المنتجات إليك.</li>
+            <li><strong>مقدمو الخدمات:</strong> مثل خدمات استضافة المواقع، تحليلات البيانات، خدمات العملاء، والتي تساعدنا في تشغيل الموقع وتقديم خدماتنا.</li>
+            <li><strong>الجهات القانونية:</strong> إذا كان ذلك مطلوبًا بموجب القانون أو استجابة لطلب قانوني صالح (مثل أمر محكمة أو مذكرة تفتيش).</li>
+            <li><strong>عمليات الدمج والاستحواذ:</strong> في حالة بيع أو دمج أو نقل لأصول الشركة، قد يتم نقل معلوماتك الشخصية كجزء من تلك الصفقة.</li>
+        </ul>
+        <p>نحن لا نبيع أو نؤجر معلوماتك الشخصية لأطراف ثالثة لأغراض تسويقية دون موافقتك الصريحة.</p>
+
+        <h2>4. حقوق حماية البيانات الخاصة بك (وفقًا للائحة العامة لحماية البيانات - GDPR)</h2>
+        <p>إذا كنت مقيمًا في المنطقة الاقتصادية الأوروبية (EEA)، لديك حقوق معينة لحماية البيانات. تهدف <strong>Axis Auto</strong> إلى اتخاذ خطوات معقولة للسماح لك بتصحيح أو تعديل أو حذف أو تقييد استخدام بياناتك الشخصية. هذه الحقوق تشمل:</p>
+        <ol>
+            <li><strong>الحق في الوصول:</strong> الحق في طلب نسخ من بياناتك الشخصية. قد نفرض رسومًا رمزية مقابل هذه الخدمة.</li>
+            <li><strong>الحق في التصحيح:</strong> الحق في طلب تصحيح أي معلومات تعتقد أنها غير دقيقة، أو إكمال المعلومات التي تعتقد أنها غير كاملة.</li>
+            <li><strong>الحق في المسح (النسيان):</strong> الحق في طلب مسح بياناتك الشخصية، في ظل ظروف معينة.</li>
+            <li><strong>الحق في تقييد المعالجة:</strong> الحق في طلب تقييد معالجة بياناتك الشخصية، في ظل ظروف معينة.</li>
+            <li><strong>الحق في الاعتراض على المعالجة:</strong> الحق في الاعتراض على معالجتنا لبياناتك الشخصية، في ظل ظروف معينة.</li>
+            <li><strong>الحق في قابلية نقل البيانات:</strong> الحق في طلب نقل البيانات التي جمعناها إلى منظمة أخرى، أو إليك مباشرة، في ظل ظروف معينة.</li>
+        </ol>
+        <p>إذا قدمت طلبًا، سيكون لدينا شهر واحد للرد عليك. إذا كنت ترغب في ممارسة أي من هذه الحقوق، يرجى الاتصال بنا عبر البريد الإلكتروني على <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a>.</p>
+
+        <h2>5. أمن البيانات</h2>
+        <p>نحن نولي أهمية كبيرة لأمن معلوماتك الشخصية ونتخذ تدابير أمنية مناسبة لحمايتها من الوصول غير المصرح به، التغيير، الإفصاح، أو التدمير. تشمل هذه التدابير الضمانات المادية والإلكترونية والإدارية.</p>
+
+        <h2>6. الاحتفاظ بالبيانات</h2>
+        <p>سنحتفظ ببياناتك الشخصية فقط للمدة الضرورية لتحقيق الأغراض الموضحة في سياسة الخصوصية هذه، ما لم تتطلب فترة احتفاظ أطول أو يسمح بها القانون (مثل الامتثال لالتزاماتنا القانونية).</p>
+
+        <h2>7. روابط لمواقع أخرى</h2>
+        <p>قد يحتوي موقعنا على روابط لمواقع أخرى لا نقوم بتشغيلها. إذا نقرت على رابط تابع لجهة خارجية، فسيتم توجيهك إلى موقع تلك الجهة. ننصحك بشدة بمراجعة سياسة الخصوصية لكل موقع تزوره. ليس لدينا سيطرة ولا نتحمل أي مسؤولية عن محتوى أو سياسات الخصوصية أو ممارسات أي مواقع أو خدمات تابعة لجهات خارجية.</p>
+
+        <h2>8. خصوصية الأطفال</h2>
+        <p>لا يستهدف موقعنا أي شخص يقل عمره عن 18 عامًا ("الأطفال"). نحن لا نجمع عن قصد معلومات شخصية من الأطفال. إذا كنت والدًا أو وصيًا وكنت على علم بأن طفلك قد قدم لنا بيانات شخصية، يرجى الاتصال بنا. إذا علمنا أننا جمعنا بيانات شخصية من أطفال دون التحقق من موافقة الوالدين، فإننا نتخذ خطوات لإزالة تلك المعلومات من خوادمنا.</p>
+
+        <h2>9. التغييرات على سياسة الخصوصية هذه</h2>
+        <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سنعلمك بأي تغييرات عن طريق نشر سياسة الخصوصية الجديدة على هذه الصفحة وتحديث "تاريخ السريان" في الأعلى. يُنصح بمراجعة سياسة الخصوصية هذه بشكل دوري لأي تغييرات. تصبح التغييرات على سياسة الخصوصية هذه سارية المفعول عند نشرها على هذه الصفحة.</p>
+
+        <h2>10. اتصل بنا</h2>
+        <p>إذا كانت لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا:</p>
+        <ul>
+            <li>عبر البريد الإلكتروني: <a href="mailto:uv@axis-auto.com">uv@axis-auto.com</a></li>
+            <li>عبر الهاتف: <span class="numbers-fix" dir="ltr">+971 6 565 0021</span></li>
+            <li>عبر الواتساب: <span class="numbers-fix" dir="ltr">+971 50 152 5742</span></li>
+            <li>عبر العنوان البريدي: شارع الشيخ محمد بن زايد - الرقعة الحمراء - سوق الحراج - الإمارات العربية المتحدة</li>
+        </ul>
+
+        <div class="last-updated">آخر تحديث: <strong class="last-updated-date">10/18/2025</strong></div>
     </div>
-  </div>
-
-  <script>
-  /*******************************
-   * Consent & Cookie Manager
-   * - يمنع تحميل أدوات التحليل/التسويق حتى يتم منح الموافقة.
-   * - يخزن الموافقة في localStorage و cookie قصيرة العمر (للاستخدام عبر الخوادم إذا رغبت).
-   * - يوفر نقطة اتصال لإرسال سجل الموافقة إلى الخادم (مثال POST).
-   *******************************/
-
-  const CONSENT_KEY = 'axisuv_consent_v1';
-
-  // default consent structure
-  const defaultConsent = {
-    necessary: true,
-    preferences: false,
-    analytics: false,
-    marketing: false,
-    timestamp: new Date().toISOString()
-  };
-
-  function readConsent(){
-    try {
-      const raw = localStorage.getItem(CONSENT_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch(e){ return null; }
-  }
-
-  function writeConsent(consent){
-    localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
-    // set short cookie for server-side recognition (optional)
-    document.cookie = `axisuv_consent=${encodeURIComponent(JSON.stringify(consent))}; max-age=${60*60*24*365}; path=/; samesite=lax`;
-  }
-
-  function openModal(){
-    document.getElementById('consentModal').style.display = 'flex';
-    document.getElementById('consentModal').setAttribute('aria-hidden','false');
-  }
-  function closeModal(){
-    document.getElementById('consentModal').style.display = 'none';
-    document.getElementById('consentModal').setAttribute('aria-hidden','true');
-  }
-
-  // Initialize UI switches according to consent
-  function initSwitches(consent){
-    document.querySelectorAll('.switch').forEach(s=>{
-      const key = s.dataset.key;
-      const val = consent[key] === true;
-      if(val) s.classList.add('on'); else s.classList.remove('on');
-      // toggle on click unless necessary
-      s.onclick = function(){
-        if(key === 'necessary') return; // cannot toggle necessary
-        s.classList.toggle('on');
-      };
-    });
-  }
-
-  // apply consent: load analytics scripts only if analytics:true etc.
-  function applyConsent(consent){
-    // Example: Load Google Analytics (GA4) only if consent.analytics is true
-    if(consent.analytics){
-      if(!window.gtagInitialized){
-        // NOTE: replace 'G-XXXXXXX' with your GA4 Measurement ID if you use GA4
-        // Do not include any tracking ID here automatically — add your ID on the site.
-        // Example loader:
-        (function(){
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          window.gtag = gtag;
-          gtag('js', new Date());
-          // gtag('config', 'G-XXXXXXXX'); // <-- ADD YOUR GA4 ID HERE
-          // load script
-          const s = document.createElement('script');
-          s.async = true;
-          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX';
-          document.head.appendChild(s);
-          window.gtagInitialized = true;
-        })();
-      }
-    } else {
-      // If analytics rejected: do NOT load analytics, and optionally disable cookies from analytics.
-      // For Google, you can set gtag('consent', 'default', {ad_storage:'denied', analytics_storage:'denied'});
-      if(window.gtag) try { gtag('consent','update',{analytics_storage:'denied', ad_storage:'denied'}); } catch(e){}
-    }
-
-    // Marketing scripts (ads) load only if consent.marketing true.
-    // Preferences scripts may customize UI; necessary always loaded.
-
-    // NOTE: For payment processors (Stripe/PayPal) the payment widget may create cookies.
-    // Payment processing is needed for purchases — ensure you list this in privacy policy.
-  }
-
-  // show/hide cookie bar depending on consent presence
-  function showCookieBarIfNeeded(){
-    const c = readConsent();
-    const bar = document.getElementById('cookieBar');
-    if(!c){
-      bar.style.display = 'block';
-    } else {
-      bar.style.display = 'none';
-    }
-  }
-
-  // UI actions
-  document.getElementById('openSettings').addEventListener('click', function(){ 
-    const c = readConsent() || defaultConsent;
-    initSwitches(c);
-    openModal();
-  });
-  document.getElementById('consentBackdrop').addEventListener('click', closeModal);
-
-  document.getElementById('acceptAll').addEventListener('click', function(){
-    const consent = { ...defaultConsent, preferences:true, analytics:true, marketing:true, timestamp:new Date().toISOString() };
-    writeConsent(consent);
-    applyConsent(consent);
-    sendConsentLog(consent);
-    document.getElementById('cookieBar').style.display='none';
-  });
-
-  document.getElementById('rejectAll').addEventListener('click', function(){
-    const consent = { ...defaultConsent, preferences:false, analytics:false, marketing:false, timestamp:new Date().toISOString() };
-    writeConsent(consent);
-    applyConsent(consent);
-    sendConsentLog(consent);
-    document.getElementById('cookieBar').style.display='none';
-  });
-
-  document.getElementById('saveAccept').addEventListener('click', function(){
-    // read switches
-    const consent = readSwitchesAndSave();
-    writeConsent(consent);
-    applyConsent(consent);
-    sendConsentLog(consent);
-    closeModal();
-    document.getElementById('cookieBar').style.display='none';
-  });
-
-  document.getElementById('savePreferences').addEventListener('click', function(){
-    const consent = readSwitchesAndSave();
-    writeConsent(consent);
-    applyConsent(consent);
-    sendConsentLog(consent);
-    closeModal();
-    document.getElementById('cookieBar').style.display='none';
-  });
-
-  function readSwitchesAndSave(){
-    const switches = document.querySelectorAll('.switch');
-    const consent = { timestamp: new Date().toISOString() };
-    switches.forEach(s=>{
-      const key = s.dataset.key;
-      consent[key] = s.classList.contains('on');
-    });
-    // ensure necessary true
-    consent.necessary = true;
-    return consent;
-  }
-
-  // Example: send consent log to server for record-keeping (recommended for GDPR)
-  // Implement server endpoint to persist logs (see notes below).
-  function sendConsentLog(consent){
-    try{
-      // Replace '/api/consent' with your actual server endpoint if you implement one.
-      fetch('/api/consent', {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify({
-          consent,
-          userAgent: navigator.userAgent,
-          page: location.pathname,
-          ip: null // server should populate request IP
-        })
-      }).catch(()=>{/* optional: offline handling */});
-    } catch(e){}
-  }
-
-  // initialize on load
-  (function(){
-    const c = readConsent();
-    if(c){
-      applyConsent(c);
-      document.getElementById('cookieBar').style.display='none';
-    } else {
-      showCookieBarIfNeeded();
-    }
-  })();
-
-  // make switches interactive (toggle on click)
-  document.querySelectorAll('.switch').forEach(s=>{
-    s.addEventListener('click', function(){
-      if(s.dataset.key === 'necessary') return;
-      s.classList.toggle('on');
-    });
-  });
-
-  // Accessibility: close modal with ESC
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') closeModal();
-  });
-
-  </script>
 </body>
 </html>
