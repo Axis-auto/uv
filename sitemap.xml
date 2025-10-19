@@ -17,4 +17,32 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://axis-uv.com/" />
   </url>
 
+  <url>
+    <loc>https://axis-uv.com/privacy-policy.html</loc>
+    <lastmod>2025-10-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://axis-uv.com/privacy-policy.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://axis-uv.com/en/privacy-policy.html" />
+  </url>
+
+  <url>
+    <loc>https://axis-uv.com/en/privacy-policy.html</loc>
+    <lastmod>2025-10-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://axis-uv.com/en/privacy-policy.html" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://axis-uv.com/privacy-policy.html" />
+  </url>
+
+  <url>
+    <loc>https://axis-uv.com/return-policy.html</loc>
+    <lastmod>2025-10-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://axis-uv.com/return-policy.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://axis-uv.com/en/return-policy.html" />
+  </url>
+
+  <url>
+    <loc>https://axis-uv.com/en/return-policy.html</loc>
+    <lastmod>2025-10-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://axis-uv.com/en/return-policy.html" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://axis-uv.com/return-policy.html" />
+  </url>
+
 </urlset>
