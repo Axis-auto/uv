@@ -1101,6 +1101,38 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=2046073482856565&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+
+<!-- Meta Events Tracking -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+  // تتبع زر "إضافة إلى السلة"
+  const addToCartButtons = document.querySelectorAll("button.btn.primary[onclick*='addToCart']");
+  addToCartButtons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      fbq('track', 'AddToCart', {
+        content_name: 'جهاز فحص السيارات بالأشعة فوق البنفسجية',
+        content_category: 'Automotive Tools',
+        currency: 'USD',
+        value: 799
+      });
+    });
+  });
+
+  // تتبع النقر على واتساب (تواصل)
+  const whatsappLinks = document.querySelectorAll("a[href*='wa.me'], a[href*='whatsapp']");
+  whatsappLinks.forEach(link => {
+    link.addEventListener("click", function() {
+      fbq('track', 'Contact', {
+        method: 'WhatsApp',
+        content_name: 'WhatsApp Inquiry - Axis Auto UV Device'
+      });
+    });
+  });
+
+});
+</script>
+<!-- End Meta Events Tracking -->
 </head>
 
 <body>
