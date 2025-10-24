@@ -813,71 +813,77 @@
     }
    
     @media (max-width:480px) {
+      .container { padding: 8px; }
+      header .inner { 
+        padding: 6px 0; 
+        gap: 6px; 
+      } 
+      
       .logo { 
-        font-size: 14px; 
-        min-width: 80px;
+        font-size: 16px; 
+        gap: 6px; 
+        min-width: 90px;
       }
       
       .logo img { 
-        height: 30px; 
+        height: 35px; 
       }
       
       .logo span { 
-        font-size: 12px; 
+        font-size: 14px; 
       } 
       
       .btn { 
-        padding: 6px 12px; 
-        font-size: 12px; 
-      }
-      
-      .hero h1 { font-size: 20px; }
-      .badge { font-size: 9px; }
-      .kpis { grid-template-columns: 1fr; }
-      
-      header .inner { 
-        gap: 4px; 
-        padding: 4px 6px;
-      }
-      
-      nav { 
-        gap: 4px; 
-        overflow-x: auto; 
-        -webkit-overflow-scrolling: touch; 
-        scrollbar-width: none; 
-        -ms-overflow-style: none; 
-      }
-      
-      nav::-webkit-scrollbar { display: none; }
+        padding: 8px 14px; 
+        font-size: 14px; 
+        white-space: nowrap; 
+      } 
       
       .btn.ghost { 
         padding: 4px 8px; 
-        font-size: 10px; 
-      }
+        font-size: 12px; 
+      } 
+      
+      .hero { padding: 12px 0; min-height: 80vh; }
+      .hero h1 { font-size: 22px; }
+      .hero .lead { font-size: 14px; }
+      .badge { font-size: 10px; padding: 3px 6px; }
+      .card { padding: 12px; }
+      .table { font-size: 14px; }
+      .table td, .table th { padding: 6px 8px; }
+      .kpi { padding: 8px; }
+      .kpi .big { font-size: 18px; }
+      .pricing-card { padding: 10px; }
+      .pricing-card .price { font-size: 24px; }
+      .form-input, .form-select { padding: 10px; font-size: 14px; }
       
       .lang-switcher { 
-        padding: 3px 6px; 
-        font-size: 11px; 
-        gap: 2px; 
-        min-width: 45px;
+        padding: 4px 8px; 
+        font-size: 12px; 
+        min-width: 50px;
       }
       
-      .cart-icon .fa-shopping-cart { 
-        font-size: 15px; 
-      }
-      
-      .cart-count { 
-        font-size: 9px; 
-        min-width: 14px; 
-        padding: 0px 3px; 
-        top: -5px; 
-        right: -5px; 
-        height: 12px;
+      .floating-cta { 
+        padding: 8px 14px; 
+        font-size: 14px; 
       }
       
       header nav a {
-        font-size: 10px;
-        padding: 4px 6px;
+        font-size: 12px;
+        padding: 5px 8px;
+      }
+      
+      .cart-icon .fa-shopping-cart { 
+        font-size: 16px; 
+      }
+      
+      .cart-count { 
+        font-size: 10px; 
+        min-width: 16px; 
+        padding: 1px 4px; 
+        top: -6px; 
+        right: -6px; 
+        height: 14px;
       }
 
       .sub-image-container {
@@ -943,6 +949,65 @@
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Cookie Banner Styles */
+    #cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #f1f5f9;
+      color: var(--text);
+      padding: 16px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    #cookie-banner p {
+      margin: 0;
+      flex: 1;
+    }
+
+    #cookie-banner .cookie-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    #cookie-banner button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    #cookie-accept {
+      background-color: var(--brand);
+      color: white;
+    }
+
+    #cookie-accept:hover {
+      background-color: var(--brand-2);
+    }
+
+    #cookie-decline {
+      background-color: transparent;
+      color: var(--muted);
+      border: 1px solid var(--muted);
+    }
+
+    #cookie-decline:hover {
+      background-color: #e2e8f0;
+    }
+
+    #cookie-banner a {
+      color: var(--brand);
+      text-decoration: underline;
+    }
   </style>
   <!-- Meta Pixel Code -->
 <script>
@@ -1566,6 +1631,15 @@ document.addEventListener("DOMContentLoaded", function() {
     <i class="fab fa-whatsapp whatsapp-icon"></i>
   </a>
 
+  <!-- Cookie Banner -->
+  <div id="cookie-banner">
+    <p>We use cookies to improve your experience on our site. By using the site, you agree to our use of cookies in accordance with the <a href="https://axis-uv.com/en/privacy-policy" target="_blank">Privacy Policy</a>.</p>
+    <div class="cookie-buttons">
+      <button id="cookie-accept">Accept</button>
+      <button id="cookie-decline">Decline</button>
+    </div>
+  </div>
+
   <script>
     const API_BASE = "https://uv-rk1s.onrender.com";
 
@@ -1577,11 +1651,32 @@ document.addEventListener("DOMContentLoaded", function() {
       initPage();
       loadCart();
       updateCart();
+      initCookieBanner();
     });
 
     function initPage() {
       document.getElementById('y').textContent = new Date().getFullYear();
       togglePaymentDetails();
+    }
+
+    function initCookieBanner() {
+      const cookieBanner = document.getElementById('cookie-banner');
+      const acceptBtn = document.getElementById('cookie-accept');
+      const declineBtn = document.getElementById('cookie-decline');
+
+      if (!localStorage.getItem('cookieConsent')) {
+        cookieBanner.style.display = 'flex';
+      }
+
+      acceptBtn.addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'accepted');
+        cookieBanner.style.display = 'none';
+      });
+
+      declineBtn.addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'declined');
+        cookieBanner.style.display = 'none';
+      });
     }
 
     function togglePaymentDetails() {
