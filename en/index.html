@@ -957,10 +957,43 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq('init', '2046073482856565');
 fbq('track', 'PageView');
 </script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=2046073482856565&ev=PageView&noscript=1"
-/></noscript>
+<noscript>
+  <img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=2046073482856565&ev=PageView&noscript=1"/>
+</noscript>
 <!-- End Meta Pixel Code -->
+
+<!-- Meta Events Tracking -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+  // Track "Add to Cart" button clicks
+  const addToCartButtons = document.querySelectorAll("button.btn.primary[onclick*='addToCart']");
+  addToCartButtons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      fbq('track', 'AddToCart', {
+        content_name: 'Axis Auto UV Car Inspection Device',
+        content_category: 'Automotive Tools',
+        currency: 'USD',
+        value: 799
+      });
+    });
+  });
+
+  // Track WhatsApp contact clicks
+  const whatsappLinks = document.querySelectorAll("a[href*='wa.me'], a[href*='whatsapp']");
+  whatsappLinks.forEach(link => {
+    link.addEventListener("click", function() {
+      fbq('track', 'Contact', {
+        method: 'WhatsApp',
+        content_name: 'WhatsApp Inquiry - Axis Auto UV Device'
+      });
+    });
+  });
+
+});
+</script>
+<!-- End Meta Events Tracking -->
 </head>
 
 <body>
