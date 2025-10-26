@@ -1100,13 +1100,10 @@ fbq('track', 'PageView');
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=2046073482856565&ev=PageView&noscript=1"
 /></noscript>
-<!-- End Meta Pixel Code -->
 
-<!-- Meta Events Tracking -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
-  // تتبع زر "إضافة إلى السلة"
   const addToCartButtons = document.querySelectorAll("button.btn.primary[onclick*='addToCart']");
   addToCartButtons.forEach(btn => {
     btn.addEventListener("click", function() {
@@ -1119,7 +1116,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // تتبع النقر على واتساب (تواصل)
   const whatsappLinks = document.querySelectorAll("a[href*='wa.me'], a[href*='whatsapp']");
   whatsappLinks.forEach(link => {
     link.addEventListener("click", function() {
@@ -1132,7 +1128,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 </script>
-<!-- End Meta Events Tracking -->
 </head>
 
 <body>
